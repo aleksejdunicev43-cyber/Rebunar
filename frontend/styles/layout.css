@@ -191,3 +191,53 @@
     white-space: nowrap;
   }
 }
+
+/* Навигация чатов */
+.nav-chat {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-chat .nav-icon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .mobile-navigation .nav-chat {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 3px;
+  }
+
+  .mobile-navigation .nav-chat .nav-icon {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+/* Навигация чатов */
+.nav-chat {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-chat .nav-icon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .mobile-navigation .nav-chat {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 3px;
+  }
+
+  .mobile-navigation .nav-chat .nav-icon {
+    width: 25px;
+    height: 25px;
+  }
+}

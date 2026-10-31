@@ -3,6 +3,31 @@
  * Общая оболочка интерфейса.
  */
 
+const chatIcon = `
+  <svg class="nav-icon" viewBox="0 0 24 24"
+       width="23" height="23" fill="none"
+       stroke="currentColor" stroke-width="1.9"
+       stroke-linecap="round" stroke-linejoin="round"
+       aria-hidden="true">
+    <path d="M20 11.5a8.4 8.4 0 0 1-.9 3.8
+      8.5 8.5 0 0 1-7.6 4.7
+      8.4 8.4 0 0 1-3.8-.9L3 21l1.9-4.7
+      A8.4 8.4 0 0 1 4 12.5
+      8.5 8.5 0 0 1 8.7 4.9
+      8.4 8.4 0 0 1 12.5 4h.5
+      a8.5 8.5 0 0 1 7 7.5z"/>
+  </svg>
+`;
+
+function chatButton() {
+  return `
+    <button type="button" class="nav-chat" data-route="messages">
+      ${chatIcon}
+      <span>Чаты</span>
+    </button>
+  `;
+}
+
 export function createShell(root) {
   root.innerHTML = `
     <div class="app-shell">
@@ -24,9 +49,8 @@ export function createShell(root) {
             <button type="button" data-route="home">Главная</button>
             <button type="button" data-route="games">Игры</button>
             <button type="button" data-route="communities">Сообщества</button>
-            <button type="button" data-route="messages">Сообщения</button>
-
-          <button type="button" data-route="settings">Настройки</button>
+            ${chatButton()}
+            <button type="button" data-route="settings">Настройки</button>
           </nav>
         </aside>
 
@@ -34,8 +58,7 @@ export function createShell(root) {
           <div id="screen-outlet"></div>
         </main>
 
-        <aside class="context-panel" id="context-panel">
-        </aside>
+        <aside class="context-panel" id="context-panel"></aside>
 
       </div>
 
@@ -43,9 +66,8 @@ export function createShell(root) {
         <button type="button" data-route="home">Главная</button>
         <button type="button" data-route="games">Игры</button>
         <button type="button" data-route="communities">Сообщества</button>
-        <button type="button" data-route="messages">Сообщения</button>
-
-          <button type="button" data-route="settings">Настройки</button>
+        ${chatButton()}
+        <button type="button" data-route="settings">Настройки</button>
       </nav>
 
     </div>
