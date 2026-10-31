@@ -1,0 +1,77 @@
+# Secrets
+.env
+.env.*
+.secret_key
+*.pem
+*.key
+*secret*
+
+# Databases and user data
+*.db
+*.sqlite
+*.sqlite3
+instance/
+uploads/
+user_uploads/
+
+# Backups
+*backup*
+*.bak
+*.old
+*.orig
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+frontend/build/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs and temporary files
+*.log
+.cache/
+.tmp/
+.DS_Store
+
+# Session data
+cookies.txt
+cookies*.txt
+
+# Old versions of files
+*-before-*
+*.before-*
+
+# Separate Matrix experiment
+matrix-test/
+matrix-test-*.tar.gz
+
+# Session data
+cookies.txt
+cookies*.txt
+
+# Old versions of files
+*-before-*
+*.before-*
+
+# Separate Matrix experiment
+matrix-test/
+matrix-test-*.tar.gz
+
+# Session data
+cookies.txt
+cookies*.txt
+
+# Old versions
+*-before-*
+*.before-*
+
+# Separate Matrix experiment
+matrix-test/
+matrix-test-*.tar.gz

@@ -1,0 +1,588 @@
+.profile-screen {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.profile-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.profile-status {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.profile-card {
+  padding: 26px;
+  background: linear-gradient(145deg, var(--bg-panel-2), var(--bg-panel));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.profile-avatar {
+  width: 104px;
+  height: 104px;
+  overflow: hidden;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--bg-panel-2);
+}
+
+.profile-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: var(--text-main);
+  font-size: 42px;
+  font-weight: 900;
+}
+
+.profile-identity {
+  margin: 18px 0 26px;
+}
+
+.profile-identity h2 {
+  margin: 0 0 6px;
+  color: var(--text-main);
+  font-size: 24px;
+}
+
+.profile-username {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.profile-details {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-detail,
+.profile-bio {
+  padding: 15px;
+  background: var(--bg-main);
+  border: 1px solid #292d31;
+  border-radius: 9px;
+}
+
+.profile-detail span,
+.profile-bio span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.profile-detail strong {
+  color: var(--text-main);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.profile-bio p {
+  margin: 0;
+  color: var(--text-main);
+  overflow-wrap: anywhere;
+}
+
+.profile-logout {
+  width: 100%;
+  margin-top: 24px;
+  padding: 13px;
+  color: var(--text-main);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-panel));
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.profile-logout:hover {
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg-panel));
+}
+
+@media (max-width: 480px) {
+  .profile-card {
+    padding: 18px;
+  }
+
+  .profile-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* ID аккаунта под аватаром */
+.profile-avatar {
+  margin: 0 auto;
+}
+
+.profile-account-id {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.profile-copy-id {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  color: var(--text-muted);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.profile-copy-id svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-copy-id:hover:not(:disabled) {
+  color: #ffffff;
+  background: #292d31;
+  border-color: var(--accent);
+}
+
+.profile-copy-id:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.profile-identity {
+  margin: 12px 0 26px;
+  text-align: center;
+}
+
+.profile-identity h2 {
+  margin-bottom: 5px;
+}
+
+.profile-username {
+  font-size: 14px;
+}
+
+.profile-bio {
+  min-height: 90px;
+}
+
+
+/* REBUNAR AVATAR EDITOR */
+
+.profile-avatar-button {
+  position: relative;
+  display: block;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  line-height: 0;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.profile-avatar-button:hover {
+  border-color: var(--accent-bright);
+}
+
+.profile-avatar-button:active {
+  transform: scale(0.97);
+}
+
+.profile-avatar-edit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 7px 2px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.72);
+  font-size: 10px;
+  line-height: 1;
+  text-align: center;
+}
+
+.avatar-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.avatar-editor {
+  width: 100%;
+  max-width: 390px;
+  padding: 22px;
+  color: var(--text-main);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+.avatar-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.avatar-editor-heading h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.avatar-editor-close {
+  width: 34px;
+  height: 34px;
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.avatar-editor-stage {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--bg-main);
+  touch-action: none;
+  cursor: grab;
+}
+
+.avatar-editor-stage:active {
+  cursor: grabbing;
+}
+
+.avatar-editor-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  max-width: none;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+}
+
+.avatar-editor-hint {
+  margin: 17px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.avatar-editor-zoom {
+  display: grid;
+  gap: 12px;
+  color: var(--text-main);
+  font-size: 13px;
+}
+
+.avatar-editor-range {
+  width: 100%;
+  accent-color: #b30000;
+  cursor: pointer;
+}
+
+.avatar-editor-error {
+  min-height: 18px;
+  margin: 10px 0;
+  color: #ff777d;
+  font-size: 12px;
+}
+
+.avatar-editor-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.avatar-editor-actions button {
+  flex: 1;
+  min-height: 42px;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.avatar-editor-cancel {
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+}
+
+.avatar-editor-save {
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.avatar-editor-save:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (max-width: 380px) {
+  .avatar-editor {
+    padding: 16px;
+  }
+
+  
+}
+
+/* REBUNAR — PROFILE EDITOR */
+
+.profile-edit {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 16px;
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.profile-edit:hover {
+  background: var(--bg-panel-2);
+  border-color: var(--accent);
+}
+
+.profile-edit:active {
+  transform: scale(0.99);
+}
+
+.profile-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.profile-editor {
+  width: 100%;
+  max-width: 390px;
+  padding: 22px;
+  color: var(--text-main);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+.profile-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.profile-editor-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.profile-editor-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.profile-editor-close:hover {
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.profile-editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.profile-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.profile-editor-field > span {
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.profile-editor-field input,
+.profile-editor-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  color: var(--text-main);
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font: inherit;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.profile-editor-field input:focus,
+.profile-editor-field textarea:focus {
+  background: var(--bg-panel-2);
+  border-color: var(--accent);
+}
+
+.profile-editor-field textarea {
+  min-height: 112px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.profile-editor-username-wrap {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.profile-editor-username-wrap > span {
+  padding-left: 13px;
+  color: #8f9499;
+  font-size: 15px;
+}
+
+.profile-editor-username-wrap input {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.profile-editor-username-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.profile-editor-field small {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.profile-editor-error {
+  min-height: 18px;
+  margin: 14px 0 0;
+  color: #e36a70;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.profile-editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.profile-editor-actions button {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profile-editor-cancel {
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+}
+
+.profile-editor-cancel:hover {
+  border-color: var(--border);
+}
+
+.profile-editor-save {
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.profile-editor-save:hover {
+  background: var(--accent);
+}
+
+.profile-editor-save:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (max-width: 380px) {
+  .profile-editor {
+    padding: 16px;
+  }
+
+  .profile-editor-heading h2 {
+    font-size: 18px;
+  }
+}

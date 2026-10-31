@@ -1,0 +1,4229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebunar</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0b1020;color:#fff}
+header{padding:20px;border-bottom:1px solid #252d48}
+.logo{font-size:28px;font-weight:700}
+main{padding:20px}
+.card{background:#151c32;border:1px solid #252d48;border-radius:18px;padding:20px}
+h1{margin-top:0}
+p{color:#aab3cc}
+</style>
+<style id="rebunar-cyber-style">
+body{background:radial-gradient(circle at 20% 10%,rgba(100,20,160,.18),transparent 35%),radial-gradient(circle at 80% 90%,rgba(220,20,80,.10),transparent 35%),#08080d!important;color:#eee!important}
+h1,h2,h3{letter-spacing:.5px;text-shadow:0 0 12px rgba(150,70,255,.35)}
+.game-card{background:linear-gradient(145deg,#11111a,#181321)!important;border:1px solid #47266b!important;box-shadow:0 0 18px rgba(100,30,160,.16),inset 0 0 20px rgba(100,30,160,.04)}
+button{background:linear-gradient(135deg,#171020,#3a1450)!important;color:#fff!important;border:1px solid #8b3dff!important;border-radius:4px!important;box-shadow:0 0 10px rgba(139,61,255,.3);letter-spacing:.4px;transition:.2s}
+button:hover{border-color:#d28cff!important;box-shadow:0 0 18px rgba(139,61,255,.65);transform:translateY(-1px)}
+input,textarea,select{background:#101018!important;color:#fff!important;border:1px solid #44265d!important;border-radius:4px!important}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#9b4dff!important;box-shadow:0 0 12px rgba(155,77,255,.35)}
+nav{background:rgba(9,8,14,.96)!important;border-top:1px solid #42205d!important;box-shadow:0 -5px 25px rgba(80,20,120,.18)}
+a{color:#b978ff}a:hover{color:#e0b8ff}
+</style>  <link rel="stylesheet" href="/rebunar.css">
+<style>
+.avatar-editor-actions {
+  display:flex;
+  gap:10px;
+  margin-top:20px;
+}
+.avatar-editor-btn {
+  flex:1;
+  min-width:0;
+  min-height:32px !important;
+  height:32px !important;
+  padding:4px 10px !important;
+  overflow:hidden;
+  color:#f4e8eb !important;
+  background:linear-gradient(180deg,#302027,#1b1218) !important;
+  border:1px solid #69404c !important;
+  border-radius:7px !important;
+  clip-path:none !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07) !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+  letter-spacing:.2px !important;
+  text-shadow:0 1px 2px #000 !important;
+  transition:background .15s,border-color .15s,filter .15s !important;
+}
+.avatar-editor-btn::before,
+.avatar-editor-btn::after {
+  content:none !important;
+  display:none !important;
+}
+.avatar-editor-btn:active {
+  transform:scale(.98);
+  filter:brightness(1.2);
+}
+.avatar-editor-cancel {
+  background:linear-gradient(180deg,#29232a,#19151b) !important;
+  border-color:#50404b !important;
+}
+.avatar-editor-save {
+  color:#fff5f5 !important;
+  background:linear-gradient(180deg,#a72b43,#74172d) !important;
+  border-color:#c34b60 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),
+    0 2px 7px rgba(120,15,39,.22) !important;
+}
+#avatarScaleSlider {
+  height:8px;
+  margin:10px 0 4px;
+  accent-color:#c83b55;
+  cursor:pointer;
+}
+</style>
+
+<style id="rebunar-global-gothic-buttons">
+button,
+.rb-search button,
+.rb-home button,
+.game-card button {
+  box-sizing:border-box !important;
+  min-height:32px !important;
+  height:auto !important;
+  padding:5px 13px !important;
+  color:#f1e5e8 !important;
+  background:linear-gradient(180deg,#302027 0%,#1b1218 100%) !important;
+  border:1px solid #69404c !important;
+  border-radius:7px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06) !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+  letter-spacing:.15px !important;
+  text-shadow:0 1px 2px #000 !important;
+  transition:background .15s,border-color .15s,filter .15s !important;
+}
+button:hover,
+.rb-search button:hover,
+.rb-home button:hover,
+.game-card button:hover {
+  background:linear-gradient(180deg,#48242e 0%,#28151d 100%) !important;
+  border-color:#98505e !important;
+}
+button:active,
+.rb-search button:active,
+.rb-home button:active,
+.game-card button:active {
+  filter:brightness(1.2);
+}
+button.avatar-editor-save {
+  background:linear-gradient(180deg,#a72b43,#74172d) !important;
+  border-color:#c34b60 !important;
+}
+</style>
+<link rel="stylesheet" href="/rebunar-blood.css?v=4">
+
+</head>
+<body>
+<header>
+  <div class="logo">Rebunar</div>
+</header>
+<main>
+  <div class="card">
+    <h1>Добро пожаловать</h1>
+    
+  </div>
+</main>
+<nav style="position:fixed;bottom:0;left:0;right:0;background:#11182c;border-top:1px solid #252d48;display:flex;justify-content:space-around;padding:14px 5px;">
+<span>⌂ Главная</span>
+<span>🎮 Игры</span>
+<span>＋ Создать</span>
+<span>👥 Сообщества</span>
+<span>◉ Профиль</span>
+</nav>
+<script src="/communities.js">
+
+
+</script>
+</body>
+
+<script>
+/* REBUNAR_SEARCH_DELEGATED */
+function applyRebunarSearch() {
+  const input = document.getElementById('webSearch');
+  if (!input) return;
+
+  const query = input.value.trim().toLocaleLowerCase('ru');
+  const cards = document.querySelectorAll('main .feed-item');
+  let visible = 0;
+
+  cards.forEach(function(card) {
+    const matches = card.textContent.toLocaleLowerCase('ru').includes(query);
+    card.style.display = matches ? '' : 'none';
+    if (matches) visible++;
+  });
+
+  const status = document.getElementById('searchStatus');
+  if (status) {
+    status.textContent = query
+      ? (visible ? 'Найдено карточек: ' + visible : 'Ничего не найдено')
+      : 'Поиск по материалам Rebunar';
+  }
+}
+
+function runRebunarSearch(event) {
+  if (event.target && event.target.id === 'webSearch') {
+    applyRebunarSearch();
+  }
+}
+document.addEventListener('input', runRebunarSearch);
+document.addEventListener('search', runRebunarSearch);
+document.addEventListener('change', runRebunarSearch);
+</script>
+</html>
+<script>function showScreen(n){document.querySelector("main").innerHTML="<div class=card><h1>"+n+"</h1><p>Раздел в разработке.</p></div>"}</script>
+<script>document.querySelectorAll("nav span").forEach(s=>s.onclick=()=>showScreen(s.textContent.replace(/^[^ ]+ /,"")));</script>
+<style>
+.game-card{background:#151c32;border:1px solid #303b5c;border-radius:14px;padding:16px;margin-top:14px}
+.game-card h2{margin:0 0 8px;font-size:18px}
+.game-card button{background:#6254db;border-radius:9px;padding:10px 16px;font-size:14px}
+</style>
+<script>
+const originalShowScreen = showScreen;
+showScreen = function(name) {
+  originalShowScreen(name);
+  if (name.includes('Игры')) {
+    document.querySelector('main').innerHTML = `
+      <h1>🎮 Каталог игр</h1>
+      <p>Открывай новые миры.</p>
+      <div class="game-card">
+        <h2>Первая игра</h2>
+        <p>Скоро здесь появится описание игры.</p>
+        <button onclick="alert('Каталог Rebunar пополняется!')">Подробнее</button>
+      </div>`;
+  }
+};
+</script>
+<script>
+const previousShowScreen = showScreen;
+showScreen = function(name) {
+  if (name.includes('Создать')) {
+    document.querySelector('main').innerHTML = `
+      <h1>＋ Создать публикацию</h1>
+      <div class="game-card">
+        <input id="postTitle" placeholder="Заголовок" style="width:100%;padding:12px;margin-bottom:12px;border-radius:8px">
+        <textarea id="postText" placeholder="Что хочешь рассказать?" style="width:100%;height:100px;padding:12px;border-radius:8px"></textarea>
+        <button onclick="publishPost()">Опубликовать</button>
+        <p id="postStatus"></p>
+      </div>`;
+  } else {
+    previousShowScreen(name);
+  }
+};
+function publishPost() {
+  const title = document.getElementById('postTitle').value.trim();
+  const text = document.getElementById('postText').value.trim();
+  if (!title && !text) {
+    document.getElementById('postStatus').textContent = 'Сначала напиши что-нибудь.';
+    return;
+  }
+  document.getElementById('postStatus').textContent = 'Публикация создана в прототипе!';
+}
+</script>
+<script>
+const showBeforeCommunity = showScreen;
+showScreen = function(name) {
+  if (name.includes('Сообщества')) {
+    document.querySelector('main').innerHTML = `
+      <h1>👥 Сообщества</h1>
+      <p>Находи людей с похожими интересами.</p>
+      <div class="game-card">
+        <h2>🎌 Аниме-клуб</h2>
+        <p>Обсуждаем любимые тайтлы и персонажей.</p>
+        <button onclick="alert('Ты открыл демо-сообщество!')">Открыть</button>
+      </div>
+      <div class="game-card">
+        <h2>🎮 Игровая комната</h2>
+        <p>Игры, новости и общение игроков.</p>
+        <button onclick="alert('Ты открыл демо-сообщество!')">Открыть</button>
+      </div>`;
+  } else {
+    showBeforeCommunity(name);
+  }
+};
+</script>
+<script>
+
+const showBeforeProfile = showScreen;
+
+showScreen = function(name) {
+  if (name.includes('Профиль')) {
+    renderProfile();
+  } else {
+    showBeforeProfile(name);
+  }
+};
+
+async function renderProfile() {
+  const main = document.querySelector('main');
+
+  try {
+    const response = await fetch('/api/me');
+    const user = await response.json();
+
+    if (user.logged_in) {
+      main.innerHTML = `
+        <h1>◉ Мой профиль</h1>
+        <div class="game-card">
+          <div id="profileAvatar" onclick="openAvatarPicker()" style="width:110px;height:110px;border-radius:50%;margin:0 auto 12px;overflow:hidden;background:#24134a;display:flex;align-items:center;justify-content:center;font-size:54px;cursor:pointer;border:2px solid #8b3dff">👤</div>
+          <h2></h2>
+          <p>Участник Rebunar</p>
+          <button onclick="editProfile()">Изменить профиль</button>
+          <button onclick="logoutRebunar()">Выйти</button>
+          <div id="profileEdit"></div>
+        </div>`;
+      main.querySelector('.game-card h2').textContent = user.username;
+    } else {
+      main.innerHTML = `
+        <h1>◉ Мой профиль</h1>
+        <div class="game-card">
+          <h2>Вход в Rebunar</h2>
+          <input id="authUsername" placeholder="Логин"
+            style="width:100%;padding:12px;margin-top:12px">
+          <input id="authPassword" type="password" placeholder="Пароль"
+            style="width:100%;padding:12px;margin-top:12px">
+          <button onclick="loginRebunar()">Войти</button>
+          <button onclick="registerRebunar()">Зарегистрироваться</button>
+          <p id="authStatus"></p>
+        </div>`;
+    }
+  } catch (error) {
+    main.innerHTML = '<h1>◉ Мой профиль</h1><div class="game-card"><p>Не удалось подключиться к серверу Rebunar.</p></div>';
+  }
+}
+
+async function registerRebunar() {
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const status = document.getElementById('authStatus');
+
+  try {
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      status.textContent = data.error || 'Ошибка регистрации';
+      return;
+    }
+    status.textContent = 'Аккаунт создан! Теперь войди.';
+  } catch (error) {
+    status.textContent = 'Ошибка подключения к серверу';
+  }
+}
+
+async function loginRebunar() {
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const status = document.getElementById('authStatus');
+
+  try {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      status.textContent = data.error || 'Ошибка входа';
+      return;
+    }
+    await renderProfile();
+  } catch (error) {
+    status.textContent = 'Ошибка подключения к серверу';
+  }
+}
+
+async function logoutRebunar() {
+  await fetch('/api/logout', {method: 'POST'});
+  await renderProfile();
+}
+
+function editProfile() {
+  document.getElementById('profileEdit').innerHTML = `
+    <input id="profileName" placeholder="Твоё имя"
+      style="width:100%;padding:12px;margin-top:12px">
+    <textarea id="profileBio" placeholder="Расскажи о себе"
+      style="width:100%;padding:12px;margin-top:12px"></textarea>
+    <button onclick="saveProfile()">Сохранить</button>`;
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  const bio = document.getElementById('profileBio').value.trim();
+  const edit = document.getElementById('profileEdit');
+
+  try {
+    const response = await fetch('/api/profile', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({display_name: name, bio: bio})
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      edit.textContent = data.error || 'Не удалось сохранить профиль';
+      return;
+    }
+
+    await renderProfile();
+  } catch (error) {
+    edit.textContent = 'Ошибка подключения к серверу';
+  }
+}
+
+</script>
+<script>
+const oldRebunarScreen = showScreen;
+showScreen = function(name) {
+  if (name.includes('Главная')) {
+    document.querySelector('main').innerHTML = `
+      <section class="rb-hero">
+        <div class="rb-brand">◈ Rebunar</div>
+        <p class="rb-subtitle">Твой мир в интернете</p>
+        <h2 class="rb-section-title">Найди что угодно</h2>
+        <form id="webSearchForm" action="https://duckduckgo.com/" method="get" target="_blank">
+          <input id="webSearch" class="rb-search" type="search" name="q"
+            placeholder="Поиск по всему интернету..."
+            aria-label="Поиск по всему интернету"
+            style="width:100%;padding:14px;border-radius:12px">
+        </form>
+        <p>Поиск по всему интернету</p>
+      </section>
+
+      <h2>Сообщества</h2>
+      <div id="communityList"><p>Загружаю сообщества...</p></div>
+      <h2>Лента</h2>
+      <div id="feedPosts"><p>Загружаю публикации...</p></div>
+      `;
+
+    loadHomeCommunities();
+    renderRebunarPosts();
+
+  } else {
+    oldRebunarScreen(name);
+  }
+};
+
+async function loadHomeCommunities() {
+  const box = document.getElementById('communityList');
+  if (!box) return;
+
+  try {
+    const response = await fetch('/api/communities');
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const communities = await response.json();
+    box.replaceChildren();
+
+    if (!communities.length) {
+      box.textContent = 'Сообщества пока не созданы.';
+      return;
+    }
+
+    communities.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'game-card feed-item';
+      const title = document.createElement('h3');
+      title.textContent = c.name;
+      const description = document.createElement('p');
+      description.textContent = c.description || '';
+      const open = document.createElement('button');
+      open.textContent = 'Открыть';
+      open.onclick = () => showScreen('Сообщества');
+      card.append(title, description, open);
+      box.appendChild(card);
+    });
+  } catch (error) {
+    box.textContent = 'Не удалось загрузить сообщества. API ещё не подключён.';
+  }
+}
+</script>
+
+
+
+
+<script>
+/* REBUNAR_SQLITE_API_V1 */
+async function renderRebunarPosts() {
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  let posts;
+  try {
+    const response = await fetch('/api/posts');
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    posts = await response.json();
+  } catch (error) {
+    console.error('Ошибка загрузки публикаций:', error);
+    let status = document.getElementById('apiLoadStatus');
+    if (!status) {
+      status = document.createElement('p');
+      status.id = 'apiLoadStatus';
+      main.appendChild(status);
+    }
+    status.textContent =
+      'Не удалось загрузить публикации. Проверь, запущен ли сервер.';
+    return;
+  }
+
+  const old = document.getElementById('savedPosts');
+  if (old) old.remove();
+
+  const status = document.getElementById('apiLoadStatus');
+  if (status) status.remove();
+
+  const section = document.createElement('section');
+  section.id = 'savedPosts';
+
+  const heading = document.createElement('h2');
+  heading.textContent = 'Публикации';
+  section.appendChild(heading);
+
+  if (posts.length === 0) {
+    const empty = document.createElement('p');
+    empty.textContent = 'Пока публикаций нет. Создай первую!';
+    section.appendChild(empty);
+  }
+
+  posts.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'game-card feed-item';
+
+    const author = document.createElement('small');
+    author.textContent = 'Автор: ' + (post.author || 'Автор неизвестен');
+
+    const title = document.createElement('h2');
+    title.textContent = post.title || 'Публикация';
+
+    const body = document.createElement('p');
+    body.textContent = post.body || '';
+
+    const date = document.createElement('small');
+    date.textContent = post.created_at || '';
+
+    card.append(author, title, body, date);
+    section.appendChild(card);
+  });
+
+  const feed = document.getElementById('feedPosts');
+  if (feed) {
+    feed.replaceChildren(section);
+  } else {
+    main.appendChild(section);
+  }
+}
+
+publishPost = async function() {
+  const titleInput = document.getElementById('postTitle');
+  const textInput = document.getElementById('postText');
+  const status = document.getElementById('postStatus');
+
+  if (!titleInput || !textInput || !status) return;
+
+  const title = titleInput.value.trim();
+  const text = textInput.value.trim();
+
+  if (!title && !text) {
+    status.textContent = 'Сначала напиши что-нибудь.';
+    return;
+  }
+
+  status.textContent = 'Сохраняю публикацию...';
+
+  try {
+    const response = await fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, text })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Ошибка сохранения');
+    }
+
+    titleInput.value = '';
+    textInput.value = '';
+    status.textContent = 'Публикация сохранена в базе данных!';
+    await renderRebunarPosts();
+  } catch (error) {
+    console.error('Ошибка публикации:', error);
+    status.textContent =
+      'Не удалось сохранить. Проверь, что сервер Rebunar работает.';
+  }
+};
+let avatarImage = null;
+let avatarScale = 1;
+let avatarOffsetX = 0;
+let avatarOffsetY = 0;
+let avatarDragging = false;
+let avatarStartX = 0;
+let avatarStartY = 0;
+let avatarStartOffsetX = 0;
+let avatarStartOffsetY = 0;
+
+function openAvatarPicker() {
+  let input = document.getElementById('avatarFileHidden');
+
+  if (!input) {
+    input = document.createElement('input');
+    input.id = 'avatarFileHidden';
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+
+    input.addEventListener('change', function() {
+      const file = this.files && this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        avatarImage = new Image();
+
+        avatarImage.onload = function() {
+          avatarScale = 1;
+          avatarOffsetX = 0;
+          avatarOffsetY = 0;
+          showAvatarEditor();
+        };
+
+        avatarImage.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  input.value = '';
+  input.click();
+}
+
+function showAvatarEditor() {
+  let old = document.getElementById('avatarEditorModal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'avatarEditorModal';
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:rgba(5,3,12,.94);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    box-sizing:border-box;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      width:100%;
+      max-width:420px;
+      background:#151020;
+      border:1px solid #7b32e8;
+      border-radius:22px;
+      padding:20px;
+      box-sizing:border-box;
+      box-shadow:0 0 35px rgba(130,45,255,.3);
+      text-align:center;
+    ">
+      <h2 style="margin:0 0 18px">Редактирование фото</h2>
+
+      <div style="
+        width:260px;
+        height:260px;
+        margin:0 auto 20px;
+        border-radius:50%;
+        overflow:hidden;
+        background:#090611;
+        border:3px solid #8b3dff;
+        position:relative;
+      ">
+        <canvas id="avatarCanvas"
+          width="260"
+          height="260"
+          style="width:260px;height:260px;display:block">
+        </canvas>
+      </div>
+
+      <div style="text-align:left;margin-bottom:8px">
+        <span>Масштаб</span>
+      </div>
+
+      <input
+        id="avatarScaleSlider"
+        type="range"
+        min="1"
+        max="3"
+        step="0.01"
+        value="1"
+        style="width:100%;accent-color:#9b4dff"
+      >
+
+      <div class="avatar-editor-actions">
+        <button
+          type="button"
+          class="avatar-editor-btn avatar-editor-cancel"
+          onclick="closeAvatarEditor()">
+          <span>ОТМЕНА</span>
+        </button>
+
+        <button
+          type="button"
+          class="avatar-editor-btn avatar-editor-save"
+          onclick="applyAvatarEditor()">
+          <span>СОХРАНИТЬ</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document.getElementById('avatarScaleSlider').addEventListener('input', function() {
+    avatarScale = Number(this.value);
+    drawAvatarEditor();
+  });
+
+  const canvas = document.getElementById('avatarCanvas');
+
+canvas.style.touchAction = 'none';
+canvas.style.userSelect = 'none';
+canvas.style.webkitUserSelect = 'none';
+canvas.style.webkitTouchCallout = 'none';
+
+canvas.addEventListener('touchstart', startAvatarDrag, {passive:false});
+canvas.addEventListener('touchmove', moveAvatarDrag, {passive:false});
+canvas.addEventListener('touchend', endAvatarDrag, {passive:false});
+canvas.addEventListener('touchcancel', endAvatarDrag, {passive:false});
+
+  canvas.addEventListener('pointerdown', startAvatarDrag);
+  canvas.addEventListener('pointermove', moveAvatarDrag);
+  canvas.addEventListener('pointerup', endAvatarDrag);
+  canvas.addEventListener('pointercancel', endAvatarDrag);
+  canvas.addEventListener('pointerleave', endAvatarDrag);
+
+  drawAvatarEditor();
+}
+
+function startAvatarDrag(event) {
+  if (!avatarImage) return;
+
+  avatarDragging = true;
+
+  const point = event.touches[0];
+
+  avatarStartX = point.clientX;
+  avatarStartY = point.clientY;
+
+  avatarStartOffsetX = avatarOffsetX;
+  avatarStartOffsetY = avatarOffsetY;
+
+  event.preventDefault();
+}
+
+function moveAvatarDrag(event) {
+  if (!avatarDragging || !avatarImage) return;
+
+  event.preventDefault();
+
+  const point = event.touches[0];
+
+  avatarOffsetX =
+    avatarStartOffsetX + (point.clientX - avatarStartX);
+
+  avatarOffsetY =
+    avatarStartOffsetY + (point.clientY - avatarStartY);
+
+  drawAvatarEditor();
+}
+
+function endAvatarDrag(event) {
+  avatarDragging = false;
+
+  if (event) {
+    event.preventDefault();
+  }
+}
+
+function drawAvatarEditor() {
+  const canvas = document.getElementById('avatarCanvas');
+  if (!canvas || !avatarImage) return;
+
+  const ctx = canvas.getContext('2d');
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const scale = avatarScale;
+
+  const imageRatio = avatarImage.width / avatarImage.height;
+  let width;
+  let height;
+
+  if (imageRatio > 1) {
+    height = canvas.height * scale;
+    width = height * imageRatio;
+  } else {
+    width = canvas.width * scale;
+    height = width / imageRatio;
+  }
+
+  const x = (canvas.width - width) / 2 + avatarOffsetX;
+  const y = (canvas.height - height) / 2 + avatarOffsetY;
+
+  ctx.drawImage(avatarImage, x, y, width, height);
+}
+
+function closeAvatarEditor() {
+  const modal = document.getElementById('avatarEditorModal');
+  if (modal) modal.remove();
+}
+
+async function applyAvatarEditor() {
+  const canvas = document.getElementById('avatarCanvas');
+  if (!canvas) return;
+
+  const avatarData = canvas.toDataURL('image/jpeg', 0.9);
+
+  const avatar = document.getElementById('profileAvatar');
+
+  if (avatar) {
+    avatar.innerHTML = '';
+
+    const image = document.createElement('img');
+    image.src = avatarData;
+    image.style.cssText =
+      'width:100%;height:100%;object-fit:cover;display:block';
+
+    avatar.appendChild(image);
+  }
+
+  try {
+    const response = await fetch('/api/profile/avatar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        avatar: avatarData
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || 'Не удалось сохранить аватар');
+      return;
+    }
+
+    closeAvatarEditor();
+  } catch (error) {
+    alert('Ошибка подключения к серверу');
+  }
+}
+
+</script>
+
+</script>
+
+
+<script>
+/* =========================================================
+   REBUNAR — STEEL & BLOOD / NEW HOME
+   UI based on the approved visual concept
+   ========================================================= */
+
+const rebunarSteelBloodBaseScreen = showScreen;
+
+showScreen = function(name) {
+
+  if (!name.includes('Главная')) {
+    rebunarSteelBloodBaseScreen(name);
+    return;
+  }
+
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  main.innerHTML = `
+    <div class="sb-layout">
+
+      <!-- LEFT MENU -->
+      <aside class="sb-sidebar">
+
+        <div class="sb-side-logo">
+          <span class="sb-logo-steel">REBUNAR</span>
+          <span class="sb-logo-blood">◆</span>
+        </div>
+
+        <button class="sb-menu active" onclick="showScreen('Главная')">
+          <span class="sb-icon">⌂</span>
+          <span>Главная</span>
+        </button>
+
+        <button class="sb-menu" onclick="showScreen('Игры')">
+          <span class="sb-icon">🎮</span>
+          <span>Игры</span>
+        </button>
+
+        <button class="sb-menu" onclick="showScreen('Сообщества')">
+          <span class="sb-icon">♧</span>
+          <span>Сообщества</span>
+        </button>
+
+        <button class="sb-menu">
+          <span class="sb-icon">▤</span>
+          <span>Посты</span>
+        </button>
+
+        <button class="sb-menu" onclick="showScreen('Профиль')">
+          <span class="sb-icon">♙</span>
+          <span>Профиль</span>
+        </button>
+
+        <div class="sb-sidebar-bottom">
+          <div class="sb-side-decoration"></div>
+        </div>
+
+      </aside>
+
+      <!-- CENTER -->
+      <section class="sb-center">
+
+        <div class="sb-mobile-header">
+          <b>REBUNAR</b>
+          <span>🩸</span>
+        </div>
+
+        <!-- HERO -->
+        <section class="sb-hero">
+
+          <div class="sb-hero-blood"></div>
+
+          <div class="sb-hero-content">
+            <div class="sb-kicker">REBUNAR ORIGINAL</div>
+
+            <h1>STEEL <span>&</span> BLOOD</h1>
+
+            <p>
+              ИГРЫ · СООБЩЕСТВО · СТРАСТЬ
+            </p>
+
+            <button class="sb-blood-button">
+              ПРИСОЕДИНИТЬСЯ
+            </button>
+          </div>
+
+        </section>
+
+        <!-- POPULAR GAMES -->
+        <section class="sb-panel">
+
+          <div class="sb-panel-title">
+            <div>
+              <span class="sb-title-mark">⚔</span>
+              Популярные игры
+            </div>
+
+            <span class="sb-all">Все игры →</span>
+          </div>
+
+          <div class="sb-games">
+
+            <article class="sb-game">
+              <div class="sb-game-art sb-art-1">
+                <span>RPG</span>
+              </div>
+              <h3>Kingdom Come</h3>
+              <small>Deliverance II</small>
+            </article>
+
+            <article class="sb-game">
+              <div class="sb-game-art sb-art-2">
+                <span>Симулятор</span>
+              </div>
+              <h3>Mount & Blade II</h3>
+              <small>Bannerlord</small>
+            </article>
+
+            <article class="sb-game">
+              <div class="sb-game-art sb-art-3">
+                <span>RPG</span>
+              </div>
+              <h3>The Witcher 3</h3>
+              <small>Wild Hunt</small>
+            </article>
+
+            <article class="sb-game">
+              <div class="sb-game-art sb-art-4">
+                <span>RPG</span>
+              </div>
+              <h3>ELDEN RING</h3>
+              <small>Shadow</small>
+            </article>
+
+          </div>
+
+        </section>
+
+        <!-- SEARCH -->
+        <section class="sb-panel sb-search-panel">
+
+          <div class="sb-panel-title">
+            <div>
+              <span class="sb-title-mark">⌕</span>
+              Поиск
+            </div>
+          </div>
+
+          <form id="sbSearchForm"
+                action="https://duckduckgo.com/"
+                method="get"
+                target="_blank">
+
+            <input
+              name="q"
+              class="sb-search"
+              placeholder="Поиск на Rebunar..."
+              autocomplete="off"
+            >
+
+          </form>
+
+        </section>
+
+        <!-- FEED -->
+        <section class="sb-panel">
+
+          <div class="sb-panel-title">
+            <div>
+              <span class="sb-title-mark">▤</span>
+              Лента постов
+            </div>
+
+            <span class="sb-all">→</span>
+          </div>
+
+          <div class="sb-publish">
+
+            <div class="sb-avatar-small">R</div>
+
+            <input
+              id="sbPostText"
+              placeholder="Что хочешь рассказать?"
+            >
+
+            <button onclick="sbPublishPost()">
+              Опубликовать
+            </button>
+
+          </div>
+
+          <div id="feedPosts">
+            <p class="sb-loading">Загружаю публикации...</p>
+          </div>
+
+        </section>
+
+        <!-- COMMUNITIES -->
+        <section class="sb-panel">
+
+          <div class="sb-panel-title">
+            <div>
+              <span class="sb-title-mark">♧</span>
+              Сообщества
+            </div>
+
+            <span class="sb-all">Все →</span>
+          </div>
+
+          <div id="communityList">
+            <p class="sb-loading">Загружаю сообщества...</p>
+          </div>
+
+        </section>
+
+      </section>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="sb-right">
+
+        <!-- PROFILE -->
+        <section class="sb-right-panel sb-profile-panel">
+
+          <div class="sb-profile-top">
+
+            <div class="sb-profile-avatar">
+              R
+            </div>
+
+            <div>
+              <h2>Rebunar</h2>
+              <span class="sb-online">
+                <i></i> Онлайн
+              </span>
+            </div>
+
+          </div>
+
+          <div class="sb-stats">
+            <div>
+              <b>12</b>
+              <span>Постов</span>
+            </div>
+
+            <div>
+              <b>348</b>
+              <span>Подписчиков</span>
+            </div>
+
+            <div>
+              <b>12</b>
+              <span>Подписок</span>
+            </div>
+          </div>
+
+          <button class="sb-wide-button"
+                  onclick="showScreen('Профиль')">
+            Редактировать профиль
+          </button>
+
+          <button class="sb-wide-button sb-danger">
+            Выйти
+          </button>
+
+        </section>
+
+        <!-- ACTIVE COMMUNITIES -->
+        <section class="sb-right-panel">
+
+          <div class="sb-panel-title">
+            <div>Активные сообщества</div>
+            <span class="sb-all">Все →</span>
+          </div>
+
+          <div class="sb-community">
+            <div class="sb-community-icon">🎮</div>
+            <div>
+              <b>Игровые новости</b>
+              <small>15.4K участников</small>
+            </div>
+            <button>+</button>
+          </div>
+
+          <div class="sb-community">
+            <div class="sb-community-icon">☠</div>
+            <div>
+              <b>Геймеры</b>
+              <small>8.7K участников</small>
+            </div>
+            <button>+</button>
+          </div>
+
+        </section>
+
+        <!-- RECOMMENDATIONS -->
+        <section class="sb-right-panel">
+
+          <div class="sb-panel-title">
+            <div>Рекомендуем</div>
+            <span class="sb-all">Все →</span>
+          </div>
+
+          <div class="sb-community">
+            <div class="sb-community-icon">⚔</div>
+            <div>
+              <b>Medieval World</b>
+              <small>5.2K участников</small>
+            </div>
+            <button>+</button>
+          </div>
+
+          <div class="sb-community">
+            <div class="sb-community-icon">☠</div>
+            <div>
+              <b>RPG Universe</b>
+              <small>3.8K участников</small>
+            </div>
+            <button>+</button>
+          </div>
+
+        </section>
+
+      </aside>
+
+    </div>
+  `;
+
+  if (typeof loadHomeCommunities === 'function') {
+    loadHomeCommunities();
+  }
+
+  if (typeof renderRebunarPosts === 'function') {
+    renderRebunarPosts();
+  }
+};
+
+
+/* simple publish bridge */
+
+window.sbPublishPost = function(){
+
+  const input = document.getElementById('sbPostText');
+
+  if (!input || !input.value.trim()) return;
+
+  if (typeof publishPost === 'function') {
+    const oldInput = document.getElementById('postText');
+
+    if (oldInput) {
+      oldInput.value = input.value;
+      publishPost();
+      return;
+    }
+  }
+
+  input.value = '';
+};
+
+</script>
+
+<style id="rebunar-steel-blood-home">
+
+/* =========================================================
+   STEEL & BLOOD — STRUCTURAL UI
+   ========================================================= */
+
+.sb-layout{
+  width:100%;
+  max-width:1400px;
+  margin:0 auto;
+
+  display:grid;
+  grid-template-columns:210px minmax(0,1fr) 280px;
+  gap:14px;
+
+  padding:14px 12px 90px;
+  box-sizing:border-box;
+}
+
+.sb-sidebar,
+.sb-right-panel,
+.sb-panel,
+.sb-hero{
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.055),
+      transparent 18%
+    ),
+    linear-gradient(
+      180deg,
+      #17191d,
+      #090b0e 65%,
+      #060708
+    );
+
+  border:1px solid #454a50;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -12px 30px rgba(0,0,0,.35),
+    0 8px 25px rgba(0,0,0,.65);
+
+  position:relative;
+}
+
+.sb-sidebar{
+  min-height:calc(100vh - 120px);
+  padding:10px;
+  box-sizing:border-box;
+
+  clip-path:polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+
+.sb-center{
+  min-width:0;
+}
+
+.sb-right{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.sb-right-panel,
+.sb-panel{
+  padding:12px;
+  box-sizing:border-box;
+
+  clip-path:polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+}
+
+/* RED EDGE */
+
+.sb-panel:before,
+.sb-right-panel:before,
+.sb-sidebar:before{
+  content:"";
+
+  position:absolute;
+  left:0;
+  top:0;
+
+  width:70px;
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f02648,
+      #781025,
+      transparent
+    );
+
+  box-shadow:0 0 10px rgba(224,27,63,.35);
+}
+
+/* LOGO */
+
+.sb-side-logo{
+  height:70px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+
+  border-bottom:1px solid #30343a;
+
+  margin-bottom:10px;
+}
+
+.sb-logo-steel{
+  color:#d8dade;
+
+  font-size:23px;
+  font-weight:900;
+  letter-spacing:1px;
+
+  text-shadow:
+    0 2px #000,
+    0 0 8px rgba(255,255,255,.08);
+}
+
+.sb-logo-blood{
+  color:#d8173d;
+  font-size:24px;
+}
+
+/* SIDE BUTTONS */
+
+.sb-menu{
+  width:100%;
+  height:48px !important;
+  min-height:48px !important;
+
+  display:flex;
+  align-items:center;
+  gap:13px;
+
+  margin-bottom:5px;
+
+  padding:0 13px !important;
+
+  color:#aeb2b8 !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #181b20,
+      #0b0d10
+    ) !important;
+
+  border:1px solid #30343a !important;
+  border-radius:0 !important;
+
+  clip-path:polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    0 100%
+  ) !important;
+
+  text-transform:none !important;
+  letter-spacing:0 !important;
+}
+
+.sb-menu:hover,
+.sb-menu.active{
+  color:#fff !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      #681023,
+      #211116 55%,
+      #0b0d10
+    ) !important;
+
+  border-color:#9e263e !important;
+}
+
+.sb-icon{
+  width:24px;
+  text-align:center;
+  font-size:20px;
+}
+
+/* HERO */
+
+.sb-hero{
+  height:240px;
+
+  overflow:hidden;
+
+  display:flex;
+  align-items:center;
+
+  background:
+    radial-gradient(
+      ellipse at 20% 50%,
+      rgba(112,18,31,.48),
+      transparent 38%
+    ),
+    linear-gradient(
+      105deg,
+      #090b0e 0%,
+      #26282b 42%,
+      #090a0c 72%,
+      #16090d 100%
+    );
+
+  margin-bottom:14px;
+}
+
+.sb-hero:after{
+  content:"";
+
+  position:absolute;
+  inset:8px;
+
+  border:1px solid rgba(255,255,255,.08);
+
+  pointer-events:none;
+}
+
+.sb-hero-blood{
+  position:absolute;
+
+  left:0;
+  top:0;
+  bottom:0;
+
+  width:42%;
+
+  background:
+    linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(116,12,30,.6) 31%,
+      rgba(20,5,8,.8) 54%,
+      transparent 55%
+    );
+
+  opacity:.8;
+}
+
+.sb-hero-content{
+  position:relative;
+  z-index:2;
+
+  margin-left:auto;
+  margin-right:8%;
+
+  text-align:center;
+}
+
+.sb-kicker{
+  color:#a8adb3;
+  font-size:10px;
+  letter-spacing:3px;
+  margin-bottom:6px;
+}
+
+.sb-hero h1{
+  margin:0;
+
+  color:#e8e9eb !important;
+
+  font-size:34px;
+  letter-spacing:3px;
+
+  text-shadow:
+    0 2px 0 #000,
+    0 0 10px rgba(255,255,255,.12);
+}
+
+.sb-hero h1 span{
+  color:#d8193d;
+}
+
+.sb-hero p{
+  margin:6px 0 16px;
+
+  color:#aeb1b6 !important;
+
+  letter-spacing:2px;
+  font-size:12px;
+}
+
+/* BLOOD BUTTON */
+
+.sb-blood-button{
+  height:42px !important;
+  min-height:42px !important;
+
+  padding:0 28px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ed274a,
+      #a4102c 50%,
+      #620b1b
+    ) !important;
+
+  border:1px solid #ff526d !important;
+
+  border-radius:0 !important;
+
+  clip-path:polygon(
+    8px 0,
+    100% 0,
+    calc(100% - 8px) 100%,
+    0 100%
+  ) !important;
+
+  box-shadow:
+    0 0 15px rgba(205,19,51,.25),
+    inset 0 1px rgba(255,255,255,.25) !important;
+}
+
+/* PANEL TITLE */
+
+.sb-panel{
+  margin-bottom:14px;
+}
+
+.sb-panel-title{
+  min-height:32px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  border-bottom:1px solid #30343a;
+
+  margin-bottom:10px;
+  padding-bottom:7px;
+
+  color:#e1e3e6;
+
+  font-size:15px;
+  font-weight:800;
+}
+
+.sb-title-mark{
+  color:#e11b40;
+  margin-right:7px;
+}
+
+.sb-all{
+  color:#777d84;
+  font-size:11px;
+  font-weight:normal;
+}
+
+/* GAMES */
+
+.sb-games{
+  display:grid;
+
+  grid-template-columns:repeat(4,minmax(0,1fr));
+
+  gap:9px;
+}
+
+.sb-game{
+  min-width:0;
+
+  background:#080a0d;
+
+  border:1px solid #3b4046;
+
+  padding:5px;
+
+  position:relative;
+
+  overflow:hidden;
+}
+
+.sb-game:after{
+  content:"";
+
+  position:absolute;
+  inset:0;
+
+  border:1px solid rgba(213,22,55,.22);
+
+  pointer-events:none;
+}
+
+.sb-game-art{
+  height:115px;
+
+  display:flex;
+  align-items:flex-end;
+
+  padding:6px;
+
+  box-sizing:border-box;
+
+  background:
+    linear-gradient(
+      135deg,
+      #34383d,
+      #0a0b0e 65%
+    );
+
+  position:relative;
+}
+
+.sb-game-art:before{
+  content:"";
+
+  position:absolute;
+  inset:0;
+
+  background:
+    radial-gradient(
+      circle at 65% 35%,
+      rgba(185,20,45,.28),
+      transparent 35%
+    );
+}
+
+.sb-art-2{
+  background:
+    linear-gradient(145deg,#40352f,#090a0c 70%);
+}
+
+.sb-art-3{
+  background:
+    linear-gradient(145deg,#333a40,#090a0c 70%);
+}
+
+.sb-art-4{
+  background:
+    radial-gradient(circle at 50% 40%,#80652b,transparent 22%),
+    linear-gradient(145deg,#303335,#070809);
+}
+
+.sb-game-art span{
+  position:relative;
+
+  padding:2px 6px;
+
+  color:#f0f1f2;
+
+  background:#57091b;
+
+  border:1px solid #d51a3d;
+
+  font-size:9px;
+}
+
+.sb-game h3{
+  margin:7px 3px 1px;
+
+  font-size:12px;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.sb-game small{
+  color:#70757c;
+  margin-left:3px;
+  font-size:9px;
+}
+
+/* SEARCH */
+
+.sb-search-panel{
+  padding-bottom:13px;
+}
+
+.sb-search{
+  width:100% !important;
+  height:40px !important;
+
+  box-sizing:border-box;
+
+  padding:0 13px;
+
+  color:#eee !important;
+
+  background:#080a0d !important;
+
+  border:1px solid #444a51 !important;
+  border-radius:0 !important;
+}
+
+/* PUBLISH */
+
+.sb-publish{
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  padding:5px;
+
+  background:#080a0d;
+
+  border:1px solid #30343a;
+}
+
+.sb-avatar-small,
+.sb-profile-avatar{
+  border-radius:50%;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:
+    radial-gradient(circle at 35% 30%,#525860,#111318 65%);
+
+  border:2px solid #8d172f;
+
+  color:#eee;
+  font-weight:900;
+}
+
+.sb-avatar-small{
+  width:32px;
+  height:32px;
+  flex:none;
+}
+
+.sb-publish input{
+  flex:1;
+
+  min-width:0;
+
+  height:34px;
+
+  box-sizing:border-box;
+
+  padding:0 10px;
+
+  background:transparent !important;
+
+  border:0 !important;
+
+  color:#eee !important;
+}
+
+.sb-publish button{
+  flex:none;
+}
+
+/* RIGHT PROFILE */
+
+.sb-profile-top{
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  margin-bottom:15px;
+}
+
+.sb-profile-avatar{
+  width:62px;
+  height:62px;
+  font-size:23px;
+}
+
+.sb-profile-top h2{
+  margin:0 0 5px;
+  font-size:19px;
+}
+
+.sb-online{
+  color:#a3a7ac;
+  font-size:11px;
+}
+
+.sb-online i{
+  display:inline-block;
+
+  width:7px;
+  height:7px;
+
+  margin-right:5px;
+
+  border-radius:50%;
+
+  background:#16c56b;
+}
+
+.sb-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+
+  border-top:1px solid #30343a;
+  border-bottom:1px solid #30343a;
+
+  padding:12px 0;
+  margin-bottom:12px;
+}
+
+.sb-stats div{
+  text-align:center;
+  border-right:1px solid #30343a;
+}
+
+.sb-stats div:last-child{
+  border:0;
+}
+
+.sb-stats b{
+  display:block;
+  color:#e7e8ea;
+  font-size:16px;
+}
+
+.sb-stats span{
+  color:#70757c;
+  font-size:9px;
+}
+
+.sb-wide-button{
+  width:100% !important;
+  margin-top:7px;
+}
+
+.sb-danger{
+  border-color:#8d152d !important;
+  color:#e52549 !important;
+}
+
+/* COMMUNITY */
+
+.sb-community{
+  display:flex;
+  align-items:center;
+  gap:9px;
+
+  padding:9px 2px;
+
+  border-bottom:1px solid #25292f;
+}
+
+.sb-community:last-child{
+  border-bottom:0;
+}
+
+.sb-community-icon{
+  width:36px;
+  height:36px;
+
+  flex:none;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:#16191e;
+
+  border:1px solid #555b62;
+
+  border-radius:50%;
+}
+
+.sb-community div:nth-child(2){
+  flex:1;
+  min-width:0;
+}
+
+.sb-community b{
+  display:block;
+  color:#dfe1e4;
+  font-size:11px;
+}
+
+.sb-community small{
+  color:#686e76;
+  font-size:9px;
+}
+
+.sb-community button{
+  width:28px !important;
+  min-width:28px !important;
+  height:28px !important;
+  min-height:28px !important;
+
+  padding:0 !important;
+
+  color:#e92348 !important;
+
+  border-color:#a41b35 !important;
+}
+
+/* LOADING */
+
+.sb-loading{
+  color:#666b72 !important;
+  padding:15px;
+  text-align:center;
+}
+
+/* MOBILE */
+
+.sb-mobile-header{
+  display:none;
+}
+
+@media(max-width:900px){
+
+  .sb-layout{
+    grid-template-columns:175px minmax(0,1fr);
+  }
+
+  .sb-right{
+    display:none;
+  }
+
+  .sb-games{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:600px){
+
+  .sb-layout{
+    display:block;
+    padding:8px 7px 82px;
+  }
+
+  .sb-sidebar{
+    display:none;
+  }
+
+  .sb-mobile-header{
+    display:flex;
+
+    height:44px;
+
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 8px;
+    margin-bottom:8px;
+
+    color:#eee;
+
+    border-bottom:1px solid #34383e;
+  }
+
+  .sb-mobile-header b{
+    letter-spacing:2px;
+  }
+
+  .sb-mobile-header span{
+    color:#e21b40;
+  }
+
+  .sb-hero{
+    height:220px;
+  }
+
+  .sb-hero-content{
+    margin:auto;
+  }
+
+  .sb-hero h1{
+    font-size:27px;
+  }
+
+  .sb-games{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .sb-game-art{
+    height:105px;
+  }
+
+}
+
+@media(max-width:370px){
+
+  .sb-game h3{
+    font-size:10px;
+  }
+
+  .sb-game-art{
+    height:90px;
+  }
+
+  .sb-hero h1{
+    font-size:23px;
+  }
+
+  .sb-hero p{
+    font-size:9px;
+  }
+
+}
+
+</style>
+
+<script>
+/* =========================================================
+   REBUNAR — STEEL & BLOOD / PROFILE
+   ========================================================= */
+
+const rebunarOldRenderProfile = renderProfile;
+
+renderProfile = async function() {
+
+  const main = document.querySelector('main');
+  if (!main) return;
+
+  try {
+
+    const response = await fetch('/api/me');
+    const user = await response.json();
+
+    if (user.logged_in) {
+
+      main.innerHTML = `
+        <div class="sb-profile-page">
+
+          <div class="sb-profile-header">
+            <div>
+              <div class="sb-profile-kicker">REBUNAR // ACCOUNT</div>
+              <h1>МОЙ ПРОФИЛЬ</h1>
+            </div>
+
+            <div class="sb-profile-status">
+              <span></span> ОНЛАЙН
+            </div>
+          </div>
+
+          <section class="sb-profile-card">
+
+            <div class="sb-profile-main">
+
+              <div
+                id="profileAvatar"
+                class="sb-profile-big-avatar"
+                onclick="openAvatarPicker()"
+              >👤</div>
+
+              <div class="sb-profile-identity">
+
+                <h2 id="sbProfileUsername"></h2>
+
+                <div class="sb-profile-role">
+                  <span>◆</span> Участник Rebunar
+                </div>
+
+                <p>
+                  Твой профиль в мире игр и сообществ.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="sb-profile-divider"></div>
+
+            <div class="sb-profile-stats">
+
+              <div>
+                <strong>0</strong>
+                <span>ПОСТОВ</span>
+              </div>
+
+              <div>
+                <strong>0</strong>
+                <span>ПОДПИСЧИКОВ</span>
+              </div>
+
+              <div>
+                <strong>0</strong>
+                <span>ПОДПИСОК</span>
+              </div>
+
+            </div>
+
+            <div class="sb-profile-actions">
+
+              <button
+                class="sb-profile-edit"
+                onclick="editProfile()"
+              >
+                <span>✎</span>
+                ИЗМЕНИТЬ ПРОФИЛЬ
+              </button>
+
+              <button
+                class="sb-profile-logout"
+                onclick="logoutRebunar()"
+              >
+                ВЫЙТИ
+              </button>
+
+            </div>
+
+            <div id="profileEdit"></div>
+
+          </section>
+
+          <section class="sb-profile-panel">
+
+            <div class="sb-profile-panel-title">
+              <span>◆</span>
+              О ПРОФИЛЕ
+            </div>
+
+            <div class="sb-profile-info-row">
+              <span>СТАТУС</span>
+              <b>АКТИВЕН</b>
+            </div>
+
+            <div class="sb-profile-info-row">
+              <span>ПЛАТФОРМА</span>
+              <b>REBUNAR</b>
+            </div>
+
+            <div class="sb-profile-info-row">
+              <span>ТИП АККАУНТА</span>
+              <b>ПОЛЬЗОВАТЕЛЬ</b>
+            </div>
+
+          </section>
+
+        </div>
+      `;
+
+      const username = document.getElementById('sbProfileUsername');
+      if (username) {
+        username.textContent = user.username;
+      }
+
+    } else {
+
+      main.innerHTML = `
+        <div class="sb-profile-page">
+
+          <div class="sb-profile-header">
+            <div>
+              <div class="sb-profile-kicker">REBUNAR // ACCESS</div>
+              <h1>ПРОФИЛЬ</h1>
+            </div>
+          </div>
+
+          <section class="sb-profile-card sb-auth-card">
+
+            <div class="sb-auth-mark">◆</div>
+
+            <h2>ВОЙТИ В REBUNAR</h2>
+
+            <p>
+              Войди в аккаунт или создай новый,
+              чтобы пользоваться возможностями Rebunar.
+            </p>
+
+            <input
+              id="authUsername"
+              placeholder="ЛОГИН"
+              autocomplete="username"
+            >
+
+            <input
+              id="authPassword"
+              type="password"
+              placeholder="ПАРОЛЬ"
+              autocomplete="current-password"
+            >
+
+            <div class="sb-auth-actions">
+
+              <button
+                class="sb-profile-edit"
+                onclick="loginRebunar()"
+              >
+                ВОЙТИ
+              </button>
+
+              <button
+                class="sb-profile-logout"
+                onclick="registerRebunar()"
+              >
+                СОЗДАТЬ АККАУНТ
+              </button>
+
+            </div>
+
+            <p id="authStatus" class="sb-auth-status"></p>
+
+          </section>
+
+        </div>
+      `;
+
+    }
+
+  } catch (error) {
+
+    main.innerHTML = `
+      <div class="sb-profile-page">
+
+        <section class="sb-profile-card">
+          <h1>ОШИБКА ПОДКЛЮЧЕНИЯ</h1>
+          <p>Не удалось подключиться к серверу Rebunar.</p>
+        </section>
+
+      </div>
+    `;
+
+  }
+};
+</script>
+
+<style id="rebunar-steel-blood-profile">
+
+/* =========================================================
+   PROFILE — STEEL & BLOOD
+   ========================================================= */
+
+.sb-profile-page{
+  max-width:760px;
+  margin:0 auto;
+  padding:18px 12px 100px;
+}
+
+/* HEADER */
+
+.sb-profile-header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+
+  margin-bottom:14px;
+
+  padding:4px 5px 12px;
+
+  border-bottom:1px solid #373b41;
+}
+
+.sb-profile-kicker{
+  color:#777d85;
+  font-size:9px;
+  letter-spacing:3px;
+  margin-bottom:4px;
+}
+
+.sb-profile-header h1{
+  margin:0;
+
+  color:#e8e9eb !important;
+
+  font-size:22px;
+  letter-spacing:1.5px;
+
+  text-shadow:
+    0 2px 0 #000,
+    0 0 10px rgba(255,255,255,.08);
+}
+
+.sb-profile-status{
+  color:#858b92;
+  font-size:9px;
+  letter-spacing:1px;
+}
+
+.sb-profile-status span{
+  display:inline-block;
+
+  width:7px;
+  height:7px;
+
+  margin-right:5px;
+
+  border-radius:50%;
+
+  background:#13c76a;
+
+  box-shadow:0 0 7px rgba(19,199,106,.5);
+}
+
+/* MAIN CARD */
+
+.sb-profile-card{
+  position:relative;
+
+  padding:20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.07),
+      transparent 18%
+    ),
+    linear-gradient(
+      180deg,
+      #1b1e23,
+      #0d0f12 45%,
+      #07090b 100%
+    );
+
+  border:1px solid #555b62;
+
+  clip-path:polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -30px 45px rgba(0,0,0,.35),
+    0 15px 35px rgba(0,0,0,.7);
+
+  overflow:hidden;
+}
+
+.sb-profile-card:before{
+  content:"";
+
+  position:absolute;
+  top:0;
+  left:0;
+
+  width:130px;
+  height:3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f12649,
+      #871027,
+      transparent
+    );
+
+  box-shadow:0 0 12px rgba(224,27,63,.4);
+}
+
+/* PROFILE IDENTITY */
+
+.sb-profile-main{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.sb-profile-big-avatar{
+  width:120px;
+  height:120px;
+
+  flex:none;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  overflow:hidden;
+
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      #545960,
+      #16191e 48%,
+      #060708 100%
+    );
+
+  border:2px solid #9a1b35;
+
+  color:#ddd;
+
+  font-size:54px;
+
+  cursor:pointer;
+
+  border-radius:50%;
+
+  box-shadow:
+    0 0 0 4px #15181c,
+    0 0 0 5px #575d64,
+    0 0 22px rgba(173,17,44,.22);
+}
+
+.sb-profile-big-avatar:hover{
+  border-color:#e82b4e;
+
+  box-shadow:
+    0 0 0 4px #15181c,
+    0 0 0 5px #858b92,
+    0 0 25px rgba(224,27,63,.32);
+}
+
+.sb-profile-identity{
+  min-width:0;
+}
+
+.sb-profile-identity h2{
+  margin:0 0 6px;
+
+  color:#f0f1f3 !important;
+
+  font-size:26px;
+
+  letter-spacing:.5px;
+}
+
+.sb-profile-role{
+  color:#b1b5bb;
+  font-size:11px;
+}
+
+.sb-profile-role span{
+  color:#df1c40;
+}
+
+.sb-profile-identity p{
+  margin:12px 0 0;
+
+  color:#70767d !important;
+
+  font-size:12px;
+}
+
+/* DIVIDER */
+
+.sb-profile-divider{
+  height:1px;
+
+  margin:20px 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #4b5057 15%,
+      #4b5057 85%,
+      transparent
+    );
+}
+
+/* STATS */
+
+.sb-profile-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+
+  margin-bottom:18px;
+}
+
+.sb-profile-stats div{
+  text-align:center;
+
+  border-right:1px solid #34383e;
+}
+
+.sb-profile-stats div:last-child{
+  border-right:0;
+}
+
+.sb-profile-stats strong{
+  display:block;
+
+  color:#e9eaec;
+
+  font-size:20px;
+}
+
+.sb-profile-stats span{
+  display:block;
+
+  margin-top:3px;
+
+  color:#70767d;
+
+  font-size:9px;
+
+  letter-spacing:1px;
+}
+
+/* ACTIONS */
+
+.sb-profile-actions{
+  display:grid;
+  grid-template-columns:1fr 150px;
+  gap:9px;
+}
+
+.sb-profile-actions button{
+  width:100% !important;
+
+  height:38px !important;
+  min-height:38px !important;
+
+  border-radius:0 !important;
+}
+
+.sb-profile-edit{
+  background:
+    linear-gradient(
+      180deg,
+      #555b62,
+      #292d33 25%,
+      #0d0f12
+    ) !important;
+
+  border-color:#858b92 !important;
+}
+
+.sb-profile-logout{
+  background:
+    linear-gradient(
+      180deg,
+      #671025,
+      #390915 60%,
+      #190409
+    ) !important;
+
+  border-color:#a91c38 !important;
+
+  color:#ef405d !important;
+}
+
+/* EDIT FORM */
+
+#profileEdit{
+  margin-top:15px;
+
+  padding-top:15px;
+
+  border-top:1px solid #30343a;
+}
+
+#profileEdit input,
+#profileEdit textarea{
+  width:100% !important;
+
+  box-sizing:border-box !important;
+
+  margin:0 0 9px !important;
+
+  padding:11px !important;
+
+  background:#080a0d !important;
+
+  border:1px solid #42474e !important;
+
+  border-radius:0 !important;
+
+  color:#eee !important;
+}
+
+#profileEdit textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+#profileEdit button{
+  width:100% !important;
+}
+
+/* INFO PANEL */
+
+.sb-profile-panel{
+  position:relative;
+
+  margin-top:14px;
+
+  padding:15px;
+
+  background:
+    linear-gradient(180deg,#171a1e,#080a0d);
+
+  border:1px solid #3e4349;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 8px 25px rgba(0,0,0,.55);
+}
+
+.sb-profile-panel-title{
+  color:#e1e3e6;
+
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.7px;
+
+  padding-bottom:10px;
+
+  margin-bottom:3px;
+
+  border-bottom:1px solid #30343a;
+}
+
+.sb-profile-panel-title span{
+  color:#e01b40;
+  margin-right:6px;
+}
+
+.sb-profile-info-row{
+  display:flex;
+  justify-content:space-between;
+
+  padding:11px 3px;
+
+  border-bottom:1px solid #25292e;
+}
+
+.sb-profile-info-row:last-child{
+  border-bottom:0;
+}
+
+.sb-profile-info-row span{
+  color:#696f77;
+  font-size:9px;
+  letter-spacing:1px;
+}
+
+.sb-profile-info-row b{
+  color:#bfc2c7;
+  font-size:10px;
+}
+
+/* AUTH */
+
+.sb-auth-card{
+  max-width:480px;
+  margin:35px auto;
+  text-align:center;
+}
+
+.sb-auth-mark{
+  color:#df1c40;
+  font-size:30px;
+
+  margin-bottom:8px;
+
+  text-shadow:0 0 12px rgba(224,27,63,.35);
+}
+
+.sb-auth-card h2{
+  margin:0 0 7px;
+
+  font-size:20px;
+}
+
+.sb-auth-card > p{
+  color:#747a82 !important;
+  font-size:11px;
+  line-height:1.5;
+  margin-bottom:20px;
+}
+
+.sb-auth-card input{
+  display:block;
+
+  width:100% !important;
+
+  height:42px;
+
+  box-sizing:border-box;
+
+  margin:9px 0;
+
+  padding:0 12px;
+
+  background:#080a0d !important;
+
+  border:1px solid #454a51 !important;
+
+  border-radius:0 !important;
+
+  color:#eee !important;
+}
+
+.sb-auth-actions{
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:8px;
+
+  margin-top:13px;
+}
+
+.sb-auth-actions button{
+  width:100% !important;
+}
+
+.sb-auth-status{
+  min-height:18px;
+  margin-top:12px !important;
+
+  color:#b52643 !important;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+  .sb-profile-page{
+    padding:12px 7px 85px;
+  }
+
+  .sb-profile-card{
+    padding:16px;
+  }
+
+  .sb-profile-main{
+    gap:14px;
+  }
+
+  .sb-profile-big-avatar{
+    width:88px;
+    height:88px;
+
+    font-size:40px;
+  }
+
+  .sb-profile-identity h2{
+    font-size:21px;
+  }
+
+  .sb-profile-actions{
+    grid-template-columns:1fr;
+  }
+
+  .sb-profile-actions button{
+    height:36px !important;
+    min-height:36px !important;
+  }
+
+}
+
+@media(max-width:370px){
+
+  .sb-profile-big-avatar{
+    width:78px;
+    height:78px;
+  }
+
+  .sb-profile-identity h2{
+    font-size:18px;
+  }
+
+}
+</style>
+
+<style id="rebunar-steel-blood-communities">
+/* ===== REBUNAR — STEEL & BLOOD / COMMUNITIES ===== */
+
+.sb-communities-page{
+  width:100%;
+  max-width:1180px;
+  margin:0 auto;
+  padding:4px 0 120px;
+  box-sizing:border-box;
+}
+
+.sb-communities-head{
+  position:relative;
+  overflow:hidden;
+  padding:24px;
+  margin-bottom:18px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.055),transparent 38%),
+    linear-gradient(160deg,#17191c,#090a0c 72%);
+  border:1px solid #3b3d40;
+  border-radius:4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 12px 35px rgba(0,0,0,.42);
+}
+
+.sb-communities-head:before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:5px;
+  height:100%;
+  background:linear-gradient(#8d1119,#d51c29,#5b080e);
+  box-shadow:0 0 18px rgba(190,20,35,.45);
+}
+
+.sb-communities-kicker{
+  margin:0 0 7px;
+  color:#a9abad;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.sb-communities-title{
+  margin:0;
+  color:#f1f1f1;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+.sb-communities-sub{
+  margin:8px 0 0;
+  color:#85888b;
+  font-size:14px;
+}
+
+.sb-community-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.sb-community-card{
+  position:relative;
+  min-height:150px;
+  padding:20px;
+  box-sizing:border-box;
+  overflow:hidden;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.045),transparent 42%),
+    #111315;
+  border:1px solid #35383b;
+  border-radius:3px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.045),
+    0 8px 24px rgba(0,0,0,.3);
+  transition:.18s ease;
+}
+
+.sb-community-card:after{
+  content:"";
+  position:absolute;
+  right:-35px;
+  bottom:-45px;
+  width:120px;
+  height:120px;
+  border:1px solid rgba(180,20,30,.2);
+  transform:rotate(45deg);
+}
+
+.sb-community-card:hover{
+  transform:translateY(-2px);
+  border-color:#702229;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 10px 30px rgba(0,0,0,.45),
+    0 0 18px rgba(130,15,25,.12);
+}
+
+.sb-community-card h2{
+  position:relative;
+  z-index:1;
+  margin:0 0 8px;
+  color:#eeeeee;
+  font-size:19px;
+  font-weight:900;
+}
+
+.sb-community-card p{
+  position:relative;
+  z-index:1;
+  min-height:38px;
+  margin:0 0 18px;
+  color:#85888b;
+  font-size:13px;
+  line-height:1.45;
+}
+
+.sb-community-open{
+  position:relative;
+  z-index:2;
+  min-width:112px;
+  padding:9px 16px;
+  color:#eee;
+  background:
+    linear-gradient(180deg,#3a3d40,#1c1f21);
+  border:1px solid #55585b;
+  border-radius:2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.1),
+    0 3px 8px rgba(0,0,0,.3);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+}
+
+.sb-community-open:hover{
+  border-color:#9b202b;
+  color:#fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.1),
+    0 0 12px rgba(150,20,30,.22);
+}
+
+/* Страница конкретного сообщества */
+
+.sb-community-page{
+  width:100%;
+  max-width:900px;
+  margin:0 auto;
+  padding-bottom:120px;
+}
+
+.sb-community-top{
+  position:relative;
+  padding:22px;
+  margin-bottom:16px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.055),transparent 38%),
+    linear-gradient(160deg,#17191c,#0b0c0e);
+  border:1px solid #3b3d40;
+  border-radius:4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 12px 30px rgba(0,0,0,.4);
+}
+
+.sb-community-back{
+  margin-bottom:18px;
+  padding:7px 12px;
+  color:#aaa;
+  background:#181a1c;
+  border:1px solid #3d4043;
+  border-radius:2px;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.sb-community-top h1{
+  margin:0 0 8px;
+  color:#f2f2f2;
+  font-size:27px;
+  font-weight:900;
+}
+
+.sb-community-top > p{
+  margin:0 0 17px;
+  color:#85888b;
+  line-height:1.5;
+}
+
+.sb-community-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.sb-community-members{
+  color:#999c9f;
+  font-size:12px;
+  font-weight:700;
+}
+
+.sb-community-write{
+  padding:10px 17px;
+  color:#fff;
+  background:linear-gradient(180deg,#a71924,#690d14);
+  border:1px solid #c52a35;
+  border-radius:2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 5px 14px rgba(90,5,12,.35);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+.sb-community-post{
+  position:relative;
+  margin-bottom:12px;
+  padding:18px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.035),transparent 35%),
+    #111315;
+  border:1px solid #323538;
+  border-left:3px solid #55141b;
+  border-radius:3px;
+  box-shadow:0 7px 20px rgba(0,0,0,.3);
+}
+
+.sb-community-post small{
+  color:#777a7d;
+  font-size:11px;
+}
+
+.sb-community-post h2{
+  margin:8px 0 7px;
+  color:#ededed;
+  font-size:18px;
+}
+
+.sb-community-post p{
+  margin:0 0 10px;
+  color:#a3a5a7;
+  line-height:1.55;
+  font-size:14px;
+}
+
+@media(max-width:700px){
+  .sb-communities-page,
+  .sb-community-page{
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .sb-community-grid{
+    grid-template-columns:1fr;
+  }
+
+  .sb-communities-title{
+    font-size:23px;
+  }
+}
+</style>
+
+<script>
+(function(){
+  const oldRenderCommunities = window.renderCommunitiesScreen;
+
+  window.renderCommunitiesScreen = async function(){
+    const main = document.querySelector('main');
+    if(!main) return;
+
+    main.innerHTML = `
+      <section class="sb-communities-page">
+        <div class="sb-community-switch">
+          <button class="sb-community-switch-btn active" onclick="renderCommunitiesScreen()">👥 Сообщества</button>
+          <button class="sb-community-switch-btn" onclick="window.renderMessagesScreen()">💬 Сообщения</button>
+        </div>
+        <div class="sb-communities-head">
+          <div class="sb-communities-kicker">REBUNAR NETWORK</div>
+          <h1 class="sb-communities-title">Сообщества</h1>
+          <p class="sb-communities-sub">Люди, игры, интересы и собственные миры внутри Rebunar.</p>
+        </div>
+        <div class="sb-community-grid" id="sbCommunityGrid">
+          <div class="sb-community-card">
+            <h2>Загрузка...</h2>
+            <p>Получаем список сообществ.</p>
+          </div>
+        </div>
+      </section>
+    `;
+
+    try{
+      const r = await fetch('/api/communities');
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const list = await r.json();
+      const grid = document.getElementById('sbCommunityGrid');
+
+      if(!list.length){
+        grid.innerHTML = `
+          <div class="sb-community-card">
+            <h2>Пока пусто</h2>
+            <p>Сообщества ещё не созданы.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+
+      list.forEach(c=>{
+        const card = document.createElement('article');
+        card.className = 'sb-community-card';
+
+        const title = document.createElement('h2');
+        title.textContent = c.name;
+
+        const desc = document.createElement('p');
+        desc.textContent = c.description || 'Описание сообщества пока не добавлено.';
+
+        const btn = document.createElement('button');
+        btn.className = 'sb-community-open';
+        btn.textContent = 'Открыть';
+        btn.onclick = ()=>window.openCommunity(c.slug);
+
+        card.append(title,desc,btn);
+        grid.appendChild(card);
+      });
+
+    }catch(e){
+      const grid = document.getElementById('sbCommunityGrid');
+      if(grid){
+        grid.innerHTML = `
+          <div class="sb-community-card">
+            <h2>Ошибка подключения</h2>
+            <p>Не удалось загрузить сообщества.</p>
+          </div>
+        `;
+      }
+    }
+  };
+
+  const oldOpenCommunity = window.openCommunity;
+
+  window.openCommunity = async function(slug){
+    const main = document.querySelector('main');
+    if(!main) return;
+
+    main.innerHTML = `
+      <section class="sb-community-page">
+        <div class="sb-community-top">
+          <button class="sb-community-back">← Все сообщества</button>
+          <h1>Загрузка...</h1>
+          <p></p>
+        </div>
+        <div id="sbCommunityPosts"></div>
+      </section>
+    `;
+
+    const back = main.querySelector('.sb-community-back');
+    back.onclick = ()=>window.renderCommunitiesScreen();
+
+    try{
+      const list = await fetch('/api/communities').then(r=>r.json());
+      const c = list.find(x=>x.slug === slug);
+      if(!c) throw new Error('not found');
+
+      const top = main.querySelector('.sb-community-top');
+      top.querySelector('h1').textContent = c.name;
+      top.querySelector('p').textContent = c.description || '';
+
+      const actions = document.createElement('div');
+      actions.className = 'sb-community-actions';
+
+      const members = document.createElement('span');
+      members.className = 'sb-community-members';
+      members.textContent = 'Участники: загрузка...';
+
+      const write = document.createElement('button');
+      write.className = 'sb-community-write';
+      write.textContent = '+ Написать здесь';
+      write.onclick = ()=>{
+        window.rebunarPreselect = c.id;
+        const items = Array.from(document.querySelectorAll('button,a'));
+        const create = items.find(x=>x.textContent.trim()==='+ Создать');
+        if(create) create.click();
+        else window.showScreen('Создать');
+      };
+
+      actions.append(members,write);
+      top.append(actions);
+
+      try{
+        const mr = await fetch('/api/membership/'+encodeURIComponent(slug));
+        const md = await mr.json();
+
+        const join = document.createElement('button');
+        join.className = 'sb-community-open';
+        join.textContent = md.joined ? 'Выйти' : 'Вступить';
+
+        const updateMembership = d=>{
+          members.textContent = 'Участники: '+d.count;
+          join.textContent = d.joined ? 'Выйти' : 'Вступить';
+        };
+
+        updateMembership(md);
+
+        join.onclick = async ()=>{
+          join.disabled = true;
+          try{
+            const r = await fetch('/api/'+(md.joined ? 'leave/' : 'join/')+encodeURIComponent(slug),{method:'POST'});
+            const d = await r.json();
+            if(r.ok){
+              md.joined = d.joined;
+              md.count = d.count;
+              updateMembership(md);
+            }
+          }finally{
+            join.disabled = false;
+          }
+        };
+
+        actions.append(join);
+      }catch(e){}
+
+      const pr = await fetch('/api/posts?community='+encodeURIComponent(slug));
+      if(!pr.ok) throw new Error('posts');
+      const posts = await pr.json();
+
+      const postsBox = document.getElementById('sbCommunityPosts');
+
+      if(!posts.length){
+        postsBox.innerHTML = `
+          <article class="sb-community-post">
+            <h2>Здесь пока пусто</h2>
+            <p>Стань первым, кто создаст публикацию в этом сообществе.</p>
+          </article>
+        `;
+        return;
+      }
+
+      posts.forEach(post=>{
+        const article = document.createElement('article');
+        article.className = 'sb-community-post';
+
+        const author = document.createElement('small');
+        author.textContent = 'Автор: '+(post.author || 'Автор неизвестен');
+
+        const title = document.createElement('h2');
+        title.textContent = post.title || 'Публикация';
+
+        const body = document.createElement('p');
+        body.textContent = post.body || '';
+
+        const date = document.createElement('small');
+        date.textContent = post.created_at || '';
+
+        article.append(author,title,body,date);
+        postsBox.append(article);
+      });
+
+    }catch(e){
+      main.innerHTML = `
+        <section class="sb-community-page">
+          <div class="sb-community-top">
+            <button class="sb-community-back">← Все сообщества</button>
+            <h1>Не удалось открыть сообщество</h1>
+            <p>Проверь соединение с сервером.</p>
+          </div>
+        </section>
+      `;
+      main.querySelector('.sb-community-back').onclick = ()=>window.renderCommunitiesScreen();
+    }
+  };
+})();
+</script>
+
+<style id="rebunar-steel-blood-messages">
+.sb-messages-page{
+  width:100%;
+  max-width:760px;
+  margin:0 auto;
+  padding:4px 0 120px;
+  box-sizing:border-box;
+}
+
+.sb-messages-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+  padding:16px 18px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.055),transparent 40%),
+    #101214;
+  border:1px solid #373a3d;
+  border-radius:3px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 8px 25px rgba(0,0,0,.4);
+}
+
+.sb-messages-head:before{
+  content:"";
+  width:4px;
+  height:31px;
+  flex:none;
+  background:linear-gradient(#c51d29,#690a11);
+  box-shadow:0 0 12px rgba(190,20,35,.45);
+}
+
+.sb-messages-title{
+  flex:1;
+  margin:0;
+  color:#eee;
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+.sb-messages-new{
+  width:34px;
+  height:34px;
+  padding:0;
+  color:#fff;
+  background:linear-gradient(180deg,#3d4144,#1c1f21);
+  border:1px solid #55595c;
+  border-radius:2px;
+  font-size:21px;
+  line-height:32px;
+  font-weight:400;
+}
+
+.sb-messages-search{
+  width:100%;
+  box-sizing:border-box;
+  margin-bottom:12px;
+  padding:12px 15px;
+  color:#ddd;
+  background:#111315;
+  border:1px solid #33373a;
+  border-radius:3px;
+  outline:none;
+  font-size:14px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.25);
+}
+
+.sb-messages-search:focus{
+  border-color:#76202a;
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,.25),
+    0 0 12px rgba(140,15,25,.13);
+}
+
+.sb-dialogs{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  overflow:hidden;
+  background:#0d0f10;
+  border:1px solid #303336;
+  border-radius:3px;
+}
+
+.sb-dialog{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-height:70px;
+  padding:10px 14px;
+  box-sizing:border-box;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.025),transparent 55%),
+    #121416;
+  border-bottom:1px solid #272a2c;
+  cursor:pointer;
+  transition:.16s ease;
+}
+
+.sb-dialog:last-child{
+  border-bottom:0;
+}
+
+.sb-dialog:hover{
+  background:#181a1d;
+}
+
+.sb-dialog:active{
+  background:#1b1d20;
+}
+
+.sb-dialog-avatar{
+  width:47px;
+  height:47px;
+  flex:none;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ddd;
+  background:
+    linear-gradient(145deg,#35383b,#151719);
+  border:1px solid #55585b;
+  border-radius:50%;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.08),
+    0 3px 8px rgba(0,0,0,.35);
+  font-size:17px;
+  font-weight:900;
+}
+
+.sb-dialog-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.sb-dialog-main{
+  min-width:0;
+  flex:1;
+}
+
+.sb-dialog-top{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.sb-dialog-name{
+  min-width:0;
+  overflow:hidden;
+  color:#e9e9e9;
+  font-size:14px;
+  font-weight:850;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+.sb-dialog-time{
+  margin-left:auto;
+  flex:none;
+  color:#66696c;
+  font-size:10px;
+}
+
+.sb-dialog-preview{
+  overflow:hidden;
+  margin-top:5px;
+  color:#85888b;
+  font-size:12px;
+  line-height:1.3;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+.sb-dialog-arrow{
+  color:#55585b;
+  font-size:18px;
+}
+
+.sb-messages-empty{
+  padding:45px 20px;
+  text-align:center;
+  background:#111315;
+  border:1px solid #303336;
+  border-radius:3px;
+}
+
+.sb-messages-empty strong{
+  display:block;
+  margin-bottom:8px;
+  color:#ddd;
+  font-size:17px;
+}
+
+.sb-messages-empty span{
+  color:#777a7d;
+  font-size:13px;
+}
+
+@media(max-width:700px){
+  .sb-messages-page{
+    padding-left:8px;
+    padding-right:8px;
+  }
+
+  .sb-messages-head{
+    padding:14px;
+  }
+}
+</style>
+
+<script>
+(function(){
+
+  window.renderMessagesScreen = async function(){
+
+    const main = document.querySelector('main');
+    if(!main) return;
+
+    main.innerHTML = `
+      <section class="sb-messages-page">
+        <div class="sb-messages-head">
+          <h1 class="sb-messages-title">Сообщения</h1>
+          <button class="sb-messages-new" id="sbMessagesNew">+</button>
+        </div>
+
+        <input
+          class="sb-messages-search"
+          id="sbMessagesSearch"
+          type="text"
+          placeholder="Поиск по сообщениям..."
+          autocomplete="off"
+        >
+
+        <div class="sb-dialogs" id="sbDialogs">
+          <div class="sb-messages-empty">
+            <strong>Загрузка диалогов...</strong>
+            <span>Получаем ваши сообщения</span>
+          </div>
+        </div>
+      </section>
+    `;
+
+    const box = document.getElementById('sbDialogs');
+    const search = document.getElementById('sbMessagesSearch');
+
+    let chats = [];
+
+    function avatarHTML(chat){
+      if(chat.avatar){
+        return '<img src="' + chat.avatar.replace(/"/g,'&quot;') + '" alt="">';
+      }
+
+      const name = chat.display_name || chat.username || '?';
+      return name.slice(0,1).toUpperCase();
+    }
+
+    function render(filter=''){
+      const q = filter.trim().toLowerCase();
+
+      const visible = chats.filter(chat=>{
+        const name = String(chat.display_name || chat.username || '').toLowerCase();
+        const text = String(chat.last_message || '').toLowerCase();
+        return !q || name.includes(q) || text.includes(q);
+      });
+
+      box.innerHTML='';
+
+      if(!visible.length){
+        box.innerHTML = `
+          <div class="sb-messages-empty">
+            <strong>${chats.length ? 'Ничего не найдено' : 'Сообщений пока нет'}</strong>
+            <span>${chats.length ? 'Попробуйте изменить запрос' : 'Когда начнётся переписка, она появится здесь'}</span>
+          </div>
+        `;
+        return;
+      }
+
+      visible.forEach(chat=>{
+        const wrap=document.createElement('div');
+        wrap.style.cssText='position:relative;overflow:hidden;border-radius:14px;margin:8px 0;touch-action:pan-y;';
+
+        const remove=document.createElement('button');
+        remove.type='button';
+        remove.textContent='🗑';
+        remove.setAttribute('aria-label','Удалить диалог');
+        remove.style.cssText='position:absolute;left:0;top:0;bottom:0;width:68px;border:0;border-radius:12px;background:#9f1828;color:white;font-size:22px;';
+
+        const row=document.createElement('div');
+        row.className='sb-dialog';
+        row.style.cssText='position:relative;transform:translateX(0);transition:transform .2s ease;';
+
+        const avatar=document.createElement('div');
+        avatar.className='sb-dialog-avatar';
+        avatar.innerHTML=avatarHTML(chat);
+
+        const content=document.createElement('div');
+        content.className='sb-dialog-main';
+
+        const top=document.createElement('div');
+        top.className='sb-dialog-top';
+
+        const name=document.createElement('div');
+        name.className='sb-dialog-name';
+        name.textContent=chat.display_name || chat.username;
+
+        const time=document.createElement('div');
+        time.className='sb-dialog-time';
+        time.textContent=chat.created_at || '';
+
+        const preview=document.createElement('div');
+        preview.className='sb-dialog-preview';
+        preview.textContent=chat.last_message || '';
+
+        top.append(name,time);
+        content.append(top,preview);
+
+        const arrow=document.createElement('div');
+        arrow.className='sb-dialog-arrow';
+        arrow.textContent='›';
+
+        row.append(avatar,content,arrow);
+        wrap.append(remove,row);
+        box.appendChild(wrap);
+
+        let startX=0,startY=0,offset=0,horizontal=false,suppressClick=false;
+
+        row.addEventListener('touchstart',e=>{
+          startX=e.touches[0].clientX;
+          startY=e.touches[0].clientY;
+          horizontal=false;
+          suppressClick=false;
+          row.style.transition='none';
+        },{passive:true});
+
+        row.addEventListener('touchmove',e=>{
+          const dx=e.touches[0].clientX-startX;
+          const dy=e.touches[0].clientY-startY;
+          if(!horizontal && Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)) horizontal=true;
+          if(horizontal){
+            const next=Math.max(0,Math.min(68,offset+dx));
+            row.style.transform='translateX('+next+'px)';
+          }
+        },{passive:true});
+
+        row.addEventListener('touchend',()=>{
+          if(horizontal){
+            const match=row.style.transform.match(/translateX\(([-\d.]+)px\)/);
+            const current=match ? Number(match[1]) : offset;
+            offset=current>=34 ? 68 : 0;
+            suppressClick=true;
+          }
+          row.style.transition='transform .2s ease';
+          row.style.transform='translateX('+offset+'px)';
+        });
+
+        row.onclick=()=>{
+          if(suppressClick){suppressClick=false;return;}
+          if(offset>0){
+            offset=0;
+            row.style.transform='translateX(0)';
+            return;
+          }
+          window.openDirectChat(chat.user_id,chat.display_name || chat.username);
+        };
+
+        remove.onclick=async()=>{
+          if(!confirm('Убрать диалог из списка? История сообщений сохранится.')) return;
+          remove.disabled=true;
+          try{
+            const response=await fetch('/api/messages/chats/'+chat.user_id,{method:'DELETE'});
+            if(!response.ok) throw new Error('HTTP '+response.status);
+            chats=chats.filter(item=>Number(item.user_id)!==Number(chat.user_id));
+            render(search.value);
+          }catch(error){
+            console.error(error);
+            remove.disabled=false;
+            alert('Не удалось убрать диалог.');
+          }
+        };
+      });
+
+      search.oninput=()=>render(search.value);
+
+    document.getElementById('sbMessagesNew').onclick=()=>{
+      alert('Поиск пользователей для нового диалога добавим следующим шагом.');
+    };
+  };
+
+  const previousShow=window.showScreen;
+
+  window.showScreen=function(name){
+    if(String(name).includes('Сообщения') || String(name).includes('Чат')){
+      window.renderMessagesScreen();
+      return;
+    }
+
+    return previousShow(name);
+  };
+
+})();
+</script>
+<style id="rebunar-messages-entry">
+.sb-top-messages{
+  position:fixed;
+  top:14px;
+  right:14px;
+  z-index:9999;
+  width:44px;
+  height:44px;
+  border:1px solid rgba(190,25,45,.65);
+  background:linear-gradient(145deg,#17191d,#090a0c);
+  color:#f2d9dd;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  cursor:pointer;
+  box-shadow:0 0 18px rgba(170,0,25,.18),inset 0 1px rgba(255,255,255,.06);
+}
+.sb-top-messages:active{transform:scale(.94)}
+</style>
+
+
+
+<style id="rebunar-new-chat-ui">
+.sb-newchat-overlay{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:70px 14px 20px;
+}
+.sb-newchat-box{
+  width:min(520px,100%);
+  max-height:80vh;
+  overflow:hidden;
+  background:linear-gradient(145deg,#17191d,#090a0c);
+  border:1px solid rgba(190,25,45,.55);
+  box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 30px rgba(150,0,25,.16);
+  border-radius:14px;
+}
+.sb-newchat-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.sb-newchat-title{
+  color:#f3dfe2;
+  font-size:20px;
+  font-weight:800;
+}
+.sb-newchat-close{
+  width:38px;
+  height:38px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;
+  background:#111316;
+  color:#ddd;
+  font-size:20px;
+}
+.sb-newchat-search{
+  margin:14px 16px;
+  width:calc(100% - 32px);
+  box-sizing:border-box;
+  padding:12px 14px;
+  border-radius:9px;
+  border:1px solid rgba(190,25,45,.35);
+  background:#0b0c0e;
+  color:#fff;
+  outline:none;
+}
+.sb-newchat-results{
+  max-height:55vh;
+  overflow-y:auto;
+  padding:0 10px 12px;
+}
+.sb-user-result{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 8px;
+  border-radius:9px;
+  cursor:pointer;
+}
+.sb-user-result:hover{
+  background:rgba(180,20,40,.1);
+}
+.sb-user-avatar{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#15171a;
+  border:1px solid rgba(190,25,45,.45);
+}
+.sb-user-name{
+  color:#f0e3e5;
+  font-weight:700;
+}
+.sb-user-login{
+  color:#85878b;
+  font-size:13px;
+  margin-top:3px;
+}
+.sb-newchat-hint{
+  padding:20px;
+  text-align:center;
+  color:#777b80;
+}
+</style>
+
+<script>
+window.openNewDirectChat=function(){
+  const old=document.querySelector('.sb-newchat-overlay');
+  if(old) old.remove();
+
+  const overlay=document.createElement('div');
+  overlay.className='sb-newchat-overlay';
+
+  overlay.innerHTML=`
+    <div class="sb-newchat-box">
+      <div class="sb-newchat-head">
+        <div class="sb-newchat-title">Новый чат</div>
+        <button class="sb-newchat-close" type="button">×</button>
+      </div>
+      <input class="sb-newchat-search" placeholder="Поиск пользователя..." autocomplete="off">
+      <div class="sb-newchat-results">
+        <div class="sb-newchat-hint">Начни вводить имя пользователя</div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const input=overlay.querySelector('.sb-newchat-search');
+  const results=overlay.querySelector('.sb-newchat-results');
+
+  overlay.querySelector('.sb-newchat-close').onclick=()=>overlay.remove();
+
+  overlay.onclick=e=>{
+    if(e.target===overlay) overlay.remove();
+  };
+
+  let timer=null;
+
+  input.oninput=function(){
+    clearTimeout(timer);
+    const q=input.value.trim();
+
+    if(q.length<1){
+      results.innerHTML='<div class="sb-newchat-hint">Начни вводить имя пользователя</div>';
+      return;
+    }
+
+    results.innerHTML='<div class="sb-newchat-hint">Поиск...</div>';
+
+    timer=setTimeout(async()=>{
+      try{
+        const r=await fetch('/api/users/search?q='+encodeURIComponent(q));
+        const data=await r.json();
+
+        if(!r.ok){
+          results.innerHTML='<div class="sb-newchat-hint">Войдите в аккаунт</div>';
+          return;
+        }
+
+        if(!data.length){
+          results.innerHTML='<div class="sb-newchat-hint">Пользователь не найден</div>';
+          return;
+        }
+
+        results.innerHTML=data.map(u=>{
+          const avatar=u.avatar
+            ? '<img class="sb-user-avatar" src="'+u.avatar+'">'
+            : '<div class="sb-user-avatar"></div>';
+
+          return `
+            <div class="sb-user-result"
+                 data-id="${u.id}"
+                 data-username="${String(u.display_name||u.username).replace(/"/g,'&quot;')}">
+              ${avatar}
+              <div>
+                <div class="sb-user-name">${u.display_name||u.username}</div>
+                <div class="sb-user-login">@${u.username}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        results.querySelectorAll('.sb-user-result').forEach(row=>{
+          row.onclick=()=>{
+            overlay.remove();
+            if(window.openDirectChat){
+              window.openDirectChat(
+                Number(row.dataset.id),
+                row.dataset.username
+              );
+            }
+          };
+        });
+
+      }catch(e){
+        results.innerHTML='<div class="sb-newchat-hint">Ошибка поиска</div>';
+      }
+    },250);
+  };
+
+  input.focus();
+};
+</script>
+<script>
+(function(){
+  function bindNewChatButton(){
+    const page=document.querySelector('.sb-messages-page');
+    if(!page) return;
+
+    const buttons=page.querySelectorAll('button');
+    buttons.forEach(btn=>{
+      const text=(btn.textContent||'').trim();
+      if(text==='+' || text.includes('Новый')){
+        btn.onclick=function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          if(window.openNewDirectChat) window.openNewDirectChat();
+        };
+      }
+    });
+  }
+
+  const oldRender=window.renderMessagesScreen;
+  if(oldRender){
+    window.renderMessagesScreen=async function(){
+      await oldRender();
+      setTimeout(bindNewChatButton,100);
+    };
+  }
+})();
+</script>
+<style id="rebunar-self-notes">
+.sb-self-notes{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 12px;
+  margin:10px 0;
+  border:1px solid rgba(190,25,45,.45);
+  border-radius:12px;
+  background:linear-gradient(145deg,rgba(120,10,25,.16),rgba(10,11,13,.92));
+  cursor:pointer;
+  box-shadow:0 0 18px rgba(150,0,25,.08);
+}
+.sb-self-notes:active{transform:scale(.985)}
+.sb-self-notes-avatar{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(145deg,#50101a,#15171a);
+  border:1px solid rgba(220,35,55,.55);
+  font-size:22px;
+  flex:none;
+}
+.sb-self-notes-main{min-width:0;flex:1}
+.sb-self-notes-name{
+  color:#f4e1e4;
+  font-weight:800;
+  font-size:16px;
+}
+.sb-self-notes-preview{
+  margin-top:4px;
+  color:#8d9297;
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+</style>
+
+<script>
+(function(){
+  function addSelfNotes(){
+    const page=document.querySelector('.sb-messages-page');
+    if(!page) return;
+    if(page.querySelector('.sb-self-notes')) return;
+
+    const dialogs=page.querySelector('.sb-dialogs');
+    if(!dialogs) return;
+
+    const item=document.createElement('div');
+    item.className='sb-self-notes';
+    item.innerHTML=`
+      <div class="sb-self-notes-avatar">🔖</div>
+      <div class="sb-self-notes-main">
+        <div class="sb-self-notes-name">Заметки для себя</div>
+        <div class="sb-self-notes-preview">Личные заметки и сохранённые сообщения</div>
+      </div>
+    `;
+
+    item.onclick=function(){
+      if(window.openSelfNotes) window.openSelfNotes();
+    };
+
+    dialogs.prepend(item);
+  }
+
+  const oldRender=window.renderMessagesScreen;
+  if(oldRender){
+    window.renderMessagesScreen=async function(){
+      await oldRender();
+      setTimeout(addSelfNotes,100);
+    };
+  }
+
+  window.openSelfNotes=async function(){
+    const main=document.querySelector('main');
+    if(!main) return;
+
+    main.innerHTML=`
+      <section class="sb-messages-page">
+        <div class="sb-messages-head">
+          <button class="sb-messages-new" onclick="window.renderMessagesScreen()">←</button>
+          <div class="sb-messages-title">🔖 Заметки для себя</div>
+        </div>
+
+        <div id="sb-self-chat"
+             style="height:55vh;overflow-y:auto;padding:12px 4px;"></div>
+
+        <div id="sb-photo-preview" style="display:none;margin:10px 0;">
+          <img id="sb-photo-preview-img"
+               style="max-width:150px;max-height:150px;border-radius:10px;border:1px solid #8f2635;">
+          <button id="sb-photo-cancel" class="sb-messages-new"
+                  style="margin-left:8px;">✕</button>
+        </div>
+
+        <input id="sb-self-file" type="file"
+               accept="image/jpeg,image/png,image/webp" hidden>
+
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+          <button id="sb-self-add" class="sb-messages-new"
+                  style="width:48px;font-size:22px;">+</button>
+          <input id="sb-self-input"
+                 placeholder="Написать заметку..."
+                 style="flex:1;min-width:0;padding:13px;border-radius:9px;border:1px solid rgba(190,25,45,.4);background:#0b0c0e;color:#fff;outline:none;">
+          <button id="sb-self-send" class="sb-messages-new"
+                  style="width:52px;">➤</button>
+        </div>
+        <div id="sb-self-status" style="font-size:12px;color:#aaa;margin-top:7px;"></div>
+      </section>
+    `;
+
+    const box=document.getElementById('sb-self-chat');
+    const input=document.getElementById('sb-self-input');
+    const send=document.getElementById('sb-self-send');
+    const file=document.getElementById('sb-self-file');
+    const add=document.getElementById('sb-self-add');
+    const preview=document.getElementById('sb-photo-preview');
+    const previewImg=document.getElementById('sb-photo-preview-img');
+    const cancel=document.getElementById('sb-photo-cancel');
+    const status=document.getElementById('sb-self-status');
+    let selectedPhoto=null;
+
+    function escapeText(value){
+      return String(value ?? '').replace(/[&<>"']/g,c=>({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    async function load(){
+      const r=await fetch('/api/messages/self');
+      const data=await r.json();
+
+      if(!r.ok){
+        box.innerHTML='<div class="sb-newchat-hint">Войдите в аккаунт</div>';
+        return;
+      }
+
+      box.innerHTML=data.length
+        ? data.map(m=>`
+            <div style="display:flex;justify-content:flex-end;align-items:flex-start;gap:7px;margin:9px 0;">
+              <button data-delete-note="${m.id}" title="Удалить заметку"
+                      style="flex-shrink:0;background:transparent;border:0;color:#a66b73;padding:8px;cursor:pointer;">✕</button>
+              <div style="max-width:82%;padding:10px 13px;border-radius:12px 12px 3px 12px;background:#40101a;color:#f5e5e7;border:1px solid rgba(190,25,45,.3);">
+                ${m.image_url ? `<img src="${escapeText(m.image_url)}" onclick="window.open(this.src,'_blank')" style="display:block;max-width:100%;max-height:260px;border-radius:8px;margin-bottom:6px;cursor:pointer;">` : ''}
+                ${m.text && m.text !== '[Фото]' ? escapeText(m.text).replace(/\n/g,'<br>') : ''}
+              </div>
+            </div>
+          `).join('')
+        : '<div class="sb-newchat-hint">Здесь можно хранить свои заметки</div>';
+
+      box.querySelectorAll('[data-delete-note]').forEach(button=>{
+        button.onclick=async()=>{
+          if(!confirm('Удалить эту заметку?')) return;
+          button.disabled=true;
+          try{
+            const r=await fetch('/api/messages/self/'+button.dataset.deleteNote,{
+              method:'DELETE'
+            });
+            const result=await r.json();
+            if(!r.ok) throw new Error(result.error || 'Не удалось удалить');
+            status.textContent='Заметка удалена.';
+            await load();
+          }catch(e){
+            button.disabled=false;
+            status.textContent=e.message || 'Ошибка удаления.';
+          }
+        };
+      });
+
+      box.scrollTop=box.scrollHeight;
+    }
+
+    add.onclick=()=>file.click();
+
+    file.onchange=()=>{
+      const photo=file.files[0];
+      if(!photo) return;
+
+      if(photo.size>10*1024*1024){
+        status.textContent='Фотография больше 10 МБ.';
+        file.value='';
+        return;
+      }
+
+      selectedPhoto=photo;
+      previewImg.src=URL.createObjectURL(photo);
+      preview.style.display='block';
+      status.textContent='Фото готово к отправке.';
+    };
+
+    cancel.onclick=()=>{
+      selectedPhoto=null;
+      file.value='';
+      preview.style.display='none';
+      previewImg.removeAttribute('src');
+      status.textContent='';
+    };
+
+    async function sendNote(){
+      const text=input.value.trim();
+      if(!text && !selectedPhoto) return;
+
+      send.disabled=true;
+      add.disabled=true;
+      status.textContent='Отправка...';
+
+      try{
+        if(selectedPhoto){
+          const form=new FormData();
+          form.append('image',selectedPhoto);
+
+          const r=await fetch('/api/messages/self/image',{
+            method:'POST',
+            body:form
+          });
+          const data=await r.json();
+          if(!r.ok) throw new Error(data.error || 'Не удалось загрузить фото');
+
+          selectedPhoto=null;
+          file.value='';
+          preview.style.display='none';
+          previewImg.removeAttribute('src');
+        }
+
+        if(text){
+          const r=await fetch('/api/messages/self',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({text})
+          });
+          const data=await r.json();
+          if(!r.ok) throw new Error(data.error || 'Не удалось сохранить заметку');
+          input.value='';
+        }
+
+        status.textContent='Сохранено.';
+        await load();
+      }catch(e){
+        status.textContent=e.message || 'Ошибка отправки.';
+      }finally{
+        send.disabled=false;
+        add.disabled=false;
+      }
+    }
+
+    send.onclick=sendNote;
+    input.onkeydown=e=>{
+      if(e.key==='Enter') sendNote();
+    };
+
+    await load();
+    input.focus();
+  };
+})();
+</script>
+
+<style>
+.sb-community-switch{
+  display:flex;
+  gap:8px;
+  margin:0 0 18px;
+  padding:4px;
+  background:#0d0f11;
+  border:1px solid #292d31;
+  border-radius:10px;
+}
+
+.sb-community-switch-btn{
+  flex:1;
+  padding:10px 14px;
+  border:1px solid transparent;
+  border-radius:7px;
+  background:transparent;
+  color:#777;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.sb-community-switch-btn.active{
+  color:#fff;
+  background:#191c20;
+  border-color:#8b1e2d;
+  box-shadow:0 0 10px rgba(139,30,45,.18);
+}
+
+.sb-community-switch-btn:hover{
+  color:#fff;
+}
+</style>
+
+<script>
+(function(){
+  window.openMessagesFromCommunity = function(){
+    const main = document.querySelector('main');
+    if(!main) return;
+
+    if(typeof window.renderMessagesScreen === 'function'){
+      window.renderMessagesScreen();
+      return;
+    }
+
+    main.innerHTML = `
+      <section class="sb-messages-page">
+        <div class="sb-messages-head">
+          <h1 class="sb-messages-title">Сообщения</h1>
+        </div>
+        <div class="sb-messages-empty">
+          <strong>Сообщения</strong>
+          <span>Не удалось загрузить экран сообщений.</span>
+        </div>
+      </section>
+    `;
+  };
+})();
+</script>

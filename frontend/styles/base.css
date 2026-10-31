@@ -1,0 +1,154 @@
+/* =========================================================
+   REBUNAR — BASE STYLES
+   ========================================================= */
+
+:root {
+  color-scheme: dark;
+
+  --bg-main: #123d27;
+  --bg-panel: #1b5938;
+  --bg-panel-2: #267347;
+  --text-main: #f0fff4;
+  --text-muted: #b5e5c2;
+  --border: #398b59;
+  --accent: #55ed83;
+  --accent-bright: #9affb4;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --content-max-width: 1400px;
+}
+
+/* 1. Яркий изумруд */
+:root[data-theme="emerald"] {
+  color-scheme: dark;
+  --bg-main: #123d27;
+  --bg-panel: #1b5938;
+  --bg-panel-2: #267347;
+  --text-main: #f0fff4;
+  --text-muted: #b5e5c2;
+  --border: #398b59;
+  --accent: #55ed83;
+  --accent-bright: #9affb4;
+}
+
+/* 2. Неон */
+:root[data-theme="neon"] {
+  color-scheme: dark;
+  --bg-main: #09251b;
+  --bg-panel: #103c2b;
+  --bg-panel-2: #17563a;
+  --text-main: #edfff3;
+  --text-muted: #a4e9bd;
+  --border: #26734b;
+  --accent: #39ff55;
+  --accent-bright: #a0ff70;
+}
+
+/* 3. Лесной */
+:root[data-theme="forest"] {
+  color-scheme: dark;
+  --bg-main: #172b20;
+  --bg-panel: #213d2c;
+  --bg-panel-2: #2c5039;
+  --text-main: #f0f5e9;
+  --text-muted: #b6c9ae;
+  --border: #49694e;
+  --accent: #8fca62;
+  --accent-bright: #b8e58a;
+}
+
+/* 4. Мятный */
+:root[data-theme="mint"] {
+  color-scheme: light;
+  --bg-main: #d5f5e5;
+  --bg-panel: #eafff2;
+  --bg-panel-2: #bcebd2;
+  --text-main: #123d2b;
+  --text-muted: #47745d;
+  --border: #9bd5b5;
+  --accent: #159b62;
+  --accent-bright: #087a4b;
+}
+
+/* 5. Тёмный зелёный */
+:root[data-theme="darkGreen"] {
+  color-scheme: dark;
+  --bg-main: #07160e;
+  --bg-panel: #10251a;
+  --bg-panel-2: #193524;
+  --text-main: #e8f5eb;
+  --text-muted: #9bb5a1;
+  --border: #31513b;
+  --accent: #39b86a;
+  --accent-bright: #70e69a;
+}
+
+/* 6. Кибер-неон — тема по умолчанию */
+:root[data-theme="cyberNeon"] {
+  color-scheme: dark;
+  --bg-main: #071b1b;
+  --bg-panel: #0d2928;
+  --bg-panel-2: #123735;
+  --text-main: #e7fffa;
+  --text-muted: #91c8bd;
+  --border: #24534d;
+  --accent: #39ff9c;
+  --accent-bright: #78ffd0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--bg-main);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--bg-main);
+  color: var(--text-main);
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#app {
+  min-height: 100vh;
+}

@@ -1,0 +1,1111 @@
+/* =========================================================
+   REBUNAR — STEEL & BLOOD
+   COMPLETE UI
+   ========================================================= */
+
+:root{
+  --bg:#050608;
+  --bg2:#090a0d;
+  --panel:#0d0f13;
+  --panel2:#111319;
+  --panel3:#151820;
+
+  --red:#b5122f;
+  --red2:#e01b3f;
+  --red-dark:#5d0b1d;
+  --red-soft:#8e1830;
+
+  --steel:#8d929b;
+  --steel2:#555a63;
+  --line:#292d34;
+
+  --text:#f1f2f4;
+  --muted:#8b9099;
+
+  --shadow:rgba(0,0,0,.75);
+}
+
+/* ===== BASE ===== */
+
+html{
+  background:#050608 !important;
+}
+
+body{
+  margin:0 !important;
+  min-height:100vh !important;
+
+  background:
+    radial-gradient(circle at 50% -20%,rgba(146,13,38,.22),transparent 42%),
+    linear-gradient(180deg,#08090b 0%,#050608 55%,#030405 100%) !important;
+
+  color:var(--text) !important;
+  font-family:Arial,Helvetica,sans-serif !important;
+  letter-spacing:.1px;
+}
+
+/* subtle steel texture */
+
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9990;
+
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 7px,
+      rgba(255,255,255,.012) 8px,
+      transparent 9px
+    );
+
+  opacity:.45;
+}
+
+/* ===== HEADER ===== */
+
+header{
+  position:relative !important;
+  background:
+    linear-gradient(180deg,#15171c 0%,#0a0b0e 100%) !important;
+
+  border-bottom:1px solid #3a3e45 !important;
+  box-shadow:
+    0 1px 0 #000,
+    0 8px 25px rgba(0,0,0,.55) !important;
+
+  overflow:hidden;
+}
+
+header:after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:2px;
+
+  background:linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--red-dark) 20%,
+    var(--red2) 50%,
+    var(--red-dark) 80%,
+    transparent 100%
+  );
+}
+
+/* ===== LOGO ===== */
+
+.logo,
+.rb-brand{
+  color:#f4f5f6 !important;
+  font-weight:900 !important;
+  letter-spacing:1.5px !important;
+  text-shadow:
+    0 1px 0 #000,
+    0 0 12px rgba(196,19,51,.25) !important;
+}
+
+.rb-brand{
+  font-size:30px !important;
+}
+
+/* ===== TEXT ===== */
+
+h1,h2,h3,h4{
+  color:#f1f2f4 !important;
+  font-weight:800 !important;
+}
+
+h1,h2{
+  letter-spacing:.5px;
+}
+
+p{
+  color:#a0a5ad !important;
+}
+
+/* ===== MAIN ===== */
+
+main{
+  max-width:720px !important;
+  margin:0 auto !important;
+  padding:18px 14px 100px !important;
+}
+
+/* ===== HERO ===== */
+
+.rb-hero{
+  position:relative !important;
+  overflow:hidden !important;
+
+  padding:25px 19px 22px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.035),
+      transparent 25%
+    ),
+    linear-gradient(
+      160deg,
+      #181a20 0%,
+      #0d0f13 45%,
+      #090a0d 100%
+    ) !important;
+
+  border:1px solid #4a4e56 !important;
+  border-radius:2px !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -20px 40px rgba(0,0,0,.25),
+    0 12px 35px rgba(0,0,0,.55) !important;
+}
+
+/* angular red corner */
+
+.rb-hero:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+
+  width:85px;
+  height:3px;
+
+  background:var(--red2);
+
+  box-shadow:
+    0 0 12px rgba(224,27,63,.45);
+}
+
+.rb-hero:after{
+  content:"";
+  position:absolute;
+  right:-35px;
+  top:-35px;
+
+  width:110px;
+  height:110px;
+
+  border:1px solid rgba(181,18,47,.35);
+  transform:rotate(45deg);
+}
+
+/* ===== BRAND ===== */
+
+.rb-brand{
+  position:relative;
+  z-index:2;
+
+  margin-bottom:5px !important;
+}
+
+.rb-subtitle{
+  color:#777d86 !important;
+  font-size:13px !important;
+  margin-top:4px !important;
+}
+
+/* ===== SECTION TITLES ===== */
+
+.rb-section-title,
+main > h2{
+  position:relative;
+
+  margin:24px 0 12px !important;
+  padding-left:12px !important;
+
+  color:#e8e9eb !important;
+  font-size:18px !important;
+  font-weight:800 !important;
+
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.rb-section-title:before,
+main > h2:before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:2px;
+  bottom:2px;
+
+  width:3px;
+
+  background:var(--red2);
+  box-shadow:0 0 8px rgba(224,27,63,.35);
+}
+
+/* ===== SEARCH ===== */
+
+#webSearchForm{
+  margin:18px 0 5px !important;
+}
+
+#webSearch,
+.rb-search{
+  box-sizing:border-box !important;
+
+  width:100% !important;
+  height:46px !important;
+
+  padding:0 15px !important;
+
+  color:#f3f4f5 !important;
+
+  background:
+    linear-gradient(180deg,#17191e,#0b0c0f) !important;
+
+  border:1px solid #4b5058 !important;
+  border-radius:1px !important;
+
+  outline:none !important;
+
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,.65),
+    0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+#webSearch:focus{
+  border-color:var(--red-soft) !important;
+
+  box-shadow:
+    inset 0 2px 8px rgba(0,0,0,.65),
+    0 0 0 1px rgba(181,18,47,.25) !important;
+}
+
+#webSearch::placeholder{
+  color:#666b73 !important;
+}
+
+/* ===== CARDS ===== */
+
+.card,
+.game-card,
+.rb-tile{
+  position:relative !important;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.035),
+      transparent 22%
+    ),
+    linear-gradient(180deg,#15171c,#0b0d10) !important;
+
+  border:1px solid #3e4249 !important;
+  border-radius:2px !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.055),
+    inset 0 -1px 0 rgba(0,0,0,.8),
+    0 7px 22px rgba(0,0,0,.45) !important;
+
+  overflow:hidden;
+}
+
+/* red technical line */
+
+.card:before,
+.game-card:before,
+.rb-tile:before{
+  content:"";
+  position:absolute;
+
+  top:0;
+  left:0;
+
+  width:35px;
+  height:2px;
+
+  background:var(--red2);
+}
+
+.game-card{
+  padding:15px !important;
+  margin-bottom:10px !important;
+}
+
+/* ===== CARD HOVER ===== */
+
+.game-card:hover,
+.card:hover{
+  border-color:#666b73 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 10px 28px rgba(0,0,0,.6) !important;
+}
+
+/* ===== BUTTONS ===== */
+
+button,
+.game-card button,
+.avatar-editor-btn,
+.avatar-editor-save{
+  position:relative !important;
+
+  box-sizing:border-box !important;
+
+  min-height:34px !important;
+  height:34px !important;
+
+  padding:0 17px !important;
+
+  color:#f3f4f5 !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #292c32 0%,
+      #181a1f 48%,
+      #0e1014 100%
+    ) !important;
+
+  border:1px solid #646a72 !important;
+  border-radius:1px !important;
+
+  font-size:12px !important;
+  font-weight:800 !important;
+
+  letter-spacing:.7px !important;
+  text-transform:uppercase !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -2px 5px rgba(0,0,0,.5),
+    0 3px 8px rgba(0,0,0,.45) !important;
+
+  clip-path:polygon(
+    0 0,
+    calc(100% - 7px) 0,
+    100% 7px,
+    100% 100%,
+    7px 100%,
+    0 calc(100% - 7px)
+  ) !important;
+
+  transition:
+    border-color .15s ease,
+    background .15s ease,
+    transform .15s ease !important;
+}
+
+button:before{
+  content:"";
+  position:absolute;
+  left:8px;
+  right:8px;
+  top:1px;
+
+  height:1px;
+
+  background:rgba(255,255,255,.08);
+}
+
+button:hover{
+  background:
+    linear-gradient(
+      180deg,
+      #3a2027,
+      #201116 55%,
+      #10090c
+    ) !important;
+
+  border-color:#b24a60 !important;
+}
+
+button:active{
+  transform:translateY(1px) !important;
+}
+
+/* primary / save */
+
+button.avatar-editor-save{
+  background:
+    linear-gradient(
+      180deg,
+      #d01c40,
+      #8e102b 48%,
+      #4f0919
+    ) !important;
+
+  border-color:#ed536d !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 14px rgba(181,18,47,.18) !important;
+}
+
+/* ===== INPUTS ===== */
+
+input,
+textarea,
+select{
+  color:#f1f2f4 !important;
+
+  background:
+    linear-gradient(180deg,#17191e,#0b0c0f) !important;
+
+  border:1px solid #42474f !important;
+  border-radius:1px !important;
+
+  outline:none !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+  border-color:#a31b36 !important;
+}
+
+/* ===== LINKS ===== */
+
+a{
+  color:#d12a48 !important;
+}
+
+a:hover{
+  color:#f04a67 !important;
+}
+
+/* ===== COMMUNITY / FEED ===== */
+
+#communityList,
+#feedPosts{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+}
+
+#communityList > .game-card,
+#feedPosts > .game-card{
+  margin:0 !important;
+}
+
+/* ===== BOTTOM NAV ===== */
+
+nav{
+  position:fixed !important;
+  z-index:10000 !important;
+
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+
+  height:62px !important;
+
+  padding:0 5px !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-around !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #17191e 0%,
+      #0a0b0e 55%,
+      #060709 100%
+    ) !important;
+
+  border-top:1px solid #444950 !important;
+
+  box-shadow:
+    0 -8px 25px rgba(0,0,0,.75),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+nav:before{
+  content:"";
+  position:absolute;
+
+  top:0;
+  left:12%;
+  right:12%;
+
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--red2),
+      transparent
+    );
+}
+
+nav span{
+  position:relative !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  height:38px !important;
+  min-width:52px !important;
+
+  padding:0 7px !important;
+
+  color:#777c84 !important;
+
+  font-size:10px !important;
+  font-weight:700 !important;
+
+  letter-spacing:.4px !important;
+
+  border:1px solid transparent !important;
+}
+
+nav span:hover{
+  color:#e8e9eb !important;
+}
+
+nav span:active{
+  color:var(--red2) !important;
+}
+
+/* ===== SCROLLBAR ===== */
+
+::-webkit-scrollbar{
+  width:5px;
+}
+
+::-webkit-scrollbar-track{
+  background:#050608;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#3b3f46;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:#79182d;
+}
+
+/* ===== MOBILE ===== */
+
+@media(max-width:420px){
+
+  main{
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+
+  .rb-hero{
+    padding:22px 15px 20px !important;
+  }
+
+  .rb-brand{
+    font-size:26px !important;
+  }
+
+  .rb-section-title,
+  main > h2{
+    font-size:16px !important;
+  }
+
+  button,
+  .game-card button{
+    min-height:33px !important;
+    height:33px !important;
+    padding-left:13px !important;
+    padding-right:13px !important;
+  }
+
+  nav{
+    height:60px !important;
+  }
+
+  nav span{
+    min-width:45px !important;
+    font-size:9px !important;
+  }
+}
+
+/* =========================================================
+   REBUNAR — STEEL & BLOOD 2.0
+   METAL / BLOOD / WAR HUD
+   ========================================================= */
+
+/* --- STEEL SURFACE --- */
+
+header,
+nav,
+.card,
+.game-card,
+.rb-hero,
+.rb-tile{
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.10) 0%,
+      rgba(255,255,255,.025) 10%,
+      transparent 28%
+    ),
+    linear-gradient(
+      180deg,
+      #292d33 0%,
+      #181b20 16%,
+      #0e1014 48%,
+      #171a1f 82%,
+      #080a0d 100%
+    ) !important;
+
+  border-color:#626870 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.17),
+    inset 0 -1px 0 rgba(0,0,0,.95),
+    inset 8px 0 18px rgba(255,255,255,.015),
+    0 12px 30px rgba(0,0,0,.72) !important;
+}
+
+/* --- METAL EDGE --- */
+
+.card,
+.game-card,
+.rb-tile,
+.rb-hero{
+  clip-path:polygon(
+    0 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  ) !important;
+}
+
+/* --- METAL INNER BORDER --- */
+
+.card:after,
+.game-card:after,
+.rb-tile:after,
+.rb-hero:after{
+  content:"";
+  position:absolute;
+  inset:4px;
+
+  pointer-events:none;
+
+  border:1px solid rgba(255,255,255,.045);
+
+  clip-path:inherit;
+}
+
+/* --- BLOOD CORNERS --- */
+
+.card:before,
+.game-card:before,
+.rb-tile:before{
+  width:70px !important;
+  height:3px !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ef294c,
+      #941029 65%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 0 8px rgba(224,27,63,.38) !important;
+}
+
+/* --- HERO BLOOD MARK --- */
+
+.rb-hero:before{
+  width:150px !important;
+  height:4px !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f1264b,
+      #9e102b 60%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 0 14px rgba(224,27,63,.45) !important;
+}
+
+/* --- LOGO --- */
+
+.logo,
+.rb-brand{
+  color:#e7e9ec !important;
+
+  text-shadow:
+    0 1px 0 #000,
+    0 2px 0 #000,
+    0 0 1px #fff,
+    0 0 16px rgba(192,18,48,.35) !important;
+}
+
+.rb-brand{
+  letter-spacing:2px !important;
+  font-weight:950 !important;
+}
+
+/* --- TITLES --- */
+
+h1,
+h2,
+h3{
+  text-shadow:
+    0 1px 0 #000,
+    0 2px 3px rgba(0,0,0,.9) !important;
+}
+
+/* --- SECTION MARKER --- */
+
+.rb-section-title:before,
+main > h2:before{
+  width:5px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ff3657,
+      #8d0d27
+    ) !important;
+
+  box-shadow:
+    0 0 10px rgba(224,27,63,.55) !important;
+}
+
+/* --- SEARCH AS STEEL PANEL --- */
+
+#webSearch{
+  height:43px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #30343a,
+      #171a1f 25%,
+      #0b0d10 100%
+    ) !important;
+
+  border:1px solid #747a82 !important;
+
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.85),
+    inset 0 1px 0 rgba(255,255,255,.15),
+    0 4px 12px rgba(0,0,0,.5) !important;
+}
+
+#webSearch:focus{
+  border-color:#d31c40 !important;
+
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,.9),
+    0 0 0 1px rgba(211,28,64,.3),
+    0 0 15px rgba(181,18,47,.18) !important;
+}
+
+/* --- REAL METAL BUTTONS --- */
+
+button,
+.game-card button,
+.avatar-editor-btn,
+.avatar-editor-save{
+  height:32px !important;
+  min-height:32px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #555b63 0%,
+      #343940 12%,
+      #1b1e23 42%,
+      #0d0f12 100%
+    ) !important;
+
+  border:1px solid #858b92 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -3px 5px rgba(0,0,0,.7),
+    0 3px 7px rgba(0,0,0,.7) !important;
+
+  text-shadow:
+    0 1px 2px #000 !important;
+}
+
+/* metallic top highlight */
+
+button:after{
+  content:"";
+  position:absolute;
+
+  top:2px;
+  left:10px;
+  right:10px;
+
+  height:1px;
+
+  background:rgba(255,255,255,.16);
+}
+
+/* blood hover */
+
+button:hover{
+  background:
+    linear-gradient(
+      180deg,
+      #6b3a44 0%,
+      #3c2028 18%,
+      #1d1014 55%,
+      #0d090b 100%
+    ) !important;
+
+  border-color:#c74b61 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.2),
+    inset 0 -3px 6px rgba(0,0,0,.8),
+    0 0 12px rgba(181,18,47,.18) !important;
+}
+
+/* primary blood button */
+
+button.avatar-editor-save{
+  background:
+    linear-gradient(
+      180deg,
+      #ed3152 0%,
+      #b41434 18%,
+      #751024 55%,
+      #3c0815 100%
+    ) !important;
+
+  border-color:#ff647e !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.3),
+    inset 0 -4px 7px rgba(40,0,8,.6),
+    0 0 13px rgba(181,18,47,.28) !important;
+}
+
+/* --- NAVIGATION --- */
+
+nav{
+  background:
+    linear-gradient(
+      180deg,
+      #383c42 0%,
+      #202329 9%,
+      #111318 28%,
+      #07080a 100%
+    ) !important;
+
+  border-top:1px solid #747a81 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 -10px 30px rgba(0,0,0,.85) !important;
+}
+
+nav:before{
+  height:3px !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 5%,
+      #771025 25%,
+      #ed2549 50%,
+      #771025 75%,
+      transparent 95%
+    ) !important;
+
+  box-shadow:
+    0 0 10px rgba(224,27,63,.45) !important;
+}
+
+nav span{
+  color:#8d9299 !important;
+
+  text-shadow:
+    0 1px 2px #000 !important;
+}
+
+nav span:hover,
+nav span:active{
+  color:#f1f2f4 !important;
+
+  text-shadow:
+    0 0 8px rgba(224,27,63,.45),
+    0 1px 2px #000 !important;
+}
+
+/* --- BLOOD ACCENT LINKS --- */
+
+a{
+  text-shadow:0 0 6px rgba(181,18,47,.2) !important;
+}
+
+/* --- MOBILE STEEL SCALE --- */
+
+@media(max-width:420px){
+
+  .game-card{
+    padding:14px !important;
+  }
+
+  .rb-hero{
+    border-width:1px !important;
+  }
+
+  button,
+  .game-card button{
+    height:31px !important;
+    min-height:31px !important;
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+}
+
+/* =========================================================
+   STEEL & BLOOD — PROFILE / AVATAR EDITOR
+   ========================================================= */
+
+#avatarEditorModal{
+  background:
+    radial-gradient(circle at 50% 35%,rgba(150,12,38,.16),transparent 38%),
+    rgba(3,4,6,.96) !important;
+  backdrop-filter:blur(8px) !important;
+}
+
+#avatarEditorModal > div{
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.08),transparent 20%),
+    linear-gradient(180deg,#292d33 0%,#15181d 18%,#090b0e 100%) !important;
+
+  border:1px solid #747a82 !important;
+  border-radius:2px !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -25px 45px rgba(0,0,0,.35),
+    0 20px 60px rgba(0,0,0,.9),
+    0 0 25px rgba(150,12,38,.15) !important;
+
+  position:relative !important;
+  overflow:hidden !important;
+}
+
+#avatarEditorModal > div:before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:150px;
+  height:3px;
+
+  background:
+    linear-gradient(90deg,#ef274a,#851027,transparent);
+
+  box-shadow:0 0 12px rgba(224,27,63,.45);
+}
+
+#avatarEditorModal h2{
+  color:#f0f1f3 !important;
+  text-transform:uppercase !important;
+  letter-spacing:1px !important;
+
+  text-shadow:
+    0 2px 3px #000,
+    0 0 10px rgba(181,18,47,.2) !important;
+}
+
+/* avatar frame */
+
+#avatarEditorModal canvas{
+  background:#050608 !important;
+}
+
+#avatarEditorModal canvas,
+#avatarEditorModal > div > div{
+  border-color:#7b8189 !important;
+}
+
+/* slider */
+
+#avatarScaleSlider{
+  accent-color:#c51a3b !important;
+  filter:drop-shadow(0 0 5px rgba(197,26,59,.35));
+}
+
+/* editor buttons */
+
+#avatarEditorModal .avatar-editor-btn{
+  height:33px !important;
+  min-height:33px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #555b62 0%,
+      #292d33 18%,
+      #111318 100%
+    ) !important;
+
+  border:1px solid #81878e !important;
+  border-radius:1px !important;
+
+  color:#f1f2f4 !important;
+  font-weight:800 !important;
+  letter-spacing:.7px !important;
+
+  clip-path:polygon(
+    0 0,
+    calc(100% - 7px) 0,
+    100% 7px,
+    100% 100%,
+    7px 100%,
+    0 calc(100% - 7px)
+  ) !important;
+}
+
+#avatarEditorModal .avatar-editor-save{
+  background:
+    linear-gradient(
+      180deg,
+      #ed3152 0%,
+      #b41434 25%,
+      #650d20 65%,
+      #350711 100%
+    ) !important;
+
+  border-color:#ff647e !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.25),
+    0 0 14px rgba(181,18,47,.3) !important;
+}
+
+#avatarEditorModal .avatar-editor-cancel:hover{
+  border-color:#c0c4c9 !important;
+}
+
+#avatarEditorModal .avatar-editor-save:hover{
+  background:
+    linear-gradient(
+      180deg,
+      #ff3b5b,
+      #c01639 45%,
+      #650b20
+    ) !important;
+}

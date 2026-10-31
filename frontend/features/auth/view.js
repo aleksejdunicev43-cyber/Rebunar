@@ -1,0 +1,112 @@
+/**
+ * REBUNAR — AUTH VIEW
+ * Экран входа и регистрации.
+ */
+
+import { login, register } from './api.js';
+import { setUser } from './session.js';
+
+export function renderAuthScreen(container, onSuccess = () => {}) {
+  let mode = 'login';
+
+  function render(message = '') {
+    const isRegister = mode === 'register';
+
+    container.innerHTML = `
+      <section class="auth-screen">
+        <div class="auth-card">
+          <div class="auth-brand">REBUNAR</div>
+          <h1>${isRegister ? 'Создание аккаунта' : 'С возвращением'}</h1>
+          <p class="auth-description">
+            ${isRegister
+              ? 'Создай аккаунт и присоединяйся к сообществу.'
+              : 'Войди в свой аккаунт Rebunar.'}
+          </p>
+
+          <form class="auth-form">
+            <label for="auth-username">Логин</label>
+            <input
+              id="auth-username"
+              name="username"
+              type="text"
+              minlength="3"
+              maxlength="50"
+              autocomplete="username"
+              placeholder="Твой логин"
+              required
+            >
+
+            <label for="auth-password">Пароль</label>
+            <input
+              id="auth-password"
+              name="password"
+              type="password"
+              minlength="4"
+              autocomplete="${isRegister ? 'new-password' : 'current-password'}"
+              placeholder="Твой пароль"
+              required
+            >
+
+            <p class="auth-message" aria-live="polite"></p>
+
+            <button class="auth-submit" type="submit">
+              ${isRegister ? 'Зарегистрироваться' : 'Войти'}
+            </button>
+          </form>
+
+          <button class="auth-switch" type="button">
+            ${isRegister
+              ? 'Уже есть аккаунт? Войти'
+              : 'Нет аккаунта? Зарегистрироваться'}
+          </button>
+        </div>
+      </section>
+    `;
+
+    const form = container.querySelector('.auth-form');
+    const messageElement = container.querySelector('.auth-message');
+    const switchButton = container.querySelector('.auth-switch');
+
+    messageElement.textContent = message;
+
+    switchButton.addEventListener('click', () => {
+      mode = mode === 'login' ? 'register' : 'login';
+      render();
+    });
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const username = form.elements.username.value.trim();
+      const password = form.elements.password.value;
+      const submitButton = form.querySelector('.auth-submit');
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Подождите...';
+      messageElement.textContent = '';
+
+      try {
+        let user;
+
+        if (mode === 'register') {
+          await register(username, password);
+          messageElement.textContent = 'Аккаунт создан. Выполняем вход...';
+          user = await login(username, password);
+        } else {
+          user = await login(username, password);
+        }
+
+        setUser(user);
+        onSuccess(user);
+      } catch (error) {
+        messageElement.textContent = error.message;
+        submitButton.disabled = false;
+        submitButton.textContent = isRegister
+          ? 'Зарегистрироваться'
+          : 'Войти';
+      }
+    });
+  }
+
+  render();
+}
