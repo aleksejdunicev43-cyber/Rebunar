@@ -36,13 +36,27 @@ function renderChatList(filter = '') {
     `${chat.display_name} ${chat.username}`.toLowerCase().includes(query)
   );
 
-  list.innerHTML = filtered.length ? filtered.map(chat => `
-    <button class="messages-room-item ${activeChat?.id === chat.user_id ? 'is-active' : ''}"
-      data-open-chat="${chat.user_id}">
-      <span class="messages-room-name">${escapeHTML(chat.display_name)}</span>
-      <span class="messages-room-preview">${escapeHTML(chat.last_message || '@' + chat.username)}</span>
-    </button>
-  `).join('') : '<div class="messages-status">Переписок пока нет</div>';
+  list.innerHTML = filtered.length ? filtered.map(chat => {
+    const name = chat.display_name || chat.username || 'Пользователь';
+    const initials = escapeHTML(name.trim().slice(0, 1).toUpperCase() || 'R');
+    const avatar = chat.avatar
+      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt="">`
+      : `<span>${initials}</span>`;
+
+    return `
+      <button class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
+        data-open-chat="${chat.user_id}">
+        <span class="chat-avatar">${avatar}</span>
+        <span class="chat-preview-block">
+          <span class="chat-row-top">
+            <span class="messages-room-name">${escapeHTML(name)}</span>
+            <time class="chat-time">${escapeHTML(chat.created_at || '')}</time>
+          </span>
+          <span class="messages-room-preview">${escapeHTML(chat.last_message || 'Начните переписку')}</span>
+        </span>
+      </button>
+    `;
+  }).join('') : '<div class="messages-status">Переписок пока нет</div>';
 }
 
 function renderMessages(messages) {
@@ -125,13 +139,13 @@ function renderShell() {
       <header class="messages-header">
         <div>
           <span class="messages-eyebrow">REBUNAR / PRIVATE SPACE</span>
-          <h1>Сообщения</h1>
+          <h1>Чаты</h1>
           <p>Переписки и личные заметки</p>
         </div>
       </header>
 
       <nav class="messages-tabs">
-        <button data-tab="chats" class="is-active">Переписки</button>
+        <button data-tab="chats" class="is-active">Чаты</button>
         <button data-tab="notes">Мои заметки</button>
       </nav>
 
@@ -145,7 +159,7 @@ function renderShell() {
         </aside>
         <section class="messages-conversation" data-conversation>
           <div class="messages-placeholder">
-            <span class="messages-placeholder-icon">✉</span>
+            <span class="messages-placeholder-icon">◉</span>
             <h2>Твоё пространство общения</h2>
             <p>Выбери переписку или найди пользователя.</p>
           </div>

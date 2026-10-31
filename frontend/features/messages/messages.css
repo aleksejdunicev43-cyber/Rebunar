@@ -834,3 +834,29 @@
     grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.7fr);
   }
 }
+
+/* Чаты: аватары и превью */
+.chat-avatar {
+  display:flex; flex:0 0 46px; width:46px; height:46px;
+  align-items:center; justify-content:center; overflow:hidden;
+  border:1px solid #75404a; border-radius:50%;
+  background:linear-gradient(145deg,#54232d,#211619);
+  color:#f4dfe2; font-size:18px; font-weight:800;
+}
+.chat-avatar-image { width:100%; height:100%; object-fit:cover; }
+.chat-preview-block {
+  display:flex; flex:1; flex-direction:column;
+  min-width:0; gap:7px;
+}
+.chat-row-top {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; min-width:0;
+}
+.chat-row-top .messages-room-name {
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.chat-time { flex:0 0 auto; color:#8e858b; font-size:10px; }
+.messages-room-item .messages-room-preview {
+  display:block; overflow:hidden; max-width:100%;
+  text-overflow:ellipsis; white-space:nowrap; line-height:1.4;
+}
