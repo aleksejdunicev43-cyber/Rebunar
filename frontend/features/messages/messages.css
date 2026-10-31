@@ -860,3 +860,56 @@
   display:block; overflow:hidden; max-width:100%;
   text-overflow:ellipsis; white-space:nowrap; line-height:1.4;
 }
+
+/* REBUNAR — аватары списка чатов */
+.messages-sidebar [data-chat-list] .messages-room-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 13px !important;
+  text-align: left !important;
+}
+
+.chat-avatar {
+  position: relative;
+  display: flex !important;
+  flex: 0 0 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden;
+  border: 2px solid #9d3d4b;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #702b39, #171719);
+  color: #fff0f2;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.chat-avatar-initial {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-avatar-image {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.chat-preview-block {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 6px;
+}

@@ -33,20 +33,24 @@ function renderChatList(filter = '') {
 
   const query = filter.trim().toLowerCase();
   const filtered = chats.filter(chat =>
-    `${chat.display_name} ${chat.username}`.toLowerCase().includes(query)
+    `${chat.display_name || ''} ${chat.username || ''}`.toLowerCase().includes(query)
   );
 
   list.innerHTML = filtered.length ? filtered.map(chat => {
     const name = chat.display_name || chat.username || 'Пользователь';
-    const initials = escapeHTML(name.trim().slice(0, 1).toUpperCase() || 'R');
+    const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
     const avatar = chat.avatar
-      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt="">`
-      : `<span>${initials}</span>`;
+      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt=""
+             onerror="this.remove()">`
+      : '';
 
     return `
       <button class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
         data-open-chat="${chat.user_id}">
-        <span class="chat-avatar">${avatar}</span>
+        <span class="chat-avatar">
+          ${avatar}
+          <span class="chat-avatar-initial">${initial}</span>
+        </span>
         <span class="chat-preview-block">
           <span class="chat-row-top">
             <span class="messages-room-name">${escapeHTML(name)}</span>
