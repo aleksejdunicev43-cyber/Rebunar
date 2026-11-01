@@ -311,3 +311,36 @@
     width: 100%;
   }
 }
+
+
+/* REBUNAR — ПРОКРУТКА СОДЕРЖИМОГО ВНУТРИ СРЕДНЕЙ ОБЛАСТИ */
+@media (max-width: 760px) {
+  .app-layout {
+    min-height: 0;
+  }
+
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #screen-outlet {
+    display: block;
+    flex: 1 1 0;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #screen-outlet:has(.messages-screen) {
+    display: flex;
+    overflow: hidden;
+  }
+}
