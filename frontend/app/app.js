@@ -9,7 +9,7 @@ import {
   subscribeToRoute
 } from './router.js';
 
-import { createShell } from '../layout/shell.js';
+import { createShell } from '../layout/shell.js?v=avatar-20261101-2';
 import { initNavigation } from '../layout/navigation.js';
 import {
   initializeAuth,

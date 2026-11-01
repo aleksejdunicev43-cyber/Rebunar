@@ -39,23 +39,25 @@ function updateHeaderProfile(root, user) {
 
   button.replaceChildren();
 
-  if (user && user.avatar) {
+  if (user?.avatar) {
     const image = document.createElement('img');
     image.className = 'header-profile-avatar';
-    image.src = user.avatar;
-    image.alt = 'Мой профиль';
+    image.alt = 'Аватар пользователя';
+    image.src = new URL(user.avatar, window.location.origin).href;
 
     image.onerror = () => {
       button.replaceChildren();
       const fallback = document.createElement('span');
-      fallback.textContent = 'R';
+      fallback.textContent = (user.display_name || user.username || 'R')
+        .trim().charAt(0).toUpperCase();
       button.append(fallback);
     };
 
     button.append(image);
   } else {
     const fallback = document.createElement('span');
-    fallback.textContent = 'R';
+    fallback.textContent = (user?.display_name || user?.username || 'R')
+      .trim().charAt(0).toUpperCase();
     button.append(fallback);
   }
 
@@ -77,7 +79,7 @@ export function createShell(root) {
             <span>R</span>
           </button>
 
-          <a class="app-logo" href="#home">REBUNAR</a>
+          
         </div>
 
         <div class="header-actions">
