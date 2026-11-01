@@ -3,6 +3,11 @@
  * Общая оболочка интерфейса.
  */
 
+import {
+  getUser,
+  subscribeToAuth
+} from '../features/auth/session.js';
+
 const chatIcon = `
   <svg class="nav-icon" viewBox="0 0 24 24"
        width="23" height="23" fill="none"
@@ -19,22 +24,6 @@ const chatIcon = `
   </svg>
 `;
 
-function settingsButton() {
-  return `
-    <button type="button" class="nav-settings" data-route="settings">
-      <svg class="nav-settings-icon" viewBox="0 0 24 24"
-           width="19" height="19" fill="none"
-           stroke="currentColor" stroke-width="1.8"
-           stroke-linecap="round" stroke-linejoin="round"
-           aria-hidden="true">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 1.7-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.4v-.2a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.7-1.7.06-.06A1.7 1.7 0 0 0 8.4 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.4h.84A1.7 1.7 0 0 0 8.4 10a1.7 1.7 0 0 0-.34-1.88L8 8.06l1.7-1.7.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.67 5.2V5h2.4v.2a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.7 1.7-.06.06A1.7 1.7 0 0 0 19.4 10a1.7 1.7 0 0 0 1.56 1.03h.2v2.4h-.2A1.7 1.7 0 0 0 19.4 15z"/>
-      </svg>
-      <span>Настройки</span>
-    </button>
-  `;
-}
-
 function chatButton() {
   return `
     <button type="button" class="nav-chat" data-route="messages">
@@ -44,12 +33,52 @@ function chatButton() {
   `;
 }
 
+function updateHeaderProfile(root, user) {
+  const button = root.querySelector('.header-profile-button');
+  if (!button) return;
+
+  button.replaceChildren();
+
+  if (user && user.avatar) {
+    const image = document.createElement('img');
+    image.className = 'header-profile-avatar';
+    image.src = user.avatar;
+    image.alt = 'Мой профиль';
+
+    image.onerror = () => {
+      button.replaceChildren();
+      const fallback = document.createElement('span');
+      fallback.textContent = 'R';
+      button.append(fallback);
+    };
+
+    button.append(image);
+  } else {
+    const fallback = document.createElement('span');
+    fallback.textContent = 'R';
+    button.append(fallback);
+  }
+
+  button.title = user?.display_name || user?.username || 'Мой профиль';
+}
+
 export function createShell(root) {
   root.innerHTML = `
     <div class="app-shell">
 
       <header class="app-header">
-        <a class="app-logo" href="#home">REBUNAR</a>
+        <div class="header-brand">
+          <button
+            type="button"
+            class="header-profile-button"
+            data-route="profile"
+            aria-label="Мой профиль"
+            title="Мой профиль">
+            <span>R</span>
+          </button>
+
+          <a class="app-logo" href="#home">REBUNAR</a>
+        </div>
 
         <div class="header-actions">
           <button type="button" data-route="search">Поиск</button>
@@ -66,7 +95,7 @@ export function createShell(root) {
             <button type="button" data-route="games">Игры</button>
             <button type="button" data-route="communities">Сообщества</button>
             ${chatButton()}
-            ${settingsButton()}
+            <button type="button" class="nav-settings" data-route="settings">Настройки</button>
           </nav>
         </aside>
 
@@ -83,11 +112,20 @@ export function createShell(root) {
         <button type="button" data-route="games">Игры</button>
         <button type="button" data-route="communities">Сообщества</button>
         ${chatButton()}
-        ${settingsButton()}
+        <button type="button" class="nav-settings" data-route="settings">Настройки</button>
       </nav>
 
     </div>
   `;
+
+  // Сразу показываем текущий аватар
+  updateHeaderProfile(root, getUser());
+
+  // Обновляем аватар при изменении аккаунта
+  root.__rebunarHeaderAuthUnsubscribe?.();
+  root.__rebunarHeaderAuthUnsubscribe = subscribeToAuth(user => {
+    updateHeaderProfile(root, user);
+  });
 
   return {
     outlet: root.querySelector('#screen-outlet'),
