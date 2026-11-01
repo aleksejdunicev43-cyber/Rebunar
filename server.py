@@ -289,7 +289,7 @@ def login():
     with connect() as con:
         con.row_factory = sqlite3.Row
         user = con.execute(
-            "SELECT id, username, password FROM users WHERE username = ?",
+            "SELECT id, username, password, display_name, bio, avatar FROM users WHERE username = ?",
             (username,)
         ).fetchone()
 
@@ -313,7 +313,10 @@ def login():
 
     return jsonify({
         "id": user["id"],
-        "username": user["username"]
+        "username": user["username"],
+        "display_name": user["display_name"] or "",
+        "bio": user["bio"] or "",
+        "avatar": user["avatar"] or ""
     }), 200
 
 
@@ -1054,13 +1057,22 @@ def message_history():
 
     with connect() as con:
         rows = con.execute("""
-            SELECT id, sender_id, receiver_id, text, created_at
-            FROM messages
+            SELECT
+                m.id,
+                m.sender_id,
+                m.receiver_id,
+                m.text,
+                m.created_at,
+                u.username,
+                u.display_name,
+                u.avatar
+            FROM messages m
+            JOIN users u ON u.id = m.sender_id
             WHERE
-                (sender_id = ? AND receiver_id = ?)
+                (m.sender_id = ? AND m.receiver_id = ?)
                 OR
-                (sender_id = ? AND receiver_id = ?)
-            ORDER BY id ASC
+                (m.sender_id = ? AND m.receiver_id = ?)
+            ORDER BY m.id ASC
         """, (
             session["user_id"], chat_with_id,
             chat_with_id, session["user_id"]
@@ -1072,7 +1084,10 @@ def message_history():
             "sender_id": row[1],
             "receiver_id": row[2],
             "text": row[3],
-            "created_at": row[4]
+            "created_at": row[4],
+            "username": row[5],
+            "display_name": row[6] or row[5],
+            "avatar": row[7] or ""
         }
         for row in rows
     ])

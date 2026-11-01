@@ -11,7 +11,6 @@ import {
 
 let outletRef = null;
 let activeChat = null;
-let activeTab = 'chats';
 let chats = [];
 let notes = [];
 let searchTimer = null;
@@ -24,7 +23,13 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
 })[char]);
 
 function showStatus(container, message) {
-  container.innerHTML = `<div class="messages-status">${escapeHTML(message)}</div>`;
+  if (container) {
+    container.innerHTML = `<div class="messages-status">${escapeHTML(message)}</div>`;
+  }
+}
+
+function getChatName(chat) {
+  return chat.display_name || chat.username || 'Пользователь';
 }
 
 function renderChatList(filter = '') {
@@ -36,17 +41,36 @@ function renderChatList(filter = '') {
     `${chat.display_name || ''} ${chat.username || ''}`.toLowerCase().includes(query)
   );
 
-  list.innerHTML = filtered.length ? filtered.map(chat => {
-    const name = chat.display_name || chat.username || 'Пользователь';
+  const favoritePreview = notes.length
+    ? notes[0].text
+    : 'Личные заметки и сохранённые записи';
+
+  const favorite = `
+    <button class="messages-room-item messages-favorite-item ${activeChat?.kind === 'favorite' ? 'is-active' : ''}"
+      data-open-favorite>
+      <span class="chat-avatar messages-favorite-avatar">
+        <span class="messages-favorite-symbol">★</span>
+      </span>
+      <span class="chat-preview-block">
+        <span class="chat-row-top">
+          <span class="messages-room-name">Избранное</span>
+          <time class="chat-time">Личное</time>
+        </span>
+        <span class="messages-room-preview">${escapeHTML(favoritePreview)}</span>
+      </span>
+    </button>
+  `;
+
+  const rows = filtered.map(chat => {
+    const name = getChatName(chat);
     const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
     const avatar = chat.avatar
-      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt=""
-             onerror="this.remove()">`
+      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt="" onerror="this.remove()">`
       : '';
 
     return `
       <button class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
-        data-open-chat="${chat.user_id}">
+        data-open-chat="${Number(chat.user_id)}">
         <span class="chat-avatar">
           ${avatar}
           <span class="chat-avatar-initial">${initial}</span>
@@ -60,7 +84,12 @@ function renderChatList(filter = '') {
         </span>
       </button>
     `;
-  }).join('') : '<div class="messages-status">Переписок пока нет</div>';
+  }).join('');
+
+  list.innerHTML = favorite + (rows || (
+    query ? '<div class="messages-status">Ничего не найдено</div>' :
+    '<div class="messages-status">Пока нет переписок</div>'
+  ));
 }
 
 function renderMessages(messages) {
@@ -68,12 +97,45 @@ function renderMessages(messages) {
   if (!list) return;
 
   const myId = Number(getUser()?.id);
-  list.innerHTML = messages.length ? messages.map(message => `
-    <div class="messages-bubble ${Number(message.sender_id) === myId ? 'is-own' : 'is-incoming'}">
-      <div>${escapeHTML(message.text)}</div>
-      <time>${escapeHTML(message.created_at || '')}</time>
-    </div>
-  `).join('') : '<div class="messages-status">Начните переписку первым сообщением</div>';
+
+  list.innerHTML = messages.length ? messages.map(message => {
+    const isOwn = Number(message.sender_id) === myId;
+    const name = message.display_name || message.username || 'Пользователь';
+    const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
+    const avatar = message.avatar
+      ? `<img class="message-avatar-image" src="${escapeHTML(message.avatar)}" alt="" onerror="this.remove()">`
+      : '';
+
+    return `
+      <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
+        <span class="message-avatar" aria-hidden="true">
+          ${avatar}<span class="message-avatar-initial">${initial}</span>
+        </span>
+        <div class="messages-bubble">
+          <div class="message-author">${escapeHTML(name)}</div>
+          <div>${escapeHTML(message.text)}</div>
+          <time>${escapeHTML(message.created_at || '')}</time>
+        </div>
+      </div>
+    `;
+  }).join('') : '<div class="messages-status">Пока нет сообщений. Напиши первым!</div>';
+
+  list.scrollTop = list.scrollHeight;
+}
+
+function renderFavoriteNotes() {
+  const list = outletRef?.querySelector('[data-message-list]');
+  if (!list) return;
+
+  list.innerHTML = notes.length ? notes.map(note => `
+    <article class="messages-favorite-note">
+      <p>${escapeHTML(note.text)}</p>
+      <div class="messages-favorite-note-footer">
+        <time>${escapeHTML(note.created_at || '')}</time>
+        <button type="button" data-delete-note="${Number(note.id)}">Удалить</button>
+      </div>
+    </article>
+  `).join('') : '<div class="messages-status">Здесь будут твои личные заметки</div>';
 
   list.scrollTop = list.scrollHeight;
 }
@@ -92,13 +154,16 @@ async function openChat(user) {
 
   conversation.innerHTML = `
     <header class="messages-chat-header">
-      <button class="messages-back" data-back>←</button>
-      <div class="messages-room-name">${escapeHTML(user.display_name)}</div>
+      <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
+      <div class="messages-chat-identity">
+        <strong>${escapeHTML(getChatName(user))}</strong>
+        <span>@${escapeHTML(user.username || 'пользователь')}</span>
+      </div>
     </header>
     <div class="messages-message-list" data-message-list></div>
     <form class="messages-compose" data-send-form>
-      <input name="text" maxlength="5000" placeholder="Написать сообщение..." autocomplete="off" required>
-      <button type="submit">Отправить</button>
+      <input name="text" maxlength="5000" placeholder="Сообщение..." autocomplete="off" required>
+      <button type="submit" aria-label="Отправить">➤</button>
     </form>
   `;
 
@@ -111,66 +176,62 @@ async function openChat(user) {
   }
 }
 
-async function loadNotes() {
-  const area = outletRef?.querySelector('[data-notes]');
-  if (!area) return;
+async function openFavorite() {
+  activeChat = { kind: 'favorite' };
+  renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
+
+  const conversation = outletRef?.querySelector('[data-conversation]');
+  if (!conversation) return;
+
+  conversation.innerHTML = `
+    <header class="messages-chat-header">
+      <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
+      <span class="chat-avatar messages-favorite-avatar messages-favorite-avatar-small">
+        <span class="messages-favorite-symbol">★</span>
+      </span>
+      <div class="messages-chat-identity">
+        <strong>Избранное</strong>
+        <span>Личные заметки</span>
+      </div>
+    </header>
+    <div class="messages-message-list messages-favorite-list" data-message-list></div>
+    <form class="messages-compose messages-favorite-compose" data-note-form>
+      <textarea name="text" maxlength="5000" rows="1" placeholder="Записать заметку..." required></textarea>
+      <button type="submit" aria-label="Сохранить">＋</button>
+    </form>
+  `;
+
+  outletRef.querySelector('.messages-layout')?.classList.add('is-chat-open');
 
   try {
     notes = await getSelfNotes();
-    area.innerHTML = `
-      <form class="messages-note-form" data-note-form>
-        <textarea name="text" maxlength="5000" placeholder="Запиши свою мысль..." required></textarea>
-        <button type="submit">Сохранить заметку</button>
-      </form>
-      <div class="messages-note-list">
-        ${notes.length ? notes.map(note => `
-          <article class="messages-note">
-            <p>${escapeHTML(note.text)}</p>
-            <time>${escapeHTML(note.created_at || '')}</time>
-            <button data-delete-note="${note.id}">Удалить</button>
-          </article>
-        `).join('') : '<div class="messages-status">Заметок пока нет</div>'}
-      </div>
-    `;
+    renderFavoriteNotes();
   } catch (error) {
-    showStatus(area, error.message);
+    showStatus(conversation.querySelector('[data-message-list]'), error.message);
   }
 }
 
 function renderShell() {
   outletRef.innerHTML = `
     <section class="screen messages-screen">
-      <header class="messages-header">
-        <div>
-          <span class="messages-eyebrow">REBUNAR / PRIVATE SPACE</span>
-          <h1>Чаты</h1>
-          <p>Переписки и личные заметки</p>
-        </div>
-      </header>
-
-      <nav class="messages-tabs">
-        <button data-tab="chats" class="is-active">Чаты</button>
-        <button data-tab="notes">Мои заметки</button>
-      </nav>
-
       <div class="messages-layout">
         <aside class="messages-sidebar">
           <div class="messages-search">
-            <input data-chat-search type="search" placeholder="Поиск переписок и людей...">
+            <span class="messages-search-icon">⌕</span>
+            <input data-chat-search type="search" placeholder="Поиск чатов">
           </div>
-          <div data-search-results></div>
-          <div data-chat-list></div>
+          <div class="messages-search-results" data-search-results></div>
+          <div class="messages-chat-list" data-chat-list></div>
         </aside>
+
         <section class="messages-conversation" data-conversation>
           <div class="messages-placeholder">
             <span class="messages-placeholder-icon">◉</span>
-            <h2>Твоё пространство общения</h2>
-            <p>Выбери переписку или найди пользователя.</p>
+            <h2>Твои чаты</h2>
+            <p>Выбери переписку, чтобы продолжить общение.</p>
           </div>
         </section>
       </div>
-
-      <section class="messages-notes-panel" data-notes hidden></section>
     </section>
   `;
 }
@@ -178,7 +239,8 @@ function renderShell() {
 export function renderMessagesScreen(outlet) {
   outletRef = outlet;
   activeChat = null;
-  activeTab = 'chats';
+  chats = [];
+  notes = [];
   const token = ++screenToken;
 
   clearInterval(refreshTimer);
@@ -205,13 +267,19 @@ export function renderMessagesScreen(outlet) {
       try {
         const users = await searchUsers(query);
         if (token !== screenToken) return;
+
         const results = outlet.querySelector('[data-search-results]');
         if (!results) return;
 
         results.innerHTML = users.map(user => `
-          <button class="messages-room-item" data-search-user="${user.id}">
-            <span class="messages-room-name">${escapeHTML(user.display_name)}</span>
-            <span class="messages-room-preview">@${escapeHTML(user.username)}</span>
+          <button class="messages-search-result" data-search-user="${Number(user.id)}"
+            data-search-name="${escapeHTML(user.display_name || user.username || 'Пользователь')}"
+            data-search-username="${escapeHTML(user.username || '')}">
+            <span class="messages-search-result-avatar">${escapeHTML((user.display_name || user.username || 'R').charAt(0).toUpperCase())}</span>
+            <span>
+              <strong>${escapeHTML(user.display_name || user.username || 'Пользователь')}</strong>
+              <small>@${escapeHTML(user.username || '')}</small>
+            </span>
           </button>
         `).join('');
       } catch (error) {
@@ -221,31 +289,37 @@ export function renderMessagesScreen(outlet) {
   }, listenerOptions);
 
   outlet.addEventListener('click', async event => {
-    const tab = event.target.closest('[data-tab]');
-    if (tab) {
-      activeTab = tab.dataset.tab;
-      outlet.querySelectorAll('[data-tab]').forEach(button =>
-        button.classList.toggle('is-active', button === tab)
-      );
-      outlet.querySelector('.messages-layout').hidden = activeTab !== 'chats';
-      outlet.querySelector('[data-notes]').hidden = activeTab !== 'notes';
-      if (activeTab === 'notes') await loadNotes();
+    const favoriteButton = event.target.closest('[data-open-favorite]');
+    if (favoriteButton) {
+      await openFavorite();
       return;
     }
 
     const chatButton = event.target.closest('[data-open-chat]');
     const userButton = event.target.closest('[data-search-user]');
-    if (chatButton || userButton) {
-      const id = Number(chatButton?.dataset.openChat || userButton?.dataset.searchUser);
-      const user = chats.find(item => item.user_id === id) ||
-        (userButton ? { user_id: id, display_name: userButton.querySelector('.messages-room-name').textContent } : null);
+
+    if (chatButton) {
+      const id = Number(chatButton.dataset.openChat);
+      const user = chats.find(item => Number(item.user_id) === id);
       if (user) await openChat(user);
       return;
     }
 
+    if (userButton) {
+      const id = Number(userButton.dataset.searchUser);
+      const user = chats.find(item => Number(item.user_id) === id) || {
+        user_id: id,
+        display_name: userButton.dataset.searchName,
+        username: userButton.dataset.searchUsername
+      };
+      await openChat(user);
+      return;
+    }
+
     if (event.target.closest('[data-back]')) {
-      outlet.querySelector('.messages-layout').classList.remove('is-chat-open');
       activeChat = null;
+      outlet.querySelector('.messages-layout')?.classList.remove('is-chat-open');
+      renderChatList(search.value);
       return;
     }
 
@@ -253,7 +327,9 @@ export function renderMessagesScreen(outlet) {
     if (deleteButton) {
       try {
         await deleteSelfNote(deleteButton.dataset.deleteNote);
-        await loadNotes();
+        notes = await getSelfNotes();
+        renderFavoriteNotes();
+        renderChatList(search.value);
       } catch (error) {
         alert(error.message);
       }
@@ -265,7 +341,7 @@ export function renderMessagesScreen(outlet) {
       event.preventDefault();
       const input = event.target.elements.text;
       const text = input.value.trim();
-      if (!text || !activeChat) return;
+      if (!text || !activeChat || activeChat.kind === 'favorite') return;
 
       const button = event.target.querySelector('button[type="submit"]');
       button.disabled = true;
@@ -286,22 +362,37 @@ export function renderMessagesScreen(outlet) {
       const input = event.target.elements.text;
       const text = input.value.trim();
       if (!text) return;
+
+      const button = event.target.querySelector('button[type="submit"]');
+      button.disabled = true;
       try {
         await createSelfNote(text);
-        await loadNotes();
+        input.value = '';
+        notes = await getSelfNotes();
+        renderFavoriteNotes();
+        renderChatList(search.value);
       } catch (error) {
         alert(error.message);
+      } finally {
+        button.disabled = false;
       }
     }
   }, listenerOptions);
 
-  loadChats().catch(error => showStatus(outlet.querySelector('[data-chat-list]'), error.message));
+  loadChats().catch(error =>
+    showStatus(outlet.querySelector('[data-chat-list]'), error.message)
+  );
 
   refreshTimer = setInterval(async () => {
     if (token !== screenToken) return;
     try {
       await loadChats();
-      if (activeChat) renderMessages(await getChatHistory(activeChat.user_id));
+      if (activeChat?.kind === 'favorite') {
+        notes = await getSelfNotes();
+        renderFavoriteNotes();
+      } else if (activeChat?.user_id) {
+        renderMessages(await getChatHistory(activeChat.user_id));
+      }
     } catch {}
   }, 5000);
 }

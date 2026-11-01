@@ -3,7 +3,7 @@
  * Экран входа и регистрации.
  */
 
-import { login, register } from './api.js';
+import { login, register, getCurrentUser } from './api.js';
 import { setUser } from './session.js';
 
 export function renderAuthScreen(container, onSuccess = () => {}) {
@@ -96,8 +96,14 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
           user = await login(username, password);
         }
 
-        setUser(user);
-        onSuccess(user);
+        const currentUser = await getCurrentUser();
+
+        if (!currentUser?.logged_in) {
+          throw new Error('Не удалось загрузить профиль после входа.');
+        }
+
+        setUser(currentUser);
+        onSuccess(currentUser);
       } catch (error) {
         messageElement.textContent = error.message;
         submitButton.disabled = false;
