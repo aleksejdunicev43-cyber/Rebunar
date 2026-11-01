@@ -19,6 +19,22 @@ const chatIcon = `
   </svg>
 `;
 
+function settingsButton() {
+  return `
+    <button type="button" class="nav-settings" data-route="settings">
+      <svg class="nav-settings-icon" viewBox="0 0 24 24"
+           width="19" height="19" fill="none"
+           stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.7 1.7-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2.4v-.2a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.7-1.7.06-.06A1.7 1.7 0 0 0 8.4 15a1.7 1.7 0 0 0-1.56-1.03H6v-2.4h.84A1.7 1.7 0 0 0 8.4 10a1.7 1.7 0 0 0-.34-1.88L8 8.06l1.7-1.7.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 12.67 5.2V5h2.4v.2a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.7 1.7-.06.06A1.7 1.7 0 0 0 19.4 10a1.7 1.7 0 0 0 1.56 1.03h.2v2.4h-.2A1.7 1.7 0 0 0 19.4 15z"/>
+      </svg>
+      <span>Настройки</span>
+    </button>
+  `;
+}
+
 function chatButton() {
   return `
     <button type="button" class="nav-chat" data-route="messages">
@@ -50,7 +66,7 @@ export function createShell(root) {
             <button type="button" data-route="games">Игры</button>
             <button type="button" data-route="communities">Сообщества</button>
             ${chatButton()}
-            <button type="button" data-route="settings">Настройки</button>
+            ${settingsButton()}
           </nav>
         </aside>
 
@@ -67,7 +83,7 @@ export function createShell(root) {
         <button type="button" data-route="games">Игры</button>
         <button type="button" data-route="communities">Сообщества</button>
         ${chatButton()}
-        <button type="button" data-route="settings">Настройки</button>
+        ${settingsButton()}
       </nav>
 
     </div>
