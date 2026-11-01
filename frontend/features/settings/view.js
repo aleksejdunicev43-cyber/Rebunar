@@ -14,7 +14,7 @@ export function renderSettingsScreen(outlet) {
       <div class="settings-heading">
         <button class="screen-back" type="button" data-route="profile"
           aria-label="Вернуться в профиль" title="Вернуться в профиль">
-          <span aria-hidden="true">←</span>
+          <span aria-hidden="true">⤺</span>
         </button>
         <span class="settings-eyebrow">REBUNAR / CONTROL</span>
         <h1>Настройки</h1>
@@ -23,18 +23,7 @@ export function renderSettingsScreen(outlet) {
 
       <div class="settings-list">
 
-        <button class="settings-item" type="button" data-route="profile">
-          <span class="settings-icon settings-profile-avatar">
-            ${getUser()?.avatar
-              ? `<img src="${getUser().avatar}" alt="Аватар пользователя">`
-              : '<span class="settings-profile-avatar-placeholder">R</span>'}
-          </span>
-          <span class="settings-item-content">
-            <strong>Профиль</strong>
-            <small>Личные данные, аватар и описание</small>
-          </span>
-          <span class="settings-arrow">›</span>
-        </button>
+
 
         <button class="settings-item" type="button" data-action="security">
           <span class="settings-icon">◇</span>

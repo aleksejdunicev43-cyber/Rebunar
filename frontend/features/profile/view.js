@@ -19,6 +19,10 @@ export function renderProfileScreen(container, user, onLogout) {
   container.innerHTML = `
     <section class="screen profile-screen">
       <div class="profile-heading">
+        <button class="screen-back" type="button" data-route="home"
+          aria-label="На главную" title="На главную">
+          <span aria-hidden="true">⤺</span>
+        </button>
         <div class="profile-heading-main">
           <h1>Профиль</h1>
           <span class="profile-status">Публичный профиль</span>

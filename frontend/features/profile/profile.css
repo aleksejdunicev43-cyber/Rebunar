@@ -657,14 +657,17 @@
 /* Красная светящаяся шестерёнка в кнопке настроек профиля */
 .profile-settings-gear {
   display: block;
-  color: #ff3030;
+  position: relative;
+  left: 0px;
+  top: 1px;
+  color: var(--accent);
   font-family: "Arial Unicode MS", sans-serif;
   font-size: 29px;
   line-height: 1;
   text-shadow:
-    0 0 5px #ff3030,
-    0 0 11px #ff2020,
-    0 0 19px #b00000;
+    0 0 5px var(--accent),
+    0 0 11px var(--accent),
+    0 0 19px var(--accent);
   transition: transform .25s, text-shadow .25s;
 }
 
