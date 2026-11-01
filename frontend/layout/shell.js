@@ -48,16 +48,14 @@ function updateHeaderProfile(root, user) {
     image.onerror = () => {
       button.replaceChildren();
       const fallback = document.createElement('span');
-      fallback.textContent = (user.display_name || user.username || 'R')
-        .trim().charAt(0).toUpperCase();
+      fallback.textContent = 'R';
       button.append(fallback);
     };
 
     button.append(image);
   } else {
     const fallback = document.createElement('span');
-    fallback.textContent = (user?.display_name || user?.username || 'R')
-      .trim().charAt(0).toUpperCase();
+    fallback.textContent = 'R';
     button.append(fallback);
   }
 
@@ -96,7 +94,7 @@ export function createShell(root) {
     <button type="button" class="header-icon-button header-notifications"
       data-route="notifications" aria-label="Уведомления" title="Уведомления">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-3-3-9"/>
         <path d="M10 21h4"/>
       </svg>
       <span class="notification-indicator" hidden></span>
