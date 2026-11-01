@@ -409,12 +409,13 @@
   white-space: nowrap;
 }
 
-.header-logo .app-logo {
+.header-logo .app-logo-image {
   display: block;
-  color: var(--text-main);
-  font-size: 21px;
-  font-weight: 900;
-  letter-spacing: 2px;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(142, 45, 255, .42));
 }
 
 .header-actions {
@@ -483,9 +484,8 @@
     padding-left: 10px;
   }
 
-  .header-logo .app-logo {
-    font-size: 17px;
-    letter-spacing: 1.5px;
+  .header-logo .app-logo-image {
+    width: 132px;
   }
 
   .header-actions {
