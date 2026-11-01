@@ -411,7 +411,7 @@
 
 .header-logo .app-logo-image {
   display: block;
-  width: 220px;
+  width: 250px;
   max-width: 100%;
   height: auto;
   object-fit: contain;
@@ -485,7 +485,7 @@
   }
 
   .header-logo .app-logo-image {
-    width: 132px;
+    width: 145px;
   }
 
   .header-actions {
