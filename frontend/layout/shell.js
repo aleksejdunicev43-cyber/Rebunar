@@ -69,25 +69,43 @@ export function createShell(root) {
     <div class="app-shell">
 
       <header class="app-header">
-        <div class="header-brand">
-          <button
-            type="button"
-            class="header-profile-button"
-            data-route="profile"
-            aria-label="Мой профиль"
-            title="Мой профиль">
-            <span>R</span>
-          </button>
+  <div class="header-brand">
+    <button
+      type="button"
+      class="header-profile-button"
+      data-route="profile"
+      aria-label="Мой профиль"
+      title="Мой профиль">
+      <span>R</span>
+    </button>
+  </div>
 
-          
-        </div>
+  <div class="header-logo">
+    <span class="app-logo">REBUNAR</span>
+  </div>
 
-        <div class="header-actions">
-          <button type="button" data-route="search">Поиск</button>
-          <button type="button" data-route="notifications">Уведомления</button>
-          <button type="button" data-route="composer">Создать</button>
-        </div>
-      </header>
+  <div class="header-actions">
+    <button type="button" class="header-icon-button"
+      data-route="search" aria-label="Поиск" title="Поиск">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10.8" cy="10.8" r="6.8"/>
+        <path d="m16 16 5 5"/>
+      </svg>
+    </button>
+
+    <button type="button" class="header-icon-button header-notifications"
+      data-route="notifications" aria-label="Уведомления" title="Уведомления">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+        <path d="M10 21h4"/>
+      </svg>
+      <span class="notification-indicator" hidden></span>
+    </button>
+
+    <button type="button" class="header-create-button"
+      data-route="composer">Создать</button>
+  </div>
+</header>
 
       <div class="app-layout">
 

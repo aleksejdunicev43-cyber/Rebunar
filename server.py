@@ -7,6 +7,9 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from werkzeug.security import generate_password_hash, check_password_hash
 from pathlib import Path
+from io import BytesIO
+import warnings
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
