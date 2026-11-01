@@ -1,0 +1,310 @@
+/* REBUNAR — RESPONSIVE APPLICATION LAYOUT */
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 24px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-logo {
+  color: var(--text-main);
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-actions button,
+.main-navigation button,
+.mobile-navigation button {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 10px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.header-actions button:hover,
+.main-navigation button:hover,
+.mobile-navigation button:hover {
+  background: var(--bg-panel-2);
+  color: var(--text-main);
+}
+
+.app-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  gap: 20px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.sidebar {
+  min-width: 0;
+}
+
+.main-navigation {
+  position: sticky;
+  top: 86px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.main-navigation button {
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+}
+
+.main-navigation button.is-active,
+.mobile-navigation button.is-active {
+  color: var(--text-main);
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-panel-2));
+  border-color: var(--accent);
+}
+
+.main-content {
+  min-width: 0;
+  min-height: 70vh;
+  padding: 22px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.screen h1 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.screen p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.context-panel {
+  min-width: 0;
+  min-height: 200px;
+  padding: 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.mobile-navigation {
+  display: none;
+}
+
+@media (max-width: 1050px) {
+  .app-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+
+  .context-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    min-height: 58px;
+    padding: 0 14px;
+  }
+
+  .app-logo {
+    font-size: 18px;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .header-actions button {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .app-layout {
+    display: block;
+    padding: 10px;
+  }
+
+  .sidebar,
+  .context-panel {
+    display: none;
+  }
+
+  .main-content {
+    min-height: calc(100vh - 140px);
+    padding: 16px;
+    border-radius: 9px;
+  }
+
+  .screen h1 {
+    font-size: 22px;
+  }
+
+  .mobile-navigation {
+    position: fixed;
+    z-index: 30;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-around;
+    gap: 2px;
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+  }
+
+  .mobile-navigation button {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 3px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+}
+
+/* Навигация чатов */
+.nav-chat {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-chat .nav-icon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .mobile-navigation .nav-chat {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 3px;
+  }
+
+  .mobile-navigation .nav-chat .nav-icon {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+/* Навигация чатов */
+.nav-chat {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-chat .nav-icon {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .mobile-navigation .nav-chat {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 3px;
+  }
+
+  .mobile-navigation .nav-chat .nav-icon {
+    width: 25px;
+    height: 25px;
+  }
+}
+
+
+/* REBUNAR — ЕДИНАЯ ФИКСИРОВАННАЯ ОБОЛОЧКА МОБИЛЬНОГО ПРИЛОЖЕНИЯ */
+@media (max-width: 760px) {
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  #app {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-header {
+    position: relative;
+    top: auto;
+    flex: 0 0 58px;
+    min-height: 58px;
+  }
+
+  .app-layout {
+    display: block;
+    flex: 1 1 auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 10px;
+    overflow: hidden;
+  }
+
+  .main-content {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-navigation {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    flex: 0 0 auto;
+    width: 100%;
+  }
+}

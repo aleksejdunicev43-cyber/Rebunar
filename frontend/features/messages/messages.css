@@ -1547,7 +1547,7 @@
     overflow: hidden;
   }
 
-  .app-header {
+  .app-shell:has(.messages-screen) .app-header {
     position: relative;
     top: auto;
     flex: 0 0 58px;
