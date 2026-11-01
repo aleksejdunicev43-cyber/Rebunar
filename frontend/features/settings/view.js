@@ -12,6 +12,10 @@ export function renderSettingsScreen(outlet) {
   outlet.innerHTML = `
     <section class="screen settings-screen">
       <div class="settings-heading">
+        <button class="screen-back" type="button" data-route="profile"
+          aria-label="Вернуться в профиль" title="Вернуться в профиль">
+          <span aria-hidden="true">←</span>
+        </button>
         <span class="settings-eyebrow">REBUNAR / CONTROL</span>
         <h1>Настройки</h1>
         <p>Управление аккаунтом и приложением</p>

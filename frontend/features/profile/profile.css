@@ -586,3 +586,98 @@
     font-size: 18px;
   }
 }
+
+
+/* REBUNAR — PROFILE HEADING AND SETTINGS BUTTON */
+.profile-heading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+}
+
+.profile-heading-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.profile-heading-main h1 {
+  margin: 0;
+}
+
+.profile-settings-button {
+  display: inline-flex;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color .2s, background .2s, border-color .2s, transform .2s;
+}
+
+.profile-settings-button svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-settings-button:hover {
+  color: #fff;
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-panel));
+  border-color: var(--accent);
+}
+
+.profile-settings-button:active {
+  transform: scale(.94);
+}
+
+@media (max-width: 480px) {
+  .profile-heading {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+
+/* Временная красная текстовая аватарка */
+.profile-temporary-avatar {
+  display: block;
+  margin: 12px auto 0;
+  padding: 9px 18px;
+  color: #ff3030;
+  background: #17191c;
+  border: 1px solid #ff3030;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.profile-temporary-avatar:active {
+  background: #301014;
+}
+
+.profile-temporary-gear {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #ff3030;
+  font-size: 66px;
+  line-height: 1;
+  text-shadow: 0 0 8px #ff2020, 0 0 20px #b00000;
+}

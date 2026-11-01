@@ -19,12 +19,19 @@ export function renderProfileScreen(container, user, onLogout) {
   container.innerHTML = `
     <section class="screen profile-screen">
       <div class="profile-heading">
-        <button class="screen-back" type="button" data-route="settings"
-          aria-label="Назад к настройкам" title="Назад к настройкам">
-          <span aria-hidden="true">⤺</span>
+        <div class="profile-heading-main">
+          <h1>Профиль</h1>
+          <span class="profile-status">Публичный профиль</span>
+        </div>
+
+        <button class="profile-settings-button" type="button"
+          data-route="settings" aria-label="Настройки"
+          title="Настройки">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/>
+            <path d="m19.4 15 .1.1a1.8 1.8 0 0 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 0 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 0 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-.9-3h-.2a1.8 1.8 0 0 1 0-3.6h.2a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 0 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 0 1 3.6 0v.2a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 0 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 0 1 0 3.6h-.2a1.8 1.8 0 0 0-.9 3Z"/>
+          </svg>
         </button>
-        <h1>Профиль</h1>
-        <span class="profile-status">Публичный профиль</span>
       </div>
 
       <div class="profile-card">
@@ -35,6 +42,9 @@ export function renderProfileScreen(container, user, onLogout) {
 
         <input class="profile-avatar-input" type="file"
           accept="image/jpeg,image/png,image/webp" hidden>
+        <button class="profile-temporary-avatar" type="button">
+          Установить ⚙
+        </button>
 
         <div class="profile-account-id">
           <span>ID: ${escapeHTML(userId)}</span>
@@ -98,6 +108,14 @@ export function renderProfileScreen(container, user, onLogout) {
   const fileInput = container.querySelector('.profile-avatar-input');
 
   avatarButton.addEventListener('click', () => fileInput.click());
+
+  container.querySelector('.profile-temporary-avatar')
+    .addEventListener('click', () => {
+      const gear = document.createElement('span');
+      gear.className = 'profile-temporary-gear';
+      gear.textContent = '⚙';
+      avatarButton.replaceChildren(gear);
+    });
 
   fileInput.addEventListener('change', () => {
     const file = fileInput.files?.[0];
