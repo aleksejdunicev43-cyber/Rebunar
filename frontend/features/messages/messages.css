@@ -1342,42 +1342,105 @@
   text-align: center;
 }
 
+/* REBUNAR — МОБИЛЬНАЯ ПРОКРУТКА МЕССЕНДЖЕРА */
 @media (max-width: 760px) {
-  .main-content:has(.messages-screen) {
-    height: calc(100dvh - 58px - 82px - 20px);
- min-height: 0;
+  .app-layout:has(.messages-screen) {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
     padding: 0;
+    overflow: hidden;
+  }
+
+  .main-content:has(.messages-screen) {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     border: 0;
     border-radius: 0;
   }
 
   #screen-outlet:has(.messages-screen) {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
     height: 100%;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .messages-screen {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
     height: 100%;
     min-height: 0;
+    overflow: hidden;
   }
 
   .messages-layout {
-    display: block;
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
     height: 100%;
+    min-width: 0;
     min-height: 0;
+    overflow: hidden;
     border: 0;
     border-radius: 0;
   }
 
   .messages-sidebar {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     border: 0;
+  }
+
+  .messages-search,
+  .messages-search-results {
+    flex: 0 0 auto;
+  }
+
+  .messages-search-results {
+    max-height: 34%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .messages-chat-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  .messages-room-item {
+    flex-shrink: 0;
   }
 
   .messages-conversation {
     display: none;
+    flex-direction: column;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .messages-layout.is-chat-open .messages-sidebar {
@@ -1388,271 +1451,38 @@
     display: flex;
   }
 
-  .messages-room-item {
-    min-height: 78px;
-    padding: 9px 15px;
+  .messages-chat-header,
+  .messages-compose {
+    flex: 0 0 auto;
   }
 
   .messages-message-list {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding: 13px;
   }
 
   .messages-compose {
     padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
+
+  .mobile-navigation {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+  }
 }
 
 @media (min-width: 761px) {
   .messages-layout {
     min-height: 620px;
-  }
-}
-
-/* REBUNAR — УБИРАЕМ ЗЕЛЁНЫЕ ПОЛЯ И ВКЛЮЧАЕМ ПРОКРУТКУ */
-@media (max-width: 760px) {
-  .app-shell:has(.messages-screen) {
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .app-layout:has(.messages-screen) {
-    display: block;
-    width: 100%;
-    height: calc(100dvh - 58px - 92px);
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .main-content:has(.messages-screen) {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    border: 0;
-    border-radius: 0;
-  }
-
-  #screen-outlet:has(.messages-screen) {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .messages-screen,
-  .messages-layout {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    flex: 1;
-    overflow: hidden;
-    border: 0;
-    border-radius: 0;
-  }
-
-  .messages-sidebar,
-  .messages-conversation {
-    min-height: 0;
-    overscroll-behavior: contain;
-  }
-
-  .messages-chat-list,
-  .messages-search-results,
-  .messages-message-list {
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-  }
-
-  .messages-room-item {
-    flex-shrink: 0;
-  }
-}
-
-/* Стрелка назад в чате — цвет активной темы, как в профиле */
-.messages-back {
-  color: var(--accent-bright) !important;
-  background: var(--bg-panel-2) !important;
-  border: 1px solid var(--accent) !important;
-  transition: color .2s, background .2s, border-color .2s;
-}
-
-.messages-back:hover {
-  color: var(--accent-bright) !important;
-  background: color-mix(in srgb, var(--accent) 18%, var(--bg-panel-2)) !important;
-  border-color: var(--accent-bright) !important;
-}
-
-.messages-back span {
-  display: block;
-  color: var(--accent-bright);
-  font-size: 27px;
-  line-height: 1;
-}
-
-/* Одинаковая прямоугольная кнопка возврата, как в профиле */
-.messages-chat-header .messages-back.screen-back {
-  display: inline-flex !important;
-  width: 44px !important;
-  height: 36px !important;
-  min-width: 44px;
-  flex: 0 0 44px;
-  align-items: center;
-  justify-content: center;
-  margin: 0 !important;
-  padding: 0 !important;
-  color: var(--text-muted) !important;
-  background: transparent !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 9px !important;
-}
-
-.messages-chat-header .messages-back.screen-back span {
-  display: block;
-  color: var(--accent-bright) !important;
-  font-size: 25px;
-  line-height: 1;
-}
-
-.messages-chat-header .messages-back.screen-back:hover {
-  color: var(--text-main) !important;
-  background: var(--bg-panel-2) !important;
-  border-color: var(--accent) !important;
-}
-
-/* REBUNAR — правильная фиксация шапки и нижней навигации */
-@media (max-width: 760px) {
-  html:has(.messages-screen),
-  body:has(.messages-screen) {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .app-shell:has(.messages-screen) {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .app-shell:has(.messages-screen) .app-header {
-    position: relative;
-    top: auto;
-    flex: 0 0 58px;
-    min-height: 58px;
-  }
-
-  .app-layout:has(.messages-screen) {
-    display: block;
-    flex: 1 1 auto;
-    width: 100%;
-    height: auto;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .main-content:has(.messages-screen) {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    border: 0;
-    border-radius: 0;
-  }
-
-  #screen-outlet:has(.messages-screen) {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .messages-screen,
-  .messages-layout {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    flex: 1;
-    overflow: hidden;
-    border: 0;
-    border-radius: 0;
-  }
-
-  .messages-sidebar {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .messages-chat-list {
-    min-height: 0;
-    flex: 1 1 auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-  }
-
-  .messages-room-item {
-    flex-shrink: 0;
-  }
-
-  .messages-conversation {
-    display: none;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .messages-layout.is-chat-open .messages-sidebar {
-    display: none;
-  }
-
-  .messages-layout.is-chat-open .messages-conversation {
-    display: flex;
-  }
-
-  .messages-message-list {
-    min-height: 0;
-    flex: 1 1 auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-  }
-
-  .mobile-navigation {
-    position: fixed;
-    z-index: 30;
-    right: 0;
-    bottom: 0;
-    left: 0;
   }
 }
