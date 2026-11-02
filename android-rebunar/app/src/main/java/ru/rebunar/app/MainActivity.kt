@@ -21,7 +21,6 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class MainActivity : Activity() {
     companion object {
@@ -31,7 +30,6 @@ class MainActivity : Activity() {
     }
 
     private lateinit var webView: WebView
-    private lateinit var refreshLayout: SwipeRefreshLayout
     private lateinit var progress: ProgressBar
     private lateinit var errorPanel: LinearLayout
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
@@ -58,28 +56,6 @@ class MainActivity : Activity() {
             setBackgroundColor(Color.rgb(8, 9, 10))
         }
 
-        val toolbar = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(16), dp(8), dp(12), dp(8))
-            setBackgroundColor(Color.rgb(12, 13, 15))
-        }
-
-        val title = TextView(this).apply {
-            text = "REBUNAR"
-            textSize = 18f
-            setTextColor(Color.WHITE)
-            letterSpacing = 0.12f
-        }
-        toolbar.addView(title, LinearLayout.LayoutParams(0, dp(44), 1f))
-
-        val refreshButton = Button(this).apply {
-            text = "Обновить"
-            isAllCaps = false
-            setOnClickListener { refreshPage() }
-        }
-        toolbar.addView(refreshButton)
-
         progress = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100
             progress = 0
@@ -87,15 +63,6 @@ class MainActivity : Activity() {
         }
 
         webView = WebView(this)
-
-        refreshLayout = SwipeRefreshLayout(this).apply {
-            setColorSchemeColors(Color.rgb(190, 35, 48))
-            setOnRefreshListener { refreshPage() }
-            addView(webView, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            ))
-        }
 
         errorPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -124,7 +91,7 @@ class MainActivity : Activity() {
         }
 
         val content = FrameLayout(this)
-        content.addView(refreshLayout, FrameLayout.LayoutParams(
+        content.addView(webView, FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         ))
@@ -133,7 +100,6 @@ class MainActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT
         ))
 
-        root.addView(toolbar)
         root.addView(progress, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, dp(3)
         ))
@@ -189,7 +155,6 @@ class MainActivity : Activity() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 progress.visibility = View.GONE
-                refreshLayout.isRefreshing = false
                 errorPanel.visibility = View.GONE
                 CookieManager.getInstance().flush()
             }
@@ -244,13 +209,11 @@ class MainActivity : Activity() {
 
     private fun refreshPage() {
         errorPanel.visibility = View.GONE
-        refreshLayout.isRefreshing = true
         if (webView.url.isNullOrBlank()) webView.loadUrl(APP_URL) else webView.reload()
     }
 
     private fun showConnectionError() {
         progress.visibility = View.GONE
-        refreshLayout.isRefreshing = false
         if (!webView.url.isNullOrBlank()) errorPanel.visibility = View.VISIBLE
     }
 
