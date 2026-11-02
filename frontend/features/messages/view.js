@@ -328,6 +328,24 @@ export function renderMessagesScreen(outlet) {
     swipeStart = null;
   }, { passive: true, signal: screenController.signal });
 
+  // Блокируем только pull-to-refresh при потягивании списка заметок вниз.
+  let favoriteTouchY = 0;
+  const favoriteList = outlet.querySelector('.messages-favorite-list');
+  if (favoriteList) {
+    favoriteList.addEventListener('touchstart', event => {
+      favoriteTouchY = event.touches[0]?.clientY || 0;
+    }, { passive: true, signal: screenController.signal });
+
+    favoriteList.addEventListener('touchmove', event => {
+      const currentY = event.touches[0]?.clientY || 0;
+      const movingDown = currentY > favoriteTouchY;
+      if (movingDown && favoriteList.scrollTop <= 0) {
+        event.preventDefault();
+      }
+      favoriteTouchY = currentY;
+    }, { passive: false, signal: screenController.signal });
+  }
+
   outlet.addEventListener('click', async event => {
     const deleteChatButton = event.target.closest('[data-delete-chat]');
     if (deleteChatButton) {
