@@ -129,9 +129,11 @@ function renderMessages(messages) {
   list.scrollTop = list.scrollHeight;
 }
 
-function renderFavoriteNotes() {
+function renderFavoriteNotes({ preserveScroll = false } = {}) {
   const list = outletRef?.querySelector('[data-message-list]');
   if (!list) return;
+  const previousScrollTop = list.scrollTop;
+  const wasNearBottom = list.scrollHeight - list.clientHeight - list.scrollTop < 80;
 
   list.innerHTML = notes.length ? notes.map(note => `
     <article class="messages-favorite-note">
@@ -144,7 +146,11 @@ function renderFavoriteNotes() {
     </article>
   `).join('') : '<div class="messages-status">Здесь будут твои личные заметки и фото</div>';
 
-  list.scrollTop = list.scrollHeight;
+  if (preserveScroll && !wasNearBottom) {
+    list.scrollTop = previousScrollTop;
+  } else {
+    list.scrollTop = list.scrollHeight;
+  }
 }
 
 async function loadChats() {
@@ -396,7 +402,7 @@ export function renderMessagesScreen(outlet) {
       try {
         await deleteSelfNote(deleteButton.dataset.deleteNote);
         notes = await getSelfNotes();
-        renderFavoriteNotes();
+        renderFavoriteNotes({ preserveScroll: true });
         renderChatList(search.value);
       } catch (error) {
         showStatus(outlet.querySelector('[data-message-list]'), error.message);
