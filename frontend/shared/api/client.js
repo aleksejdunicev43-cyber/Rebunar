@@ -58,6 +58,13 @@ export const api = {
     });
   },
 
+  upload(path, formData) {
+    return request(path, {
+      method: 'POST',
+      body: formData
+    });
+  },
+
   delete(path) {
     return request(path, {
       method: 'DELETE'
