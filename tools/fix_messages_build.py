@@ -16,7 +16,6 @@ def read(path):
 def repair_is_needed():
     server = read(SERVER)
     view = read(VIEW)
-
     backend_ok = (
         "def get_messages_time_column(con):" in server
         and "m2.sender_id != m2.receiver_id" in server
@@ -32,12 +31,11 @@ def repair_is_needed():
 
 
 if repair_is_needed():
-    print("Проверяю и исправляю логику сообщений и Избранного...")
+    print("Исправляю логику сообщений и Избранного...")
     subprocess.run([sys.executable, str(REPAIR)], cwd=ROOT, check=True)
 else:
     print("Логика сообщений и Избранного уже исправлена")
 
-# Remove duplicate time formatter declarations safely.
 source = read(VIEW)
 pattern = re.compile(r"function formatMessageTime\\(value\\) \\{[\\s\\S]*?\\n\\}")
 matches = list(pattern.finditer(source))
@@ -52,10 +50,9 @@ elif len(matches) == 1:
 else:
     raise SystemExit("ОШИБКА: formatMessageTime не найдена после исправления")
 
-# Validate the backend before creating the production bundle.
 subprocess.run([sys.executable, "-m", "py_compile", str(SERVER)], cwd=ROOT, check=True)
 print("BACKEND PYTHON CHECK: OK")
 
 subprocess.run(["npm", "run", "build"], cwd=ROOT, check=True)
 print("FRONTEND BUILD: OK")
-print("ПРОВЕРКА: заметки остаются в Избранном и не создают отдельный чат")
+print("Избранное: личные заметки, без отдельного чата")
