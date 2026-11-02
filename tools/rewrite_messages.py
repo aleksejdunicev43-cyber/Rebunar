@@ -192,6 +192,88 @@ view = view.replace(
 )
 VIEW.write_text(view)
 
+
+# Additional reliability improvements for the message screen.
+view = VIEW.read_text()
+
+def replace_once(source, old, new, label):
+    count = source.count(old)
+    if count != 1:
+        raise SystemExit(f"ОШИБКА frontend {label}: найдено {count}, ожидалось 1")
+    return source.replace(old, new, 1)
+
+view = replace_once(
+    view,
+    "let screenController = null;",
+    "let screenController = null;\nlet conversationRequestToken = 0;\nlet searchRequestToken = 0;\nlet lastHistorySnapshot = '';",
+    "request tokens"
+)
+
+view = replace_once(
+    view,
+    "const favoritePreview = notes.length\n    ? notes[0].text",
+    "const favoritePreview = notes.length\n    ? notes[notes.length - 1].text",
+    "latest favorite preview"
+)
+
+view = replace_once(
+    view,
+    "async function openChat(user) {\n  activeChat = user;",
+    "async function openChat(user) {\n  const requestToken = ++conversationRequestToken;\n  lastHistorySnapshot = '';\n  activeChat = user;",
+    "chat request token"
+)
+
+view = replace_once(
+    view,
+    "  try {\n    renderMessages(await getChatHistory(user.user_id));\n  } catch (error) {\n    showStatus(conversation.querySelector('[data-message-list]'), error.message);\n  }",
+    "  try {\n    const history = await getChatHistory(user.user_id);\n    if (requestToken !== conversationRequestToken || activeChat?.user_id !== user.user_id) return;\n    lastHistorySnapshot = JSON.stringify(history);\n    renderMessages(history);\n  } catch (error) {\n    if (requestToken === conversationRequestToken) showStatus(conversation.querySelector('[data-message-list]'), error.message);\n  }",
+    "chat response guard"
+)
+
+view = replace_once(
+    view,
+    "async function openFavorite() {\n  activeChat = { kind: 'favorite' };",
+    "async function openFavorite() {\n  ++conversationRequestToken;\n  lastHistorySnapshot = '';\n  activeChat = { kind: 'favorite' };",
+    "favorite request guard"
+)
+
+view = replace_once(
+    view,
+    "  search.addEventListener('input', () => {\n    clearTimeout(searchTimer);",
+    "  search.addEventListener('input', () => {\n    const currentSearchToken = ++searchRequestToken;\n    clearTimeout(searchTimer);",
+    "search request token"
+)
+
+view = replace_once(
+    view,
+    "        const users = await searchUsers(query);\n        if (token !== screenToken) return;",
+    "        const users = await searchUsers(query);\n        if (token !== screenToken || currentSearchToken !== searchRequestToken) return;",
+    "stale search guard"
+)
+
+view = replace_once(
+    view,
+    "    if (event.target.closest('[data-back]')) {\n      activeChat = null;",
+    "    if (event.target.closest('[data-back]')) {\n      ++conversationRequestToken;\n      lastHistorySnapshot = '';\n      activeChat = null;",
+    "back navigation guard"
+)
+
+view = replace_once(
+    view,
+    "        await sendMessage(activeChat.user_id, text);\n        input.value = '';\n        renderMessages(await getChatHistory(activeChat.user_id));\n        await loadChats();",
+    "        const recipientId = Number(activeChat.user_id);\n        const sentTo = await sendMessage(recipientId, text);\n        input.value = '';\n        if (activeChat?.user_id === recipientId) {\n          const history = await getChatHistory(recipientId);\n          lastHistorySnapshot = JSON.stringify(history);\n          renderMessages(history);\n        }\n        await loadChats();",
+    "send refresh"
+)
+
+view = replace_once(
+    view,
+    "      } else if (activeChat?.user_id) {\n        renderMessages(await getChatHistory(activeChat.user_id));\n      }",
+    "      } else if (activeChat?.user_id) {\n        const currentId = Number(activeChat.user_id);\n        const history = await getChatHistory(currentId);\n        if (activeChat?.user_id === currentId) {\n          const snapshot = JSON.stringify(history);\n          if (snapshot !== lastHistorySnapshot) {\n            lastHistorySnapshot = snapshot;\n            renderMessages(history);\n          }\n        }\n      }",
+    "polling without redraw"
+)
+
+VIEW.write_text(view)
+
 # Validate source files and rebuild the production frontend when available.
 subprocess.run(["python", "-m", "py_compile", str(SERVER)], check=True)
 
