@@ -24,6 +24,15 @@ DB = BASE / "rebunar.db"
 def connect():
     return sqlite3.connect(DB)
 
+
+def get_messages_time_column(con):
+    columns = {row[1] for row in con.execute("PRAGMA table_info(messages)")}
+    if "created_at" in columns:
+        return "created_at"
+    if "timestamp" in columns:
+        return "timestamp"
+    raise RuntimeError("В таблице messages нет столбца времени")
+
 def init_db():
     with connect() as con:
         con.execute("""
@@ -981,25 +990,27 @@ def message_chats():
     me = session["user_id"]
 
     with connect() as con:
-        rows = con.execute("""
+        time_column = get_messages_time_column(con)
+        rows = con.execute(f"""
             SELECT
                 u.id,
                 u.username,
                 u.display_name,
                 u.avatar,
                 m.text,
-                m.timestamp AS created_at
+                m.{time_column} AS created_at
             FROM messages m
             JOIN users u
               ON u.id = CASE
                   WHEN m.sender_id = ? THEN m.receiver_id
                   ELSE m.sender_id
               END
-            WHERE m.id IN (
+            WHERE m.sender_id != m.receiver_id
+              AND m.id IN (
                 SELECT MAX(m2.id)
                 FROM messages m2
-                WHERE (m2.sender_id = ?
-                   OR m2.receiver_id = ?)
+                WHERE (m2.sender_id = ? OR m2.receiver_id = ?)
+                  AND m2.sender_id != m2.receiver_id
                   AND NOT EXISTS (
                       SELECT 1 FROM hidden_chats h
                       WHERE h.user_id = ?
@@ -1012,7 +1023,7 @@ def message_chats():
                     WHEN m2.sender_id = ? THEN m2.receiver_id
                     ELSE m2.sender_id
                 END
-            )
+              )
             ORDER BY m.id DESC
         """, (me, me, me, me, me, me)).fetchall()
 
@@ -1059,14 +1070,19 @@ def message_history():
     except (TypeError, ValueError):
         return jsonify({"error": "Некорректный пользователь"}), 400
 
+    me = session["user_id"]
+    if chat_with_id == me:
+        return jsonify({"error": "Нельзя открыть личные заметки как обычный чат"}), 400
+
     with connect() as con:
-        rows = con.execute("""
+        time_column = get_messages_time_column(con)
+        rows = con.execute(f"""
             SELECT
                 m.id,
                 m.sender_id,
                 m.receiver_id,
                 m.text,
-                m.timestamp AS created_at,
+                m.{time_column} AS created_at,
                 u.username,
                 u.display_name,
                 u.avatar
@@ -1078,8 +1094,8 @@ def message_history():
                 (m.sender_id = ? AND m.receiver_id = ?)
             ORDER BY m.id ASC
         """, (
-            session["user_id"], chat_with_id,
-            chat_with_id, session["user_id"]
+            me, chat_with_id,
+            chat_with_id, me
         )).fetchall()
 
     return jsonify([
@@ -1095,7 +1111,6 @@ def message_history():
         }
         for row in rows
     ])
-
 
 
 @app.get("/rebunar.css")

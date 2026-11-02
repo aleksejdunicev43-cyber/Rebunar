@@ -23,15 +23,17 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
               : 'Войди в свой аккаунт Rebunar.'}
           </p>
 
-          <form class="auth-form">
+          <form class="auth-form" autocomplete="off">
             <label for="auth-username">Логин</label>
             <input
               id="auth-username"
-              name="username"
+              name="rebunar_login"
               type="text"
               minlength="3"
               maxlength="50"
-              autocomplete="username"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
               placeholder="Твой логин"
               required
             >
@@ -39,10 +41,10 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
             <label for="auth-password">Пароль</label>
             <input
               id="auth-password"
-              name="password"
+              name="rebunar_password"
               type="password"
               minlength="4"
-              autocomplete="${isRegister ? 'new-password' : 'current-password'}"
+              autocomplete="new-password"
               placeholder="Твой пароль"
               required
             >
@@ -77,8 +79,8 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
     form.addEventListener('submit', async event => {
       event.preventDefault();
 
-      const username = form.elements.username.value.trim();
-      const password = form.elements.password.value;
+      const username = form.elements.rebunar_login.value.trim();
+      const password = form.elements.rebunar_password.value;
       const submitButton = form.querySelector('.auth-submit');
 
       submitButton.disabled = true;
