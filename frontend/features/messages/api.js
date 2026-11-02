@@ -30,3 +30,10 @@ export function createSelfNote(message) {
 export function deleteSelfNote(noteId) {
   return api.delete(`/messages/self/${Number(noteId)}`);
 }
+
+
+export function uploadSelfImage(file) {
+  const form = new FormData();
+  form.append('image', file);
+  return api.upload('/messages/self/image', form);
+}
