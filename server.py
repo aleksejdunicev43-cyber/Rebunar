@@ -1070,14 +1070,19 @@ def message_history():
     except (TypeError, ValueError):
         return jsonify({"error": "Некорректный пользователь"}), 400
 
+    me = session["user_id"]
+    if chat_with_id == me:
+        return jsonify({"error": "Нельзя открыть личные заметки как обычный чат"}), 400
+
     with connect() as con:
-        rows = con.execute("""
+        time_column = get_messages_time_column(con)
+        rows = con.execute(f"""
             SELECT
                 m.id,
                 m.sender_id,
                 m.receiver_id,
                 m.text,
-                m.timestamp AS created_at,
+                m.{time_column} AS created_at,
                 u.username,
                 u.display_name,
                 u.avatar
@@ -1089,8 +1094,8 @@ def message_history():
                 (m.sender_id = ? AND m.receiver_id = ?)
             ORDER BY m.id ASC
         """, (
-            session["user_id"], chat_with_id,
-            chat_with_id, session["user_id"]
+            me, chat_with_id,
+            chat_with_id, me
         )).fetchall()
 
     return jsonify([
@@ -1106,7 +1111,6 @@ def message_history():
         }
         for row in rows
     ])
-
 
 
 @app.get("/rebunar.css")
