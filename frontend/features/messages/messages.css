@@ -1520,3 +1520,43 @@
   border-radius: 9px;
   object-fit: contain;
 }
+
+
+/* Удаление переписки свайпом влево */
+.messages-chat-row {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(150, 160, 175, .07);
+  background: #8f303a;
+}
+.messages-chat-row .messages-room-item {
+  position: relative;
+  z-index: 1;
+  border-bottom: 0;
+  background: #19222e;
+  transition: transform .18s ease;
+  touch-action: pan-y;
+}
+.messages-chat-row.is-swiped .messages-room-item {
+  transform: translateX(-68px);
+}
+.messages-chat-delete {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  display: grid;
+  width: 68px;
+  height: 100%;
+  min-height: 82px;
+  place-items: center;
+  border: 0;
+  background: #9e3441;
+  color: #fff;
+  font-size: 21px;
+}
+.messages-chat-delete:disabled { opacity: .55; }
+@media (hover: hover) {
+  .messages-chat-row:hover .messages-room-item { background: #202b38; }
+}
