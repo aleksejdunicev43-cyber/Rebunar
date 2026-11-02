@@ -1560,3 +1560,31 @@
 @media (hover: hover) {
   .messages-chat-row:hover .messages-room-item { background: #202b38; }
 }
+
+
+/* Мобильная прокрутка Избранного без перехвата жеста обновления */
+@media (max-width: 760px) {
+  html,
+  body,
+  #app,
+  .app-shell,
+  .app-layout,
+  .main-content,
+  #screen-outlet,
+  .messages-screen,
+  .messages-layout,
+  .messages-conversation,
+  .messages-message-list.messages-favorite-list {
+    overscroll-behavior-y: none;
+  }
+
+  .messages-message-list.messages-favorite-list {
+    min-height: 0;
+    flex: 1 1 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scroll-behavior: smooth;
+  }
+}
