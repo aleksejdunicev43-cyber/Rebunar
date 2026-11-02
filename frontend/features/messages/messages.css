@@ -1562,7 +1562,7 @@
 }
 
 
-/* Мобильная прокрутка Избранного без перехвата жеста обновления */
+/* Избранное: обычная прокрутка без браузерного pull-to-refresh */
 @media (max-width: 760px) {
   html,
   body,
@@ -1575,31 +1575,16 @@
   .messages-layout,
   .messages-conversation,
   .messages-message-list.messages-favorite-list {
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: none !important;
   }
 
   .messages-message-list.messages-favorite-list {
     min-height: 0;
     flex: 1 1 0;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
     scroll-behavior: smooth;
-  }
-}
-
-
-/* Избранное: запрет браузерного pull-to-refresh, но обычная прокрутка остаётся */
-@media (max-width: 760px) {
-  html, body, #app, #screen-outlet,
-  .messages-screen, .messages-layout, .messages-conversation,
-  .messages-message-list.messages-favorite-list {
-    overscroll-behavior-y: none !important;
-  }
-  .messages-message-list.messages-favorite-list {
-    overflow-y: auto !important;
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
   }
 }
