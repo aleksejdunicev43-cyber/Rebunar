@@ -1588,3 +1588,18 @@
     scroll-behavior: smooth;
   }
 }
+
+
+/* Избранное: запрет браузерного pull-to-refresh, но обычная прокрутка остаётся */
+@media (max-width: 760px) {
+  html, body, #app, #screen-outlet,
+  .messages-screen, .messages-layout, .messages-conversation,
+  .messages-message-list.messages-favorite-list {
+    overscroll-behavior-y: none !important;
+  }
+  .messages-message-list.messages-favorite-list {
+    overflow-y: auto !important;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+}
