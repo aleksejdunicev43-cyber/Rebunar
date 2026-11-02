@@ -6,7 +6,8 @@ import {
   sendMessage,
   getSelfNotes,
   createSelfNote,
-  deleteSelfNote
+  deleteSelfNote,
+  uploadSelfImage
 } from './api.js';
 
 let outletRef = null;
@@ -129,13 +130,14 @@ function renderFavoriteNotes() {
 
   list.innerHTML = notes.length ? notes.map(note => `
     <article class="messages-favorite-note">
-      <p>${escapeHTML(note.text)}</p>
+      ${note.image_url ? `<img class="messages-favorite-image" src="${escapeHTML(note.image_url)}" alt="Сохранённое фото" loading="lazy">` : ''}
+      ${note.text && note.text !== '[Фото]' ? `<p>${escapeHTML(note.text)}</p>` : ''}
       <div class="messages-favorite-note-footer">
         <time>${escapeHTML(note.created_at || '')}</time>
         <button type="button" data-delete-note="${Number(note.id)}">Удалить</button>
       </div>
     </article>
-  `).join('') : '<div class="messages-status">Здесь будут твои личные заметки</div>';
+  `).join('') : '<div class="messages-status">Здесь будут твои личные заметки и фото</div>';
 
   list.scrollTop = list.scrollHeight;
 }
@@ -196,8 +198,10 @@ async function openFavorite() {
     </header>
     <div class="messages-message-list messages-favorite-list" data-message-list></div>
     <form class="messages-compose messages-favorite-compose" data-note-form>
-      <textarea name="text" maxlength="5000" rows="1" placeholder="Записать заметку..." required></textarea>
-      <button type="submit" aria-label="Сохранить">＋</button>
+      <input type="file" accept="image/jpeg,image/png,image/webp" data-favorite-image hidden>
+      <button type="button" data-attach-image aria-label="Добавить фото" title="Добавить фото">＋</button>
+      <textarea name="text" maxlength="5000" rows="1" placeholder="Записать заметку..." autocomplete="off"></textarea>
+      <button type="submit" aria-label="Сохранить заметку" title="Сохранить заметку">➤</button>
     </form>
   `;
 
@@ -323,6 +327,12 @@ export function renderMessagesScreen(outlet) {
       return;
     }
 
+    const attachButton = event.target.closest('[data-attach-image]');
+    if (attachButton) {
+      outlet.querySelector('[data-favorite-image]')?.click();
+      return;
+    }
+
     const deleteButton = event.target.closest('[data-delete-note]');
     if (deleteButton) {
       try {
@@ -376,6 +386,23 @@ export function renderMessagesScreen(outlet) {
       } finally {
         button.disabled = false;
       }
+    }
+  }, listenerOptions);
+
+  outlet.addEventListener('change', async event => {
+    if (!event.target.matches('[data-favorite-image]')) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await uploadSelfImage(file);
+      notes = await getSelfNotes();
+      renderFavoriteNotes();
+      renderChatList(search.value);
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      event.target.value = '';
     }
   }, listenerOptions);
 
