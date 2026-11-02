@@ -37,3 +37,8 @@ export function uploadSelfImage(file) {
   form.append('image', file);
   return api.upload('/messages/self/image', form);
 }
+
+
+export function hideChat(userId) {
+  return api.delete(`/messages/chats/${Number(userId)}`);
+}
