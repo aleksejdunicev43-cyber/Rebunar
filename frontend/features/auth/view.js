@@ -79,8 +79,8 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
     form.addEventListener('submit', async event => {
       event.preventDefault();
 
-      const username = form.elements.username.value.trim();
-      const password = form.elements.password.value;
+      const username = form.elements.rebunar_login.value.trim();
+      const password = form.elements.rebunar_password.value;
       const submitButton = form.querySelector('.auth-submit');
 
       submitButton.disabled = true;
