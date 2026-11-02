@@ -480,7 +480,7 @@ export function renderMessagesScreen(outlet) {
       await loadChats();
       if (activeChat?.kind === 'favorite') {
         notes = await getSelfNotes();
-        renderFavoriteNotes();
+        renderFavoriteNotes({ preserveScroll: true });
       } else if (activeChat?.user_id) {
         renderMessages(await getChatHistory(activeChat.user_id));
       }
