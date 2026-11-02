@@ -987,7 +987,7 @@ def message_chats():
                 u.display_name,
                 u.avatar,
                 m.text,
-                m.created_at
+                m.timestamp AS created_at
             FROM messages m
             JOIN users u
               ON u.id = CASE
