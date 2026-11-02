@@ -341,7 +341,7 @@ export function renderMessagesScreen(outlet) {
         renderFavoriteNotes();
         renderChatList(search.value);
       } catch (error) {
-        alert(error.message);
+        showStatus(outlet.querySelector('[data-message-list]'), error.message);
       }
     }
   }, listenerOptions);
@@ -361,7 +361,7 @@ export function renderMessagesScreen(outlet) {
         renderMessages(await getChatHistory(activeChat.user_id));
         await loadChats();
       } catch (error) {
-        alert(error.message);
+        showStatus(outlet.querySelector('[data-message-list]'), error.message);
       } finally {
         button.disabled = false;
       }
@@ -382,7 +382,7 @@ export function renderMessagesScreen(outlet) {
         renderFavoriteNotes();
         renderChatList(search.value);
       } catch (error) {
-        alert(error.message);
+        showStatus(outlet.querySelector('[data-message-list]'), error.message);
       } finally {
         button.disabled = false;
       }
@@ -400,7 +400,7 @@ export function renderMessagesScreen(outlet) {
       renderFavoriteNotes();
       renderChatList(search.value);
     } catch (error) {
-      alert(error.message);
+      showStatus(outlet.querySelector('[data-message-list]'), error.message);
     } finally {
       event.target.value = '';
     }
