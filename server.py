@@ -842,8 +842,9 @@ def self_messages():
     me = session["user_id"]
 
     with connect() as con:
-        rows = con.execute("""
-            SELECT id, text, created_at, image_path
+        time_column = get_messages_time_column(con)
+        rows = con.execute(f"""
+            SELECT id, text, {time_column}, image_path
             FROM messages
             WHERE sender_id = ? AND receiver_id = ?
             ORDER BY id ASC
