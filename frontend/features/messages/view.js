@@ -1,6 +1,7 @@
 import { getUser } from '../auth/session.js';
 import {
   getChats,
+  hideChat,
   searchUsers,
   getChatHistory,
   sendMessage,
@@ -70,20 +71,24 @@ function renderChatList(filter = '') {
       : '';
 
     return `
-      <button class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
-        data-open-chat="${Number(chat.user_id)}">
-        <span class="chat-avatar">
-          ${avatar}
-          <span class="chat-avatar-initial">${initial}</span>
-        </span>
-        <span class="chat-preview-block">
-          <span class="chat-row-top">
-            <span class="messages-room-name">${escapeHTML(name)}</span>
-            <time class="chat-time">${escapeHTML(chat.created_at || '')}</time>
+      <div class="messages-chat-row">
+        <button type="button" class="messages-chat-delete" data-delete-chat="${Number(chat.user_id)}"
+          aria-label="Удалить переписку" title="Удалить переписку">🗑</button>
+        <button type="button" class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
+          data-open-chat="${Number(chat.user_id)}">
+          <span class="chat-avatar">
+            ${avatar}
+            <span class="chat-avatar-initial">${initial}</span>
           </span>
-          <span class="messages-room-preview">${escapeHTML(chat.last_message || 'Начните переписку')}</span>
-        </span>
-      </button>
+          <span class="chat-preview-block">
+            <span class="chat-row-top">
+              <span class="messages-room-name">${escapeHTML(name)}</span>
+              <time class="chat-time">${escapeHTML(chat.created_at || '')}</time>
+            </span>
+            <span class="messages-room-preview">${escapeHTML(chat.last_message || 'Начните переписку')}</span>
+          </span>
+        </button>
+      </div>
     `;
   }).join('');
 
@@ -292,7 +297,60 @@ export function renderMessagesScreen(outlet) {
     }, 300);
   }, listenerOptions);
 
+  let swipeStart = null;
+  const chatList = outlet.querySelector('[data-chat-list]');
+  chatList.addEventListener('touchstart', event => {
+    const row = event.target.closest('.messages-chat-row');
+    if (!row || !event.touches.length) return;
+    const touch = event.touches[0];
+    swipeStart = { row, x: touch.clientX, y: touch.clientY };
+  }, { passive: true, signal: screenController.signal });
+
+  chatList.addEventListener('touchend', event => {
+    if (!swipeStart || !event.changedTouches.length) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - swipeStart.x;
+    const dy = touch.clientY - swipeStart.y;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      if (dx < 0) {
+        chatList.querySelectorAll('.messages-chat-row.is-swiped').forEach(row => row.classList.remove('is-swiped'));
+        swipeStart.row.classList.add('is-swiped');
+      } else {
+        swipeStart.row.classList.remove('is-swiped');
+      }
+    }
+    swipeStart = null;
+  }, { passive: true, signal: screenController.signal });
+
   outlet.addEventListener('click', async event => {
+    const deleteChatButton = event.target.closest('[data-delete-chat]');
+    if (deleteChatButton) {
+      const userId = Number(deleteChatButton.dataset.deleteChat);
+      if (!userId || !window.confirm('Удалить эту переписку из списка?')) return;
+      deleteChatButton.disabled = true;
+      try {
+        await hideChat(userId);
+        chats = chats.filter(chat => Number(chat.user_id) !== userId);
+        if (Number(activeChat?.user_id) === userId) {
+          activeChat = null;
+          const conversation = outlet.querySelector('[data-conversation]');
+          if (conversation) conversation.innerHTML = `
+            <div class="messages-placeholder">
+              <span class="messages-placeholder-icon">◉</span>
+              <h2>Твои чаты</h2>
+              <p>Выбери переписку, чтобы продолжить общение.</p>
+            </div>
+          `;
+          outlet.querySelector('.messages-layout')?.classList.remove('is-chat-open');
+        }
+        renderChatList(search.value);
+      } catch (error) {
+        deleteChatButton.disabled = false;
+        showStatus(outlet.querySelector('[data-chat-list]'), error.message);
+      }
+      return;
+    }
+
     const favoriteButton = event.target.closest('[data-open-favorite]');
     if (favoriteButton) {
       await openFavorite();
