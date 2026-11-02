@@ -990,25 +990,27 @@ def message_chats():
     me = session["user_id"]
 
     with connect() as con:
-        rows = con.execute("""
+        time_column = get_messages_time_column(con)
+        rows = con.execute(f"""
             SELECT
                 u.id,
                 u.username,
                 u.display_name,
                 u.avatar,
                 m.text,
-                m.timestamp AS created_at
+                m.{time_column} AS created_at
             FROM messages m
             JOIN users u
               ON u.id = CASE
                   WHEN m.sender_id = ? THEN m.receiver_id
                   ELSE m.sender_id
               END
-            WHERE m.id IN (
+            WHERE m.sender_id != m.receiver_id
+              AND m.id IN (
                 SELECT MAX(m2.id)
                 FROM messages m2
-                WHERE (m2.sender_id = ?
-                   OR m2.receiver_id = ?)
+                WHERE (m2.sender_id = ? OR m2.receiver_id = ?)
+                  AND m2.sender_id != m2.receiver_id
                   AND NOT EXISTS (
                       SELECT 1 FROM hidden_chats h
                       WHERE h.user_id = ?
@@ -1021,7 +1023,7 @@ def message_chats():
                     WHEN m2.sender_id = ? THEN m2.receiver_id
                     ELSE m2.sender_id
                 END
-            )
+              )
             ORDER BY m.id DESC
         """, (me, me, me, me, me, me)).fetchall()
 
