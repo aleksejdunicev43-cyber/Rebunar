@@ -37,7 +37,7 @@ else:
     print("Логика сообщений и Избранного уже исправлена")
 
 source = read(VIEW)
-pattern = re.compile(r"function formatMessageTime\\(value\\) \\{[\\s\\S]*?\\n\\}")
+pattern = re.compile(r"function formatMessageTime\(value\) \{[\s\S]*?\n\}")
 matches = list(pattern.finditer(source))
 
 if len(matches) > 1:
