@@ -24,6 +24,15 @@ DB = BASE / "rebunar.db"
 def connect():
     return sqlite3.connect(DB)
 
+
+def get_messages_time_column(con):
+    columns = {row[1] for row in con.execute("PRAGMA table_info(messages)")}
+    if "created_at" in columns:
+        return "created_at"
+    if "timestamp" in columns:
+        return "timestamp"
+    raise RuntimeError("В таблице messages нет столбца времени")
+
 def init_db():
     with connect() as con:
         con.execute("""
