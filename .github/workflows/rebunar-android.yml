@@ -16,6 +16,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare circular avatar icon
+        run: |
+          python -m pip install Pillow
+          python - <<'PY'
+          from PIL import Image, ImageDraw
+          path = "android-rebunar/app/src/main/res/drawable/rebunar_logo.png"
+          source = Image.open(path).convert("RGBA")
+          # Keep only the anime character portrait; remove the large Rebunar lettermark and wordmark.
+          portrait = source.crop((400, 25, 800, 425)).resize((512, 512), Image.Resampling.LANCZOS)
+          mask = Image.new("L", (512, 512), 0)
+          ImageDraw.Draw(mask).ellipse((2, 2, 510, 510), fill=255)
+          portrait.putalpha(mask)
+          portrait.save(path, format="PNG", optimize=True)
+          PY
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
