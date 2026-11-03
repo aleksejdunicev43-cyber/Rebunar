@@ -19,7 +19,7 @@ export function initProfileCollectionButton(container) {
   button.type = 'button';
   button.setAttribute('aria-label', 'Коллекция рамок');
   button.title = 'Коллекция рамок';
-  button.innerHTML = '<span class="profile-collection-icon" aria-hidden="true">▤</span><span>Коллекция</span>';
+  button.innerHTML = '<span class="profile-frame-icon" aria-hidden="true"><span></span><span></span><span></span></span><span>Коллекция</span>';
   actions.appendChild(button);
 
   collection.hidden = true;
