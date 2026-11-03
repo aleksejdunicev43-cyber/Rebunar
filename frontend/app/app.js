@@ -208,6 +208,7 @@ async function startApp() {
   `;
 
   await initializeAuth();
+  initializeTheme(getUser());
 
   if (getUser()) {
     mountApp();
@@ -236,5 +237,4 @@ async function startApp() {
   console.log('Rebunar: ожидается вход пользователя');
 }
 
-initializeTheme();
 startApp();
