@@ -705,3 +705,30 @@
 .profile-achievement-share{width:100%;min-height:43px;color:#fff;background:linear-gradient(110deg,#851522,#bd2638);border:1px solid #c63749;border-radius:9px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .profile-toast{position:fixed;z-index:10030;left:50%;bottom:max(24px,env(safe-area-inset-bottom));width:max-content;max-width:calc(100vw - 40px);box-sizing:border-box;padding:12px 16px;color:#fff;background:#202326;border:1px solid color-mix(in srgb,var(--accent) 55%,#34383c);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.4);font-size:13px;text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,12px);transition:opacity .2s,transform .2s}
 .profile-toast.is-visible{opacity:1;transform:translate(-50%,0)}
+
+
+/* REBUNAR PROFILE CUSTOMIZATION — STEEL & BLOOD */
+.profile-card{position:relative;overflow:hidden;padding-top:0}
+.profile-cover{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;min-height:126px;margin:0 -26px 22px;padding:18px 24px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.1);isolation:isolate}
+.profile-cover::before,.profile-cover::after{position:absolute;content:"";inset:0;z-index:-1;pointer-events:none}
+.profile-cover::before{background:radial-gradient(ellipse at 78% 18%,rgba(255,55,70,.36),transparent 38%),linear-gradient(115deg,#101316 0%,#25292d 48%,#450d17 100%)}
+.profile-cover::after{inset:auto -8% -72px 38%;height:150px;border:1px solid rgba(255,255,255,.12);border-radius:50%;transform:rotate(-17deg);box-shadow:0 0 0 18px rgba(255,255,255,.025),0 0 0 38px rgba(255,255,255,.02)}
+.profile-cover[data-theme="crimson"]::before{background:radial-gradient(ellipse at 78% 18%,rgba(255,70,85,.42),transparent 42%),linear-gradient(115deg,#12090c,#3b0d17 58%,#850f27)}
+.profile-cover[data-theme="eclipse"]::before{background:radial-gradient(ellipse at 75% 25%,rgba(170,20,42,.5),transparent 38%),linear-gradient(120deg,#08090b,#17191e 52%,#310b14)}
+.profile-cover[data-theme="frost"]::before{background:radial-gradient(ellipse at 78% 18%,rgba(180,205,220,.27),transparent 42%),linear-gradient(115deg,#11171c,#35414a 58%,#5a1b27)}
+.profile-cover-mark{color:#fff;font-size:clamp(20px,5vw,28px);font-weight:900;letter-spacing:.24em;text-shadow:0 3px 18px rgba(0,0,0,.55)}
+.profile-cover-caption{color:rgba(255,255,255,.66);font-size:9px;font-weight:700;letter-spacing:.2em}
+.profile-customization-card{margin-top:14px;padding:16px;background:linear-gradient(145deg,var(--bg-panel-2),var(--bg-main));border:1px solid var(--border);border-radius:11px}
+.profile-customization-symbol{color:var(--accent);font-size:22px;text-shadow:0 0 14px var(--accent)}
+.profile-customization-description{margin:10px 0 13px;color:var(--text-muted);font-size:12px;line-height:1.5}
+.profile-theme-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.profile-theme-option{position:relative;display:flex;align-items:center;gap:9px;min-width:0;min-height:48px;padding:8px 10px;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border);border-radius:9px;font:inherit;font-size:12px;text-align:left;cursor:pointer;transition:border-color .18s,background .18s}
+.profile-theme-option.is-selected{background:color-mix(in srgb,var(--accent) 10%,var(--bg-main));border-color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 20%,transparent)}
+.profile-theme-swatch{flex:0 0 25px;width:25px;height:25px;border:1px solid rgba(255,255,255,.2);border-radius:7px}
+.profile-theme-swatch.theme-steel{background:linear-gradient(135deg,#171b20 45%,#a51d31)}
+.profile-theme-swatch.theme-crimson{background:linear-gradient(135deg,#210b11,#a51b36)}
+.profile-theme-swatch.theme-eclipse{background:linear-gradient(135deg,#08090b,#501020)}
+.profile-theme-swatch.theme-frost{background:linear-gradient(135deg,#9aaab4,#52202c)}
+.profile-theme-check{margin-left:auto;color:var(--accent);font-weight:900}
+.profile-theme-note{margin:12px 0 0;color:var(--text-muted);font-size:10px;line-height:1.45}
+@media(max-width:480px){.profile-cover{margin-right:-18px;margin-left:-18px;min-height:112px;padding:16px 18px}}
