@@ -5,6 +5,9 @@
   inset: -19% !important;
   overflow: visible !important;
   pointer-events: none;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   -webkit-mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
   mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
   -webkit-mask-repeat: no-repeat;
@@ -17,7 +20,7 @@
   overflow: visible !important;
 }
 
-/* Рамка новичка — чистая стальная окантовка без второго белого круга. */
+/* Рамка новичка — только одна чистая стальная окантовка. */
 .profile-avatar-button .profile-avatar-frame.frame-rookie .avatar-frame-art {
   display: none !important;
 }
