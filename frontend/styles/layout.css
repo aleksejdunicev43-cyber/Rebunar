@@ -22,14 +22,13 @@
   box-shadow: 0 4px 22px rgba(0, 0, 0, .45), 0 1px 12px rgba(150, 25, 25, .14);
 }
 
-/* Header artwork fills the whole top strip and is intentionally cropped a little
-   beyond the edges so no narrow black margin can remain visible. */
+/* The artwork is deliberately oversized so its own black top/bottom margins are cropped away. */
 .app-logo-image-wrap {
   position: absolute;
-  inset: -6px 0;
+  inset: -10px 0;
   z-index: 0;
   width: 100%;
-  height: calc(100% + 12px);
+  height: calc(100% + 20px);
   overflow: hidden;
   pointer-events: none;
 }
@@ -40,7 +39,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center center;
-  transform: scale(1.02) translateY(-2px);
+  transform: scale(1.18) translateY(-1%);
   transform-origin: center center;
   filter: drop-shadow(0 0 8px rgba(170, 20, 20, .32));
 }
