@@ -4,8 +4,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/rebunar_icon"
-        android:roundIcon="@drawable/rebunar_icon"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="Rebunar"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
