@@ -372,37 +372,9 @@
   }
 }
 
-/* REBUNAR — центрированная верхняя панель */
-.app-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-}
-
+/* REBUNAR — верхняя панель без центрального логотипа */
 .header-brand {
   justify-self: start;
-}
-
-.header-logo {
-  justify-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
-}
-
-.header-logo .app-logo-image {
-  display: block;
-  width: 42px;
-  height: 42px;
-  max-width: 42px;
-  max-height: 42px;
-  object-fit: contain;
-  border-radius: 10px;
-  filter: drop-shadow(0 0 5px rgba(142, 45, 255, .42));
 }
 
 .header-actions {
@@ -465,24 +437,11 @@
 
 @media (max-width: 760px) {
   .app-header {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    display: flex;
+    justify-content: space-between;
     gap: 4px;
     padding-right: 10px;
     padding-left: 10px;
-  }
-
-  .header-logo {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-  }
-
-  .header-logo .app-logo-image {
-    width: 34px;
-    height: 34px;
-    max-width: 34px;
-    max-height: 34px;
-    border-radius: 8px;
   }
 
   .header-actions {
