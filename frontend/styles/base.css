@@ -214,3 +214,100 @@ a {
   outline: 2px solid var(--accent-bright);
   outline-offset: 2px;
 }
+
+
+/* REBUNAR — SMOOTH GLOBAL THEME TRANSITIONS */
+html,
+body,
+.app-header,
+.app-layout,
+.main-content,
+.context-panel,
+.sidebar,
+.main-navigation button,
+.mobile-navigation,
+.mobile-navigation button,
+.header-actions button,
+.screen,
+.settings-item,
+.profile-card,
+.profile-status-card,
+.profile-xp-card,
+.profile-achievements-card,
+.profile-customization-card,
+.profile-theme-option,
+.profile-locked-option,
+.community-card,
+.post-card,
+.message-card,
+.game-card {
+  transition:
+    background-color 260ms ease,
+    background 260ms ease,
+    color 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+/* Branded startup screen, shown while the account theme is restored. */
+.rebunar-splash {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px;
+  color: var(--text-main);
+  background:
+    radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 48%),
+    linear-gradient(155deg, var(--bg-panel), var(--bg-main));
+  text-align: center;
+}
+.rebunar-splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.rebunar-splash-mark {
+  color: var(--text-main);
+  font-size: clamp(30px, 9vw, 44px);
+  font-weight: 950;
+  letter-spacing: .2em;
+  text-indent: .2em;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.rebunar-splash-line {
+  width: 112px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--bg-panel-2);
+}
+.rebunar-splash-line::after {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  content: "";
+  animation: rebunar-splash-progress 1.15s ease-in-out infinite;
+}
+.rebunar-splash-caption {
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: .16em;
+}
+@keyframes rebunar-splash-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(260%); }
+}
+@media(prefers-reduced-motion:reduce) {
+  html, body, .app-header, .main-content, .mobile-navigation,
+  .mobile-navigation button, .screen, .settings-item, .profile-card,
+  .profile-status-card, .profile-xp-card, .profile-achievements-card,
+  .profile-customization-card, .profile-theme-option, .profile-locked-option {
+    transition-duration: .01ms !important;
+  }
+  .rebunar-splash-line::after { animation-duration: 2.5s; }
+}
