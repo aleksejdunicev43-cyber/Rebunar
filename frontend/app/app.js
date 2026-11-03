@@ -31,6 +31,7 @@ import '../features/favorites/favorites.css';
 import '../features/games/games.css';
 import '../features/communities/communities.css';
 import { renderStatisticsScreen } from '../features/statistics/view.js';
+import '../features/statistics/statistics.css';
 import { renderSettingsScreen } from '../features/settings/view.js';
 import { startPresence, stopPresence } from '../features/statistics/presence.js';
 import { initializeTheme } from '../shared/theme.js';
