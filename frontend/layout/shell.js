@@ -76,8 +76,9 @@ export function createShell(root) {
             title="Мой профиль">
             <span>R</span>
           </button>
-          <div class="app-logo" aria-label="REBUNAR">REBUNAR</div>
         </div>
+
+        <div class="app-logo" aria-label="REBUNAR">REBUNAR</div>
 
         <div class="header-actions">
           <button type="button" class="header-icon-button"
@@ -96,9 +97,6 @@ export function createShell(root) {
             </svg>
             <span class="notification-indicator" hidden></span>
           </button>
-
-          <button type="button" class="header-create-button"
-            data-route="composer">Создать</button>
         </div>
       </header>
 
@@ -131,10 +129,8 @@ export function createShell(root) {
     </div>
   `;
 
-  // Сразу показываем текущий аватар
   updateHeaderProfile(root, getUser());
 
-  // Обновляем аватар при изменении аккаунта
   root.__rebunarHeaderAuthUnsubscribe?.();
   root.__rebunarHeaderAuthUnsubscribe = subscribeToAuth(user => {
     updateHeaderProfile(root, user);
