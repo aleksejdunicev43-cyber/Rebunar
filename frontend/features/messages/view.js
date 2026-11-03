@@ -146,7 +146,9 @@ function renderFavoriteNotes({ preserveScroll = false } = {}) {
     </article>
   `).join('') : '<div class="messages-status">Здесь будут твои личные заметки и фото</div>';
 
-  if (preserveScroll && !wasNearBottom) {
+  if (preserveScroll) {
+    // При удалении или фоновом обновлении сохраняем позицию,
+    // даже если пользователь находится рядом с концом списка.
     list.scrollTop = previousScrollTop;
   } else {
     list.scrollTop = list.scrollHeight;
