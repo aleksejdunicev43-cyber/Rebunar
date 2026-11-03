@@ -20,7 +20,7 @@ jobs:
         run: |
           python -m pip install Pillow numpy
           python - <<'PY'
-          from PIL import Image, ImageDraw, ImageFilter
+          from PIL import Image, ImageDraw, ImageFilter, ImageChops
           import numpy as np
 
           path = "android-rebunar/app/src/main/res/drawable/rebunar_logo.png"
