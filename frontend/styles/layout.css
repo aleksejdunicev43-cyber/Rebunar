@@ -22,13 +22,14 @@
   box-shadow: 0 4px 22px rgba(0, 0, 0, .45), 0 1px 12px rgba(150, 25, 25, .14);
 }
 
-/* The generated REBUNAR artwork is the complete background of the top strip. */
+/* Header artwork fills the whole top strip and is intentionally cropped a little
+   beyond the edges so no narrow black margin can remain visible. */
 .app-logo-image-wrap {
   position: absolute;
-  inset: 0;
+  inset: -6px 0;
   z-index: 0;
   width: 100%;
-  height: 100%;
+  height: calc(100% + 12px);
   overflow: hidden;
   pointer-events: none;
 }
@@ -38,7 +39,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center center;
+  transform: scale(1.02) translateY(-2px);
+  transform-origin: center center;
   filter: drop-shadow(0 0 8px rgba(170, 20, 20, .32));
 }
 
