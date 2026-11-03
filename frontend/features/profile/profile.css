@@ -1057,3 +1057,14 @@
 .profile-avatar-button .profile-avatar-frame.frame-royal-blood{inset:-10px;border:4px ridge #d6a044;box-shadow:0 0 0 3px #59202a,0 0 17px #d69a3c}
 .profile-avatar-button .profile-avatar-frame.frame-void-dragon{inset:-11px;border:4px double #a34bff;box-shadow:0 0 0 3px #29203d,0 0 20px #a34bff}
 @media(max-width:360px){.profile-frame-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.profile-frame-item{padding:9px 5px}}
+
+
+/* REBUNAR — ORNATE VECTOR AVATAR FRAMES */
+.profile-frame-preview{width:94px;height:94px;overflow:visible;background:radial-gradient(circle,#252a30 0 56%,#111419 58%)}
+.profile-frame-preview .avatar-frame-art{display:block;width:100%;height:100%;overflow:visible}
+.profile-avatar-button{position:relative!important;isolation:isolate;overflow:visible!important;clip-path:none!important;border-radius:50%;z-index:0}
+.profile-avatar-button .profile-avatar-image,
+.profile-avatar-button .profile-avatar-placeholder{position:relative;z-index:1;display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;object-fit:cover}
+.profile-avatar-button .profile-avatar-frame{position:absolute;inset:-19%;z-index:3;display:block;pointer-events:none;overflow:visible}
+.profile-avatar-button .avatar-frame-art{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 5px rgba(0,0,0,.75))}
+.profile-frame-item .avatar-frame-art{filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
