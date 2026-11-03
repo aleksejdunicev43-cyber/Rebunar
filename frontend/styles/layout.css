@@ -62,9 +62,7 @@
   padding: 20px;
 }
 
-.sidebar {
-  min-width: 0;
-}
+.sidebar { min-width: 0; }
 
 .main-navigation {
   position: sticky;
@@ -96,367 +94,103 @@
   border-radius: 12px;
 }
 
-.screen h1 {
-  margin: 0 0 12px;
-  font-size: 26px;
-  font-weight: 800;
-}
-
-.screen p {
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-.context-panel {
-  min-width: 0;
-  min-height: 200px;
-  padding: 16px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.mobile-navigation {
-  display: none;
-}
+.screen h1 { margin: 0 0 12px; font-size: 26px; font-weight: 800; }
+.screen p { color: var(--text-muted); line-height: 1.6; }
+.context-panel { min-width: 0; min-height: 200px; padding: 16px; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; }
+.mobile-navigation { display: none; }
 
 @media (max-width: 1050px) {
-  .app-layout {
-    grid-template-columns: 190px minmax(0, 1fr);
-  }
-
-  .context-panel {
-    display: none;
-  }
+  .app-layout { grid-template-columns: 190px minmax(0, 1fr); }
+  .context-panel { display: none; }
 }
 
 @media (max-width: 760px) {
-  .app-header {
-    min-height: 58px;
-    padding: 0 14px;
-  }
-
-  .app-logo {
-    font-size: 18px;
-  }
-
-  .header-actions {
-    gap: 4px;
-  }
-
-  .header-actions button {
-    padding: 8px;
-    font-size: 12px;
-  }
-
-  .app-layout {
-    display: block;
-    padding: 10px;
-  }
-
-  .sidebar,
-  .context-panel {
-    display: none;
-  }
-
-  .main-content {
-    min-height: calc(100vh - 140px);
-    padding: 16px;
-    border-radius: 9px;
-  }
-
-  .screen h1 {
-    font-size: 22px;
-  }
-
-  .mobile-navigation {
-    position: fixed;
-    z-index: 30;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    justify-content: space-around;
-    gap: 2px;
-    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
-    background: var(--bg-panel);
-    border-top: 1px solid var(--border);
-  }
-
-  .mobile-navigation button {
-    flex: 1;
-    min-width: 0;
-    padding: 10px 3px;
-    font-size: 11px;
-    white-space: nowrap;
-  }
+  .app-header { min-height: 58px; padding: 0 14px; }
+  .app-logo { font-size: 18px; }
+  .header-actions { gap: 4px; }
+  .header-actions button { padding: 8px; font-size: 12px; }
+  .app-layout { display: block; padding: 10px; }
+  .sidebar, .context-panel { display: none; }
+  .main-content { min-height: calc(100vh - 140px); padding: 16px; border-radius: 9px; }
+  .screen h1 { font-size: 22px; }
+  .mobile-navigation { position: fixed; z-index: 30; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-around; gap: 2px; padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); background: var(--bg-panel); border-top: 1px solid var(--border); }
+  .mobile-navigation button { flex: 1; min-width: 0; padding: 10px 3px; font-size: 11px; white-space: nowrap; }
 }
 
-/* Навигация чатов */
-.nav-chat {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
+.nav-chat { display: inline-flex; align-items: center; gap: 10px; }
+.nav-chat .nav-icon { flex: 0 0 auto; }
 
-.nav-chat .nav-icon {
-  flex: 0 0 auto;
+@media (max-width: 760px) {
+  .mobile-navigation .nav-chat { flex-direction: column; justify-content: center; gap: 4px; padding: 6px 3px; }
+  .mobile-navigation .nav-chat .nav-icon { width: 25px; height: 25px; }
 }
 
 @media (max-width: 760px) {
-  .mobile-navigation .nav-chat {
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    padding: 6px 3px;
-  }
-
-  .mobile-navigation .nav-chat .nav-icon {
-    width: 25px;
-    height: 25px;
-  }
+  html, body { width: 100%; height: 100%; min-height: 0; overflow: hidden; overscroll-behavior: none; }
+  #app { width: 100%; height: 100%; min-height: 0; overflow: hidden; }
+  .app-shell { display: flex; flex-direction: column; width: 100%; height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+  .app-header { position: relative; top: auto; flex: 0 0 58px; min-height: 58px; }
+  .app-layout { display: flex; flex: 1 1 0; flex-direction: column; width: 100%; min-height: 0; margin: 0; padding: 10px; overflow: hidden; }
+  .sidebar, .context-panel { display: none; }
+  .main-content { display: flex; flex: 1 1 auto; flex-direction: column; width: 100%; min-width: 0; min-height: 0; padding: 16px; overflow: hidden; }
+  #screen-outlet { display: block; flex: 1 1 0; width: 100%; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
+  .mobile-navigation { position: relative; right: auto; bottom: auto; left: auto; z-index: 30; display: flex; flex: 0 0 auto; width: 100%; }
+  .mobile-navigation button { flex: 1; min-width: 0; }
 }
 
-/* REBUNAR — ЕДИНАЯ МОБИЛЬНАЯ ОБОЛОЧКА */
-@media (max-width: 760px) {
-  html,
-  body {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
-
-  #app {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .app-shell {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .app-header {
-    position: relative;
-    top: auto;
-    flex: 0 0 58px;
-    min-height: 58px;
-  }
-
-  .app-layout {
-    display: flex;
-    flex: 1 1 0;
-    flex-direction: column;
-    width: 100%;
-    min-height: 0;
-    margin: 0;
-    padding: 10px;
-    overflow: hidden;
-  }
-
-  .sidebar,
-  .context-panel {
-    display: none;
-  }
-
-  .main-content {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-    padding: 16px;
-    overflow: hidden;
-  }
-
-  #screen-outlet {
-    display: block;
-    flex: 1 1 0;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .mobile-navigation {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    z-index: 30;
-    display: flex;
-    flex: 0 0 auto;
-    width: 100%;
-  }
-
-  .mobile-navigation button {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-/* REBUNAR — АВАТАР ПРОФИЛЯ В ЛЕВОЙ ЧАСТИ ШАПКИ */
-.header-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
+.header-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
 
 .header-profile-button {
-  display: flex;
-  flex: 0 0 40px;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  overflow: hidden;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  background: var(--bg-panel-2);
-  color: var(--text-main);
-  font-size: 16px;
-  font-weight: 800;
-  cursor: pointer;
+  display: flex; flex: 0 0 40px; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0; overflow: hidden;
+  border: 2px solid var(--accent); border-radius: 50%; background: var(--bg-panel-2);
+  color: var(--text-main); font-size: 16px; font-weight: 800; cursor: pointer;
 }
+.header-profile-button span { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; line-height: 1; padding-top: 2px; box-sizing: border-box; }
+.header-profile-avatar { display: block; width: 100%; height: 100%; object-fit: cover; }
+.header-profile-button:active { transform: scale(0.96); }
 
-.header-profile-button span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  line-height: 1;
-  padding-top: 2px;
-  box-sizing: border-box;
-}
-
-.header-profile-avatar {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.header-profile-button:active {
-  transform: scale(0.96);
-}
-
-@media (max-width: 760px) {
-  .header-brand {
-    gap: 9px;
-  }
-
-  .header-profile-button {
-    flex-basis: 36px;
-    width: 36px;
-    height: 36px;
-  }
-
-  .header-actions {
-    min-width: 0;
-  }
-}
-
-/* REBUNAR — верхняя панель без центрального логотипа */
-.header-brand {
-  justify-self: start;
-}
-
-.header-actions {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.header-actions .header-icon-button {
+/* Крутой фирменный wordmark REBUNAR */
+.app-logo {
   position: relative;
-  display: flex;
-  flex: 0 0 38px;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  padding: 8px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--text-main);
-  cursor: pointer;
+  line-height: 1;
+  font-family: "Arial Black", "Trebuchet MS", sans-serif;
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: 2.8px;
+  color: #f2f2f2;
+  text-shadow: 0 0 8px rgba(210, 210, 210, .28), 0 0 18px rgba(150, 25, 25, .42);
+  -webkit-text-stroke: .35px rgba(255, 255, 255, .28);
 }
 
-.header-icon-button svg {
-  display: block;
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.header-actions .header-icon-button:hover {
-  background: var(--bg-panel-2);
-  color: var(--text-main);
-}
-
-.notification-indicator:not([hidden]) {
+.app-logo::after {
+  content: '';
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 9px;
-  height: 9px;
-  border: 2px solid var(--bg-panel);
-  border-radius: 50%;
-  background: #ef3434;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), rgba(255,255,255,.35), transparent);
+  opacity: .9;
 }
 
-.header-actions .header-create-button {
-  padding: 8px 11px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text-main);
-  white-space: nowrap;
-}
+.header-brand { justify-self: start; }
+.header-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
+.header-actions .header-icon-button { position: relative; display: flex; flex: 0 0 38px; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 8px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--text-main); cursor: pointer; }
+.header-icon-button svg { display: block; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.header-actions .header-icon-button:hover { background: var(--bg-panel-2); color: var(--text-main); }
+.notification-indicator:not([hidden]) { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border: 2px solid var(--bg-panel); border-radius: 50%; background: #ef3434; }
+.header-actions .header-create-button { padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); white-space: nowrap; }
 
 @media (max-width: 760px) {
-  .app-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 4px;
-    padding-right: 10px;
-    padding-left: 10px;
-  }
-
-  .header-actions {
-    gap: 2px;
-  }
-
-  .header-actions .header-icon-button {
-    flex-basis: 34px;
-    width: 34px;
-    height: 36px;
-    padding: 7px;
-  }
-
-  .header-actions .header-create-button {
-    padding: 7px 8px;
-    font-size: 12px;
-  }
+  .header-brand { gap: 9px; }
+  .header-profile-button { flex-basis: 36px; width: 36px; height: 36px; }
+  .app-logo { font-size: 16px; letter-spacing: 2px; }
+  .app-logo::after { bottom: -4px; }
+  .header-actions { min-width: 0; gap: 2px; }
+  .header-actions .header-icon-button { flex-basis: 34px; width: 34px; height: 36px; padding: 7px; }
+  .header-actions .header-create-button { padding: 7px 8px; font-size: 12px; }
 }
