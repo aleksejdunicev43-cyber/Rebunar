@@ -59,6 +59,7 @@ export async function renderCommunitiesScreen(outlet) {
   const compose = outlet.querySelector('#community-compose-panel');
   const groupSelect = outlet.querySelector('#community-post-group');
   let communities = [];
+  let postsCache = [];
   let activeFeed = 'all';
 
   const load = async () => {
@@ -68,6 +69,7 @@ export async function renderCommunitiesScreen(outlet) {
         requestJSON('/api/posts'),
         requestJSON('/api/communities')
       ]);
+      postsCache = posts;
       communities = groups;
       groupSelect.innerHTML = '<option value="">Общая лента</option>' +
         groups.map(group => `<option value="${Number(group.id)}">${escapeHTML(group.name)}</option>`).join('');
@@ -180,7 +182,7 @@ export async function renderCommunitiesScreen(outlet) {
         </div>
         ${posts.length ? posts.map(post => `<article class="creator-post"><strong>${escapeHTML(post.author || 'Автор')}</strong><h2>${escapeHTML(post.title || 'Публикация')}</h2><p class="creator-post-body">${escapeHTML(post.body || '')}</p><small>${escapeHTML(formatDate(post.created_at))}</small></article>`).join('') : '<div class="community-empty">Здесь пока нет публикаций.</div>'}
       `;
-      content.querySelector('#community-back').addEventListener('click', () => renderFeed([]));
+      content.querySelector('#community-back').addEventListener('click', () => renderFeed(postsCache));
       content.querySelector('#community-join').addEventListener('click', async event => {
         const joinButton = event.currentTarget;
         joinButton.disabled = true;
