@@ -1022,3 +1022,38 @@
     margin-bottom: 20px;
   }
 }
+
+/* REBUNAR — COLLECTIBLE AVATAR FRAMES */
+.profile-frame-collection{margin-top:15px;padding:15px;background:linear-gradient(145deg,var(--bg-panel-2),var(--bg-main));border:1px solid var(--border);border-radius:11px}
+.profile-frame-progress{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;padding:10px 12px;background:var(--bg-main);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:11px}
+.profile-frame-progress strong{color:var(--text-main);font-size:13px}
+.profile-frame-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.profile-frame-item{position:relative;display:grid;justify-items:center;gap:5px;min-width:0;padding:11px 7px;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border);border-radius:9px;font:inherit;cursor:pointer;transition:border-color .2s,background .2s,opacity .2s}
+.profile-frame-item:disabled{cursor:not-allowed}
+.profile-frame-item.is-equipped{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,var(--bg-main));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
+.profile-frame-item.is-locked{opacity:.55}
+.profile-frame-preview{position:relative;display:grid;width:66px;height:66px;place-items:center;margin:2px 0 5px;border-radius:50%;background:radial-gradient(circle,#252a30 0 54%,#111419 56%)}
+.frame-preview-ring{position:absolute;inset:1px;border:3px solid #89939c;border-radius:50%;box-shadow:0 0 8px currentColor}
+.frame-rookie{color:#9da8b1;border-color:#9da8b1}
+.frame-steel-blood{color:#ed394f;border:4px solid #b51e35;box-shadow:0 0 0 3px #343b42,0 0 14px #e52d48,inset 0 0 8px #e52d48}
+.frame-cyber-edge{color:#00e5d4;border:3px dashed #00e5d4;box-shadow:0 0 12px #00e5d4,inset 0 0 9px #00e5d4}
+.frame-inferno{color:#ff6a32;border:5px double #ff542d;box-shadow:0 0 7px #ff3c24,0 0 17px #b51d1d,inset 0 0 10px #ff6a32}
+.frame-royal-blood{color:#f1bd58;border:4px ridge #d6a044;box-shadow:0 0 0 3px #59202a,0 0 17px #d69a3c}
+.frame-void-dragon{color:#bb73ff;border:4px double #a34bff;box-shadow:0 0 0 3px #29203d,0 0 9px #a34bff,0 0 20px #6a2dc0,inset 0 0 12px #a34bff}
+.profile-frame-lock{position:absolute;right:-2px;bottom:-2px;display:grid;width:22px;height:22px;place-items:center;background:#24282e;border:1px solid #737b84;border-radius:50%;font-size:11px}
+.profile-frame-name{max-width:100%;overflow-wrap:anywhere;font-size:11px;font-weight:800;text-align:center}
+.profile-frame-rarity{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.profile-frame-level{font-size:10px;color:var(--accent);font-weight:700}
+.profile-frame-item.rarity-редкая .profile-frame-rarity{color:#55aaff}
+.profile-frame-item.rarity-эпическая .profile-frame-rarity{color:#b77aff}
+.profile-frame-item.rarity-легендарная .profile-frame-rarity{color:#ffb84e}
+.profile-frame-item.rarity-мифическая .profile-frame-rarity{color:#f06bff}
+.profile-frame-footnote{margin:12px 0 0;color:var(--text-muted);font-size:10px;line-height:1.5}
+.profile-avatar-button{position:relative;isolation:isolate;overflow:visible}
+.profile-avatar-button .profile-avatar-frame{position:absolute;inset:-7px;z-index:3;border:3px solid #9da8b1;border-radius:50%;pointer-events:none}
+.profile-avatar-button .profile-avatar-frame.frame-steel-blood{inset:-9px;border:4px solid #b51e35;box-shadow:0 0 0 3px #343b42,0 0 14px #e52d48}
+.profile-avatar-button .profile-avatar-frame.frame-cyber-edge{inset:-9px;border:3px dashed #00e5d4;box-shadow:0 0 13px #00e5d4}
+.profile-avatar-button .profile-avatar-frame.frame-inferno{inset:-10px;border:5px double #ff542d;box-shadow:0 0 17px #ff3c24}
+.profile-avatar-button .profile-avatar-frame.frame-royal-blood{inset:-10px;border:4px ridge #d6a044;box-shadow:0 0 0 3px #59202a,0 0 17px #d69a3c}
+.profile-avatar-button .profile-avatar-frame.frame-void-dragon{inset:-11px;border:4px double #a34bff;box-shadow:0 0 0 3px #29203d,0 0 20px #a34bff}
+@media(max-width:360px){.profile-frame-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.profile-frame-item{padding:9px 5px}}
