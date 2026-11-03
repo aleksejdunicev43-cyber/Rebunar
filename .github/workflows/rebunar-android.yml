@@ -20,7 +20,7 @@ jobs:
         run: |
           python -m pip install Pillow numpy
           python - <<'PY'
-          from PIL import Image, ImageDraw
+          from PIL import Image, ImageDraw, ImageFilter
           import numpy as np
 
           path = "android-rebunar/app/src/main/res/drawable/rebunar_logo.png"
@@ -28,7 +28,7 @@ jobs:
           pixels = np.asarray(source.convert("RGB"))
           red, green, blue = pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]
 
-          # Find the original green circular outline, not the portrait or lettermark.
+          # Detect the original green outer ring to retain the full logo artwork.
           green_ring = (green > 65) & (green > red * 1.22) & (green > blue * 1.12)
           ys, xs = np.where(green_ring)
           if len(xs) < 100:
@@ -40,8 +40,7 @@ jobs:
           cy = (top + bottom) / 2
           radius = min(right - left, bottom - top) / 2
 
-          # Keep the entire circle: big R, character, REBUNAR wordmark and green rim.
-          # Only pixels outside the detected circular boundary become transparent.
+          # Keep the complete circle, including R, character, REBUNAR and the rim.
           pad = 2
           x0 = max(0, int(round(cx - radius - pad)))
           y0 = max(0, int(round(cy - radius - pad)))
@@ -54,9 +53,23 @@ jobs:
           logo = logo.crop((crop_left, crop_top, crop_left + side, crop_top + side))
           logo = logo.resize((512, 512), Image.Resampling.LANCZOS)
 
+          # Apply a clean circular alpha edge.
           mask = Image.new("L", (512, 512), 0)
           ImageDraw.Draw(mask).ellipse((1, 1, 510, 510), fill=255)
           logo.putalpha(mask)
+
+          # Add a geometrically perfect, consistent neon-green finishing rim.
+          # A restrained soft glow keeps the original Steel & Blood / neon look.
+          glow = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+          ImageDraw.Draw(glow).ellipse((4.5, 4.5, 507.5, 507.5),
+                                       outline=(35, 255, 75, 150), width=5)
+          glow = glow.filter(ImageFilter.GaussianBlur(3))
+          logo = Image.alpha_composite(logo, glow)
+          ImageDraw.Draw(logo).ellipse((5.5, 5.5, 506.5, 506.5),
+                                       outline=(95, 255, 115, 245), width=2)
+
+          # Re-apply the circular mask so all four outside corners stay transparent.
+          logo.putalpha(ImageChops.multiply(logo.getchannel("A"), mask))
           logo.save(path, format="PNG", optimize=True)
           logo.save("rebunar-logo-preview.png", format="PNG", optimize=True)
           print(f"Detected green ring bounds: ({left}, {top}) - ({right}, {bottom})")
