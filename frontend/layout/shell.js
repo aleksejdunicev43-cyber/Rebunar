@@ -33,6 +33,15 @@ function chatButton() {
   `;
 }
 
+function favoritesButton() {
+  return `
+    <button type="button" class="nav-favorites" data-route="favorites">
+      <span aria-hidden="true">☆</span>
+      <span>Избранное</span>
+    </button>
+  `;
+}
+
 function updateHeaderProfile(root, user) {
   const button = root.querySelector('.header-profile-button');
   if (!button) return;
@@ -111,6 +120,7 @@ export function createShell(root) {
         <aside class="sidebar">
           <nav class="main-navigation">
             <button type="button" data-route="home">Главная</button>
+            ${favoritesButton()}
             <button type="button" data-route="games">Игры</button>
             <button type="button" data-route="communities">Сообщества</button>
             ${chatButton()}
@@ -127,6 +137,7 @@ export function createShell(root) {
 
       <nav class="mobile-navigation">
         <button type="button" data-route="home">Главная</button>
+        ${favoritesButton()}
         <button type="button" data-route="games">Игры</button>
         <button type="button" data-route="communities">Сообщества</button>
         ${chatButton()}
