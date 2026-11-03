@@ -55,6 +55,25 @@ def init_db():
 
 
         con.execute("""
+            CREATE TABLE IF NOT EXISTS profile_progress (
+                user_id INTEGER PRIMARY KEY,
+                xp INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+        """)
+
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS user_avatar_frames (
+                user_id INTEGER NOT NULL,
+                frame_id TEXT NOT NULL,
+                unlocked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY(user_id, frame_id),
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+        """)
+
+        con.execute("""
             CREATE TABLE IF NOT EXISTS communities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 slug TEXT NOT NULL UNIQUE,
@@ -693,6 +712,85 @@ def upload_profile_avatar():
         )
 
     return jsonify({"ok": True, "avatar": avatar_url}), 200
+
+
+AVATAR_FRAMES = [
+    {"id": "rookie", "name": "Новичок", "rarity": "Обычная", "level": 1, "description": "Первая рамка участника Rebunar."},
+    {"id": "steel-blood", "name": "Стальная кровь", "rarity": "Редкая", "level": 5, "description": "Стальные грани и алое свечение."},
+    {"id": "cyber-edge", "name": "Кибер-контур", "rarity": "Эпическая", "level": 10, "description": "Неоновые сегменты и цифровая энергия."},
+    {"id": "inferno", "name": "Инферно", "rarity": "Легендарная", "level": 20, "description": "Пылающая рамка с раскалёнными деталями."},
+    {"id": "royal-blood", "name": "Королевская кровь", "rarity": "Легендарная", "level": 35, "description": "Корона, крылья и алые драгоценности."},
+    {"id": "void-dragon", "name": "Дракон пустоты", "rarity": "Мифическая", "level": 50, "description": "Редкая мифическая рамка с энергией бездны."}
+]
+
+def get_profile_frame_state(con, user_id):
+    con.execute(
+        "INSERT OR IGNORE INTO profile_progress (user_id, xp) VALUES (?, 0)",
+        (user_id,)
+    )
+    progress = con.execute(
+        "SELECT xp FROM profile_progress WHERE user_id = ?",
+        (user_id,)
+    ).fetchone()
+    xp = max(0, int(progress[0] or 0))
+    level = 1 + xp // 100
+    unlocked = [frame for frame in AVATAR_FRAMES if level >= frame["level"]]
+    for frame in unlocked:
+        con.execute(
+            "INSERT OR IGNORE INTO user_avatar_frames (user_id, frame_id) VALUES (?, ?)",
+            (user_id, frame["id"])
+        )
+    owned_rows = con.execute(
+        "SELECT frame_id FROM user_avatar_frames WHERE user_id = ?",
+        (user_id,)
+    ).fetchall()
+    owned = {row[0] for row in owned_rows}
+    equipped_row = con.execute(
+        "SELECT frame_id FROM user_avatar_frames WHERE user_id = ? AND frame_id = (SELECT equipped_frame FROM profile_progress WHERE user_id = ?)",
+        (user_id, user_id)
+    ).fetchone()
+    equipped = equipped_row[0] if equipped_row else "rookie"
+    current_xp = xp % 100
+    return {
+        "level": level,
+        "xp": current_xp,
+        "xp_to_next": 100,
+        "total_xp": xp,
+        "equipped": equipped,
+        "frames": [
+            {**frame, "unlocked": frame["id"] in owned, "equipped": frame["id"] == equipped}
+            for frame in AVATAR_FRAMES
+        ]
+    }
+
+@app.get("/api/profile/frames")
+def profile_frames():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+    with connect() as con:
+        con.execute("ALTER TABLE profile_progress ADD COLUMN equipped_frame TEXT NOT NULL DEFAULT 'rookie'") if "equipped_frame" not in {row[1] for row in con.execute("PRAGMA table_info(profile_progress)")} else None
+        state = get_profile_frame_state(con, user_id)
+    return jsonify(state), 200
+
+@app.post("/api/profile/frames/equip")
+def equip_profile_frame():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+    data = request.get_json(silent=True) or {}
+    frame_id = str(data.get("frame_id", "")).strip()
+    if frame_id not in {frame["id"] for frame in AVATAR_FRAMES}:
+        return jsonify({"error": "Неизвестная рамка"}), 400
+    with connect() as con:
+        con.execute("INSERT OR IGNORE INTO profile_progress (user_id, xp) VALUES (?, 0)", (user_id,))
+        state = get_profile_frame_state(con, user_id)
+        owned = next((frame for frame in state["frames"] if frame["id"] == frame_id and frame["unlocked"]), None)
+        if not owned:
+            return jsonify({"error": "Эта рамка ещё не открыта"}), 403
+        con.execute("UPDATE profile_progress SET equipped_frame = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?", (frame_id, user_id))
+        state = get_profile_frame_state(con, user_id)
+    return jsonify(state), 200
 
 
 @app.get("/uploads/avatars/<filename>")
