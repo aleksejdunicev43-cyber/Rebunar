@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.CookieManager
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
@@ -34,12 +35,12 @@ class MainActivity : Activity() {
     private lateinit var errorPanel: LinearLayout
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var hasEnteredForeground = false
-    private var skipResumeReload = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = Color.rgb(8, 9, 10)
         window.navigationBarColor = Color.rgb(8, 9, 10)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         buildScreen()
         configureWebView()
 
@@ -62,7 +63,11 @@ class MainActivity : Activity() {
             visibility = View.GONE
         }
 
-        webView = WebView(this)
+        webView = WebView(this).apply {
+            isFocusable = true
+            isFocusableInTouchMode = true
+            requestFocus(View.FOCUS_DOWN)
+        }
 
         errorPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -195,7 +200,6 @@ class MainActivity : Activity() {
                     addCategory(Intent.CATEGORY_OPENABLE)
                 }
                 return try {
-                    skipResumeReload = true
                     startActivityForResult(intent, FILE_PICKER_REQUEST)
                     true
                 } catch (_: Exception) {
