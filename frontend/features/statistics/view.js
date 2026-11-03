@@ -30,90 +30,126 @@ function formatDate(value, period) {
 }
 
 function createChart(registrations, period) {
+  const daily = new Map(
+    registrations.map(item => [item.date, Number(item.count) || 0])
+  );
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let series = [];
+
+  if (period === 'year') {
+    const firstMonth = new Date(today.getFullYear(), today.getMonth() - 11, 1);
+    const monthly = new Map();
+
+    registrations.forEach(item => {
+      const date = new Date(item.date + 'T00:00:00');
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      monthly.set(key, (monthly.get(key) || 0) + (Number(item.count) || 0));
+    });
+
+    series = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
+      const key = `${date.getFullYear()}-${date.getMonth()}`;
+      return {
+        date,
+        label: date.toLocaleDateString('ru-RU', { month: 'short' }),
+        count: monthly.get(key) || 0
+      };
+    });
+  } else {
+    const length = period === 'week' ? 7 : 30;
+    const firstDay = new Date(today);
+    firstDay.setDate(today.getDate() - length + 1);
+
+    series = Array.from({ length }, (_, index) => {
+      const date = new Date(firstDay);
+      date.setDate(firstDay.getDate() + index);
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0')
+      ].join('-');
+
+      return {
+        date,
+        label: date.toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'short'
+        }),
+        count: daily.get(key) || 0
+      };
+    });
+  }
+
+  let cumulative = 0;
+  series = series.map(item => {
+    cumulative += item.count;
+    return { ...item, cumulative };
+  });
+
   const width = 720;
   const height = 260;
   const padding = { top: 24, right: 24, bottom: 42, left: 42 };
-
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
+  const maxValue = Math.max(1, cumulative);
 
-  const values = registrations.map(item => item.count);
-  const maxValue = Math.max(1, ...values);
-  const points = registrations.map((item, index) => {
-    const x = padding.left +
-      (registrations.length > 1
-        ? index / (registrations.length - 1) * innerWidth
-        : innerWidth / 2);
+  const points = series.map((item, index) => ({
+    ...item,
+    x: padding.left + (series.length > 1
+      ? index / (series.length - 1) * innerWidth
+      : innerWidth / 2),
+    y: padding.top + innerHeight - item.cumulative / maxValue * innerHeight
+  }));
 
-    const y = padding.top +
-      innerHeight - item.count / maxValue * innerHeight;
+  const line = points.map((point, index) =>
+    `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
+  ).join(' ');
 
-    return {
-      x,
-      y,
-      date: item.date,
-      count: item.count
-    };
-  });
-
-  const line = points
-    .map((point, index) =>
-      `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
-    )
-    .join(' ');
-
+  const baseline = padding.top + innerHeight;
   const area = points.length
-    ? `${line} L ${points[points.length - 1].x} ${padding.top + innerHeight} L ${points[0].x} ${padding.top + innerHeight} Z`
+    ? `${line} L ${points[points.length - 1].x} ${baseline} L ${points[0].x} ${baseline} Z`
     : '';
 
   const grid = [0, 1, 2, 3].map(step => {
     const y = padding.top + innerHeight * step / 3;
     const value = Math.round(maxValue * (3 - step) / 3);
-
     return `
-      <line x1="${padding.left}" y1="${y}"
-            x2="${width - padding.right}" y2="${y}"
-            class="statistics-grid-line"/>
-      <text x="${padding.left - 10}" y="${y + 4}"
-            text-anchor="end" class="statistics-axis-label">${value}</text>
+      <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="statistics-grid-line"/>
+      <text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" class="statistics-axis-label">${value}</text>
     `;
   }).join('');
 
-  const markers = points.map(point => `
-    <circle cx="${point.x}" cy="${point.y}" r="4"
-            class="statistics-point">
-      <title>${point.date}: ${point.count}</title>
+  const labelIndexes = period === 'week'
+    ? [0, 2, 4, 6]
+    : period === 'month'
+      ? [0, 7, 14, 21, 29]
+      : [0, 2, 4, 6, 8, 10, 11];
+
+  const labels = labelIndexes.map(index => points[index]).filter(Boolean).map(point => `
+    <text x="${point.x}" y="${height - 12}" text-anchor="middle" class="statistics-axis-label">${point.label}</text>
+  `).join('');
+
+  const markers = points.filter((point, index) =>
+    index === 0 || index === Math.floor(points.length / 2) || index === points.length - 1
+  ).map(point => `
+    <circle cx="${point.x}" cy="${point.y}" r="5" class="statistics-point">
+      <title>${point.label}: +${point.count}, накопительно: ${point.cumulative}</title>
     </circle>
   `).join('');
 
-  const labels = points
-    .filter((point, index) =>
-      index === 0 ||
-      index === points.length - 1 ||
-      (period === 'week' && index === Math.floor(points.length / 2)) ||
-      (period !== 'week' && index % Math.ceil(points.length / 5) === 0)
-    )
-    .map(point => `
-      <text x="${point.x}" y="${height - 12}"
-            text-anchor="middle" class="statistics-axis-label">
-        ${formatDate(point.date, period)}
-      </text>
-    `).join('');
-
   return `
-    <svg class="statistics-chart" viewBox="0 0 ${width} ${height}"
-         role="img" aria-label="График регистраций">
+    <svg class="statistics-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Накопительный график роста регистраций">
       <defs>
         <linearGradient id="statisticsAreaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ed3548" stop-opacity=".32"/>
+          <stop offset="0%" stop-color="#ed3548" stop-opacity=".34"/>
           <stop offset="100%" stop-color="#ed3548" stop-opacity="0"/>
         </linearGradient>
       </defs>
       ${grid}
-      ${area ? `<path d="${area}" class="statistics-area"/>` : ''}
-      ${points.length > 1
-        ? `<path d="${line}" class="statistics-line"/>`
-        : ''}
+      <path d="${area}" class="statistics-area"/>
+      <path d="${line}" class="statistics-line"/>
       ${markers}
       ${labels}
     </svg>
