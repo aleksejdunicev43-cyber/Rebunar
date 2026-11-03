@@ -2,6 +2,7 @@
    The photo owns the entire inside of the avatar circle.
    Decorative frame pixels are allowed only from the avatar edge outward. */
 .profile-avatar-button {
+  position: relative !important;
   overflow: visible !important;
   border: 0 !important;
   background: transparent !important;
