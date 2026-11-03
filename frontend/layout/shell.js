@@ -79,7 +79,7 @@ export function createShell(root) {
   </div>
 
   <div class="header-logo">
-    <img class="app-logo-image" src="/new/build/rebunar-logo.svg" alt="REBUNAR">
+    <img class="app-logo-image" src="/new/build/rebunar_avatar.png" alt="REBUNAR">
   </div>
 
   <div class="header-actions">
