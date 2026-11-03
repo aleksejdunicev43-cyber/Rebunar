@@ -129,11 +129,29 @@ jobs:
               f"https://{host}/api/v0/user/{quote(username, safe='')}"
               "/webapps/rebunar.pythonanywhere.com/reload/"
           )
+          reload_completed = False
           for attempt in range(1, 7):
-              response = requests.post(reload_url, headers=headers, timeout=60)
+              try:
+                  response = requests.post(
+                      reload_url,
+                      headers=headers,
+                      timeout=(15, 120),
+                  )
+              except requests.RequestException as exc:
+                  if attempt == 6:
+                      raise SystemExit(
+                          f"Webapp reload failed: network error after 6 attempts: {exc}"
+                      )
+                  delay = min(10 * attempt, 60)
+                  print(f"PythonAnywhere reload network error; retry {attempt + 1}/6 in {delay}s: {exc}")
+                  time.sleep(delay)
+                  continue
+
               if response.status_code in (200, 201, 202, 204):
                   print("PythonAnywhere deployment and webapp reload completed.")
+                  reload_completed = True
                   break
+
               if response.status_code == 429 and attempt < 6:
                   retry_after = response.headers.get("Retry-After")
                   try:
@@ -143,7 +161,11 @@ jobs:
                   print(f"PythonAnywhere reload rate limit; retry {attempt + 1}/6 in {delay}s")
                   time.sleep(delay)
                   continue
+
               raise SystemExit(
                   f"Webapp reload failed: HTTP {response.status_code} {response.text[:500]}"
               )
+
+          if not reload_completed:
+              raise SystemExit("Webapp reload did not complete after 6 attempts.")
           PY
