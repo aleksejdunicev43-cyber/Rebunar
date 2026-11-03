@@ -16,19 +16,51 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare circular avatar icon
+      - name: Prepare full circular Rebunar logo
         run: |
-          python -m pip install Pillow
+          python -m pip install Pillow numpy
           python - <<'PY'
           from PIL import Image, ImageDraw
+          import numpy as np
+
           path = "android-rebunar/app/src/main/res/drawable/rebunar_logo.png"
           source = Image.open(path).convert("RGBA")
-          # Keep only the anime character portrait; remove the large Rebunar lettermark and wordmark.
-          portrait = source.crop((400, 25, 800, 425)).resize((512, 512), Image.Resampling.LANCZOS)
+          pixels = np.asarray(source.convert("RGB"))
+          red, green, blue = pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]
+
+          # Find the original green circular outline, not the portrait or lettermark.
+          green_ring = (green > 65) & (green > red * 1.22) & (green > blue * 1.12)
+          ys, xs = np.where(green_ring)
+          if len(xs) < 100:
+              raise RuntimeError("Could not reliably detect the green outer circle; refusing to crop the logo.")
+
+          left, right = int(xs.min()), int(xs.max())
+          top, bottom = int(ys.min()), int(ys.max())
+          cx = (left + right) / 2
+          cy = (top + bottom) / 2
+          radius = min(right - left, bottom - top) / 2
+
+          # Keep the entire circle: big R, character, REBUNAR wordmark and green rim.
+          # Only pixels outside the detected circular boundary become transparent.
+          pad = 2
+          x0 = max(0, int(round(cx - radius - pad)))
+          y0 = max(0, int(round(cy - radius - pad)))
+          x1 = min(source.width, int(round(cx + radius + pad + 1)))
+          y1 = min(source.height, int(round(cy + radius + pad + 1)))
+          logo = source.crop((x0, y0, x1, y1))
+          side = min(logo.size)
+          crop_left = (logo.width - side) // 2
+          crop_top = (logo.height - side) // 2
+          logo = logo.crop((crop_left, crop_top, crop_left + side, crop_top + side))
+          logo = logo.resize((512, 512), Image.Resampling.LANCZOS)
+
           mask = Image.new("L", (512, 512), 0)
-          ImageDraw.Draw(mask).ellipse((2, 2, 510, 510), fill=255)
-          portrait.putalpha(mask)
-          portrait.save(path, format="PNG", optimize=True)
+          ImageDraw.Draw(mask).ellipse((1, 1, 510, 510), fill=255)
+          logo.putalpha(mask)
+          logo.save(path, format="PNG", optimize=True)
+          logo.save("rebunar-logo-preview.png", format="PNG", optimize=True)
+          print(f"Detected green ring bounds: ({left}, {top}) - ({right}, {bottom})")
+          print(f"Original image: {source.size}; circular logo exported: {logo.size}")
           PY
 
       - name: Set up JDK 17
@@ -50,5 +82,13 @@ jobs:
         with:
           name: rebunar-android-debug
           path: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload processed logo preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-circular-logo-preview
+          path: rebunar-logo-preview.png
           if-no-files-found: error
           retention-days: 14
