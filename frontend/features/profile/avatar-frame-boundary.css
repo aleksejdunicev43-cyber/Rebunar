@@ -5,8 +5,8 @@
   inset: -19% !important;
   overflow: visible !important;
   pointer-events: none;
-  -webkit-mask-image: radial-gradient(circle at center, transparent 0 73%, #000 73.4% 100%);
-  mask-image: radial-gradient(circle at center, transparent 0 73%, #000 73.4% 100%);
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
+  mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-size: 100% 100%;
@@ -15,4 +15,23 @@
 
 .profile-avatar-button .profile-avatar-frame .avatar-frame-art {
   overflow: visible !important;
+}
+
+/* Рамка новичка — чистая стальная окантовка без второго белого круга. */
+.profile-avatar-button .profile-avatar-frame.frame-rookie .avatar-frame-art {
+  display: none !important;
+}
+
+.profile-avatar-button .profile-avatar-frame.frame-rookie::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72.5%;
+  height: 72.5%;
+  box-sizing: content-box;
+  transform: translate(-50%, -50%);
+  border: 4px solid #aebbc7;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #596875, 0 2px 8px rgba(0,0,0,.7);
 }
