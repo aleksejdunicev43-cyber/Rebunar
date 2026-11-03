@@ -123,9 +123,11 @@ function renderMessages(messages) {
   list.scrollTop = list.scrollHeight;
 }
 
-function renderFavoriteNotes() {
+function renderFavoriteNotes({ scrollToBottom = false, scrollTop } = {}) {
   const list = outletRef?.querySelector('[data-message-list]');
   if (!list) return;
+
+  const previousScrollTop = Number.isFinite(scrollTop) ? scrollTop : list.scrollTop;
 
   list.innerHTML = notes.length ? notes.map(note => `
     <article class="messages-favorite-note">
@@ -137,7 +139,7 @@ function renderFavoriteNotes() {
     </article>
   `).join('') : '<div class="messages-status">Здесь будут твои личные заметки</div>';
 
-  list.scrollTop = list.scrollHeight;
+  list.scrollTop = scrollToBottom ? list.scrollHeight : previousScrollTop;
 }
 
 async function loadChats() {
@@ -205,7 +207,7 @@ async function openFavorite() {
 
   try {
     notes = await getSelfNotes();
-    renderFavoriteNotes();
+    renderFavoriteNotes({ scrollToBottom: true });
   } catch (error) {
     showStatus(conversation.querySelector('[data-message-list]'), error.message);
   }
@@ -325,10 +327,12 @@ export function renderMessagesScreen(outlet) {
 
     const deleteButton = event.target.closest('[data-delete-note]');
     if (deleteButton) {
+      const notesList = outlet.querySelector('[data-message-list]');
+      const previousScrollTop = notesList?.scrollTop ?? 0;
       try {
         await deleteSelfNote(deleteButton.dataset.deleteNote);
         notes = await getSelfNotes();
-        renderFavoriteNotes();
+        renderFavoriteNotes({ scrollTop: previousScrollTop });
         renderChatList(search.value);
       } catch (error) {
         alert(error.message);
@@ -369,7 +373,7 @@ export function renderMessagesScreen(outlet) {
         await createSelfNote(text);
         input.value = '';
         notes = await getSelfNotes();
-        renderFavoriteNotes();
+        renderFavoriteNotes({ scrollToBottom: true });
         renderChatList(search.value);
       } catch (error) {
         alert(error.message);
