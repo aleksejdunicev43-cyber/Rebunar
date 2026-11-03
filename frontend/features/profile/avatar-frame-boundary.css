@@ -2,12 +2,16 @@
    The photo owns the entire inside of the avatar circle.
    Decorative frame pixels are allowed only from the avatar edge outward. */
 .profile-avatar-button .profile-avatar-frame {
+  position: absolute !important;
   inset: -19% !important;
+  z-index: 3 !important;
+  display: block !important;
   overflow: visible !important;
-  pointer-events: none;
+  pointer-events: none !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  border-radius: 50% !important;
   -webkit-mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
   mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
   -webkit-mask-repeat: no-repeat;
@@ -17,7 +21,24 @@
 }
 
 .profile-avatar-button .profile-avatar-frame .avatar-frame-art {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
   overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Полностью отменяем старые индивидуальные inset/border/box-shadow рамок. */
+.profile-avatar-button .profile-avatar-frame.frame-steel-blood,
+.profile-avatar-button .profile-avatar-frame.frame-cyber-edge,
+.profile-avatar-button .profile-avatar-frame.frame-inferno,
+.profile-avatar-button .profile-avatar-frame.frame-royal-blood,
+.profile-avatar-button .profile-avatar-frame.frame-void-dragon {
+  inset: -19% !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 /* Рамка новичка — только одна чистая стальная окантовка. */
