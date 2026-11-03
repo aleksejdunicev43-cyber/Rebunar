@@ -101,7 +101,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
     <p class="profile-customization-description">Открывай рамки за уровни. Награды выдаются только на особых рубежах — не на каждом уровне.</p>
     <div class="profile-frame-progress" aria-live="polite">Загружаем коллекцию…</div>
     <div class="profile-frame-grid"></div>
-    <p class="profile-frame-footnote">Новые рамки открываются на уровнях 5, 10, 20, 35 и 50. Между ними ты получаешь только уровень.</p>
+    <p class="profile-frame-footnote">Повышай уровень в играх и сообществах Rebunar, чтобы разблокировать всю коллекцию.</p>
   `;
   customization.appendChild(section);
 
@@ -133,13 +133,13 @@ async function renderAvatarFrameCollection(container, customization, user) {
       const unlocked = frame.id === 'rookie' || Boolean(frame.unlocked);
       const equipped = Boolean(frame.equipped);
       return `
-        <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped' : ''}"
-          data-frame-id="${escapeHTML(frame.id)}" ${unlocked ? '' : 'disabled'}
+        <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}"
+          data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''}
           aria-pressed="${equipped}" title="${escapeHTML(frame.description)}">
           <span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span>
           <span class="profile-frame-name">${escapeHTML(frame.name)}</span>
           <span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span>
-          <span class="profile-frame-level">${unlocked ? (equipped ? 'Надета' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span>
+          <span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span>
         </button>`;
     }).join('');
     grid.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
@@ -176,7 +176,7 @@ function renderFrameState(container, section, state) {
   section.querySelector('.profile-frame-grid').innerHTML = (state.frames || []).map(frame => {
     const unlocked = frame.id === 'rookie' || Boolean(frame.unlocked);
     const equipped = Boolean(frame.equipped);
-    return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${unlocked ? '' : 'disabled'} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надета' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
+    return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
   }).join('');
   section.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
     const frame = (state.frames || [])[index];
