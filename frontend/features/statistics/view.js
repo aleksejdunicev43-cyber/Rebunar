@@ -1,281 +1,94 @@
 /**
  * REBUNAR — STATISTICS VIEW
- * Экран публичной статистики платформы.
+ * Единая история фактического количества аккаунтов.
  */
+import { getStatisticsSummary, getStatisticsHistory } from './api.js';
 
-import {
-  getStatisticsSummary,
-  getStatisticsHistory
-} from './api.js';
-
-const PERIODS = {
-  week: 'Неделя',
-  month: 'Месяц',
-  year: 'Год'
-};
-
-function formatDate(value, period) {
-  const date = new Date(value + 'T00:00:00');
-
-  if (period === 'year') {
-    return date.toLocaleDateString('ru-RU', {
-      month: 'short'
-    });
-  }
-
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short'
-  });
+function dateKey(date) {
+  return [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
+}
+function formatDate(value, options={day:'numeric',month:'short'}) {
+  return new Date(value+'T00:00:00').toLocaleDateString('ru-RU',options);
 }
 
-function createChart(registrations, period) {
-  const daily = new Map(
-    registrations.map(item => [item.date, Number(item.count) || 0])
-  );
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  let series = [];
-
-  if (period === 'year') {
-    const firstMonth = new Date(today.getFullYear(), today.getMonth() - 11, 1);
-    const monthly = new Map();
-
-    registrations.forEach(item => {
-      const date = new Date(item.date + 'T00:00:00');
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      monthly.set(key, (monthly.get(key) || 0) + (Number(item.count) || 0));
-    });
-
-    series = Array.from({ length: 12 }, (_, index) => {
-      const date = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + index, 1);
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      return {
-        date,
-        label: date.toLocaleDateString('ru-RU', { month: 'short' }),
-        count: monthly.get(key) || 0
-      };
-    });
-  } else {
-    const length = period === 'week' ? 7 : 30;
-    const firstDay = new Date(today);
-    firstDay.setDate(today.getDate() - length + 1);
-
-    series = Array.from({ length }, (_, index) => {
-      const date = new Date(firstDay);
-      date.setDate(firstDay.getDate() + index);
-      const key = [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, '0'),
-        String(date.getDate()).padStart(2, '0')
-      ].join('-');
-
-      return {
-        date,
-        label: date.toLocaleDateString('ru-RU', {
-          day: 'numeric',
-          month: 'short'
-        }),
-        count: daily.get(key) || 0
-      };
-    });
+function createChart(history,currentTotal) {
+  const events=new Map(history.map(item=>[item.date,Number(item.total)||0]));
+  const today=new Date(); today.setHours(0,0,0,0);
+  const firstDate=history.length?new Date(history[0].date+'T00:00:00'):new Date(today);
+  const series=[]; let lastTotal=0;
+  for(const date=new Date(firstDate);date<=today;date.setDate(date.getDate()+1)){
+    const key=dateKey(date);
+    if(events.has(key)) lastTotal=events.get(key);
+    series.push({date:key,label:formatDate(key),total:lastTotal});
   }
+  if(!series.length) series.push({date:dateKey(today),label:formatDate(dateKey(today)),total:currentTotal});
+  else series[series.length-1].total=currentTotal;
 
-  let cumulative = 0;
-  series = series.map(item => {
-    cumulative += item.count;
-    return { ...item, cumulative };
-  });
-
-  const width = 720;
-  const height = 260;
-  const padding = { top: 24, right: 24, bottom: 42, left: 42 };
-  const innerWidth = width - padding.left - padding.right;
-  const innerHeight = height - padding.top - padding.bottom;
-  const maxValue = Math.max(1, cumulative);
-
-  const points = series.map((item, index) => ({
-    ...item,
-    x: padding.left + (series.length > 1
-      ? index / (series.length - 1) * innerWidth
-      : innerWidth / 2),
-    y: padding.top + innerHeight - item.cumulative / maxValue * innerHeight
+  const width=720,height=260,padding={top:24,right:24,bottom:42,left:48};
+  const innerWidth=width-padding.left-padding.right,innerHeight=height-padding.top-padding.bottom;
+  const maxValue=Math.max(1,...series.map(item=>item.total))*1.12;
+  const points=series.map((item,index)=>({...item,
+    x:padding.left+(series.length>1?index/(series.length-1)*innerWidth:innerWidth/2),
+    y:padding.top+innerHeight-item.total/maxValue*innerHeight
   }));
-
-  const line = points.map((point, index) =>
-    `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
-  ).join(' ');
-
-  const baseline = padding.top + innerHeight;
-  const area = points.length
-    ? `${line} L ${points[points.length - 1].x} ${baseline} L ${points[0].x} ${baseline} Z`
-    : '';
-
-  const grid = [0, 1, 2, 3].map(step => {
-    const y = padding.top + innerHeight * step / 3;
-    const value = Math.round(maxValue * (3 - step) / 3);
-    return `
-      <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="statistics-grid-line"/>
-      <text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" class="statistics-axis-label">${value}</text>
-    `;
+  const line=points.map((p,i)=>`${i===0?'M':'L'} ${p.x} ${p.y}`).join(' ');
+  const baseline=padding.top+innerHeight;
+  const area=`${line} L ${points[points.length-1].x} ${baseline} L ${points[0].x} ${baseline} Z`;
+  const grid=[0,1,2,3].map(step=>{
+    const y=padding.top+innerHeight*step/3,value=Math.round(maxValue*(3-step)/3);
+    return `<line x1="${padding.left}" y1="${y}" x2="${width-padding.right}" y2="${y}" class="statistics-grid-line"/><text x="${padding.left-10}" y="${y+4}" text-anchor="end" class="statistics-axis-label">${value}</text>`;
   }).join('');
-
-  const labelIndexes = period === 'week'
-    ? [0, 2, 4, 6]
-    : period === 'month'
-      ? [0, 7, 14, 21, 29]
-      : [0, 2, 4, 6, 8, 10, 11];
-
-  const labels = labelIndexes.map(index => points[index]).filter(Boolean).map(point => `
-    <text x="${point.x}" y="${height - 12}" text-anchor="middle" class="statistics-axis-label">${point.label}</text>
-  `).join('');
-
-  const markers = points.filter((point, index) =>
-    index === 0 || index === Math.floor(points.length / 2) || index === points.length - 1
-  ).map(point => `
-    <circle cx="${point.x}" cy="${point.y}" r="5" class="statistics-point">
-      <title>${point.label}: +${point.count}, накопительно: ${point.cumulative}</title>
-    </circle>
-  `).join('');
-
+  const labelIndexes=[...new Set([0,Math.floor((points.length-1)/2),points.length-1])];
+  const labels=labelIndexes.map((index,i)=>points[index]).filter(Boolean).map((p,i)=>
+    `<text x="${p.x}" y="${height-12}" text-anchor="middle" class="statistics-axis-label">${i===0?formatDate(p.date,{month:'short',year:'numeric'}):p.label}</text>`
+  ).join('');
+  const markerIndexes=new Set(labelIndexes);
+  const markers=points.filter((p,i)=>markerIndexes.has(i)).map(p=>
+    `<circle cx="${p.x}" cy="${p.y}" r="5" class="statistics-point"><title>${p.label}: ${p.total} аккаунтов</title></circle>`
+  ).join('');
   return `
-    <svg class="statistics-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Накопительный график роста регистраций">
-      <defs>
-        <linearGradient id="statisticsAreaGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ed3548" stop-opacity=".34"/>
-          <stop offset="100%" stop-color="#ed3548" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${grid}
-      <path d="${area}" class="statistics-area"/>
-      <path d="${line}" class="statistics-line"/>
-      ${markers}
-      ${labels}
-    </svg>
-  `;
+    <svg class="statistics-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="История общего количества аккаунтов Rebunar">
+      <defs><linearGradient id="statisticsAreaGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ed3548" stop-opacity=".34"/><stop offset="100%" stop-color="#ed3548" stop-opacity="0"/></linearGradient></defs>
+      ${grid}<path d="${area}" class="statistics-area"/><path d="${line}" class="statistics-line"/>${markers}${labels}
+    </svg>`;
 }
 
 export async function renderStatisticsScreen(outlet) {
-  outlet.innerHTML = `
+  outlet.innerHTML=`
     <section class="screen statistics-screen">
-      <div class="statistics-heading">
-        <div>
-          <button class="screen-back" type="button" data-route="settings" aria-label="Назад к настройкам" title="Назад к настройкам">
-            <span aria-hidden="true">⤺</span>
-          </button>
-          <span class="statistics-eyebrow">REBUNAR / ANALYTICS</span>
-          <h1>Статистика</h1>
-          <p>Развитие и активность платформы</p>
-        </div>
-      </div>
-
+      <div class="statistics-heading"><div>
+        <button class="screen-back" type="button" data-route="settings" aria-label="Назад к настройкам" title="Назад к настройкам"><span aria-hidden="true">⤺</span></button>
+        <span class="statistics-eyebrow">REBUNAR / ANALYTICS</span><h1>Статистика</h1><p>Развитие и активность платформы</p>
+      </div></div>
       <div class="statistics-summary-grid">
-        <article class="statistics-card">
-          <span>Всего аккаунтов</span>
-          <strong id="statistics-total">—</strong>
-        </article>
-
-        <article class="statistics-card">
-          <span>Сейчас онлайн</span>
-          <strong id="statistics-online">—</strong>
-        </article>
+        <article class="statistics-card"><span>Всего аккаунтов</span><strong id="statistics-total">—</strong></article>
+        <article class="statistics-card"><span>Сейчас онлайн</span><strong id="statistics-online">—</strong></article>
       </div>
-
       <section class="statistics-chart-card">
-        <div class="statistics-chart-header">
-          <div>
-            <h2>Рост регистраций</h2>
-            <p id="statistics-period-total">Загрузка данных...</p>
-          </div>
-
-          <div class="statistics-periods">
-            ${Object.entries(PERIODS).map(([key, label]) => `
-              <button type="button"
-                      data-statistics-period="${key}"
-                      class="${key === 'week' ? 'is-active' : ''}">
-                ${label}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        <div id="statistics-chart-container"
-             class="statistics-chart-container">
-          <p>Загружаем график...</p>
-        </div>
+        <div class="statistics-chart-header"><div><h2>Количество аккаунтов</h2><p id="statistics-period-total">Загрузка истории...</p></div><span class="statistics-all-time">ЗА ВСЁ ВРЕМЯ</span></div>
+        <div id="statistics-chart-container" class="statistics-chart-container"><p>Загружаем график...</p></div>
       </section>
+      <p class="statistics-footnote">График учитывает новые регистрации и удаления аккаунтов.</p>
+    </section>`;
 
-      <p class="statistics-footnote">
-        Данные обновляются с сервера Rebunar.
-      </p>
-    </section>
-  `;
-
-  const totalElement = outlet.querySelector('#statistics-total');
-  const onlineElement = outlet.querySelector('#statistics-online');
-  const periodTotal = outlet.querySelector('#statistics-period-total');
-  const chartContainer = outlet.querySelector('#statistics-chart-container');
-  const periodButtons = outlet.querySelectorAll('[data-statistics-period]');
-
-  let selectedPeriod = 'week';
-  let requestNumber = 0;
-
-  async function loadPeriod(period) {
-    selectedPeriod = period;
-    const currentRequest = ++requestNumber;
-
-    periodButtons.forEach(button => {
-      button.classList.toggle(
-        'is-active',
-        button.dataset.statisticsPeriod === period
-      );
-    });
-
-    chartContainer.innerHTML = '<p>Загружаем график...</p>';
-    periodTotal.textContent = 'Загрузка данных...';
-
-    try {
-      const data = await getStatisticsHistory(period);
-
-      if (currentRequest !== requestNumber) return;
-
-      const registrations = data.registrations || [];
-      const total = registrations.reduce(
-        (sum, item) => sum + item.count,
-        0
-      );
-
-      periodTotal.textContent = `${total} новых регистраций за период`;
-
-      chartContainer.innerHTML = registrations.length
-        ? createChart(registrations, period)
-        : '<p class="statistics-empty">Пока нет регистраций за этот период.</p>';
-    } catch (error) {
-      if (currentRequest !== requestNumber) return;
-
-      chartContainer.innerHTML =
-        '<p class="statistics-error">Не удалось загрузить график.</p>';
-
-      periodTotal.textContent = error.message;
-    }
-  }
-
-  periodButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      loadPeriod(button.dataset.statisticsPeriod);
-    });
-  });
-
+  const totalElement=outlet.querySelector('#statistics-total');
+  const onlineElement=outlet.querySelector('#statistics-online');
+  const historyLabel=outlet.querySelector('#statistics-period-total');
+  const chartContainer=outlet.querySelector('#statistics-chart-container');
   try {
-    const summary = await getStatisticsSummary();
-    totalElement.textContent = summary.total_users ?? 0;
-    onlineElement.textContent = summary.online_users ?? 0;
-  } catch (error) {
-    totalElement.textContent = '—';
-    onlineElement.textContent = '—';
-    console.error('Rebunar: ошибка статистики:', error);
+    const [summary,history]=await Promise.all([getStatisticsSummary(),getStatisticsHistory()]);
+    const total=Number(summary.total_users??history.current_total??0);
+    totalElement.textContent=total.toLocaleString('ru-RU');
+    onlineElement.textContent=Number(summary.online_users??0).toLocaleString('ru-RU');
+    const points=history.points||[],firstDate=points[0]?.date;
+    historyLabel.textContent=firstDate
+      ? `С ${formatDate(firstDate,{day:'numeric',month:'long',year:'numeric'})} · сейчас ${total.toLocaleString('ru-RU')}`
+      : `Сейчас ${total.toLocaleString('ru-RU')} аккаунтов`;
+    chartContainer.innerHTML=createChart(points,total);
+  } catch(error) {
+    totalElement.textContent='—'; onlineElement.textContent='—';
+    chartContainer.innerHTML='<p class="statistics-error">Не удалось загрузить статистику.</p>';
+    historyLabel.textContent=error.message||'Ошибка загрузки';
+    console.error('Rebunar: ошибка статистики:',error);
   }
-
-  await loadPeriod(selectedPeriod);
 }

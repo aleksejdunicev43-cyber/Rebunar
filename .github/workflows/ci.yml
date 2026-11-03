@@ -121,9 +121,13 @@ jobs:
               relative = file.relative_to(build).as_posix()
               remote = f"/home/{username}/rebunar_next/frontend/build/{relative}"
               url = base + quote(remote, safe="/")
-              upload_with_retry(file, relative, url, index, len(files))
-              if index < len(files):
-                  time.sleep(2.5)
+              upload_with_retry(file, relative, url, index, len(files) + 1)
+              time.sleep(2.5)
+
+          backend_file = Path("server.py")
+          backend_remote = f"/home/{username}/rebunar_next/server.py"
+          backend_url = base + quote(backend_remote, safe="/")
+          upload_with_retry(backend_file, "server.py", backend_url, len(files) + 1, len(files) + 1)
 
           reload_url = (
               f"https://{host}/api/v0/user/{quote(username, safe='')}"

@@ -108,6 +108,40 @@ def init_db():
         """)
 
         con.execute("""
+            CREATE TABLE IF NOT EXISTS account_count_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                delta INTEGER NOT NULL,
+                recorded_at TEXT NOT NULL,
+                event_type TEXT NOT NULL
+            )
+        """)
+
+        con.execute("""
+            INSERT INTO account_count_events (delta, recorded_at, event_type)
+            SELECT COUNT(*), CURRENT_TIMESTAMP, 'baseline'
+            FROM users
+            WHERE NOT EXISTS (SELECT 1 FROM account_count_events)
+        """)
+
+        con.execute("""
+            CREATE TRIGGER IF NOT EXISTS users_count_after_insert
+            AFTER INSERT ON users
+            BEGIN
+                INSERT INTO account_count_events (delta, recorded_at, event_type)
+                VALUES (1, CURRENT_TIMESTAMP, 'registration');
+            END
+        """)
+
+        con.execute("""
+            CREATE TRIGGER IF NOT EXISTS users_count_after_delete
+            AFTER DELETE ON users
+            BEGIN
+                INSERT INTO account_count_events (delta, recorded_at, event_type)
+                VALUES (-1, CURRENT_TIMESTAMP, 'deletion');
+            END
+        """)
+
+        con.execute("""
             CREATE TABLE IF NOT EXISTS user_presence (
                 presence_id TEXT PRIMARY KEY,
                 user_id INTEGER NOT NULL,
@@ -194,30 +228,31 @@ def statistics_summary():
 
 @app.get("/api/statistics/history")
 def statistics_history():
-    periods = {
-        "week": 7,
-        "month": 30,
-        "year": 365
-    }
-    period = request.args.get("period", "week")
-    days = periods.get(period)
-
-    if days is None:
-        return jsonify({"error": "Допустимые периоды: week, month, year"}), 400
-
     with connect() as con:
         rows = con.execute("""
-            SELECT date(registered_at) AS day, COUNT(*) AS count
-            FROM registration_events
-            WHERE registered_at >= datetime('now', ?)
-            GROUP BY date(registered_at)
+            WITH daily AS (
+                SELECT date(recorded_at) AS day, SUM(delta) AS delta
+                FROM account_count_events
+                GROUP BY date(recorded_at)
+            )
+            SELECT
+                day,
+                delta,
+                SUM(delta) OVER (
+                    ORDER BY day
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                ) AS total
+            FROM daily
             ORDER BY day ASC
-        """, (f"-{days - 1} days",)).fetchall()
+        """).fetchall()
+        current_total = con.execute(
+            "SELECT COUNT(*) FROM users"
+        ).fetchone()[0]
 
     return jsonify({
-        "period": period,
-        "registrations": [
-            {"date": row[0], "count": row[1]}
+        "current_total": current_total,
+        "points": [
+            {"date": row[0], "delta": row[1], "total": row[2]}
             for row in rows
         ]
     })

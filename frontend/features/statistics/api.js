@@ -9,12 +9,6 @@ export function getStatisticsSummary() {
   return api.get('/statistics/summary');
 }
 
-export function getStatisticsHistory(period = 'week') {
-  const allowedPeriods = ['week', 'month', 'year'];
-
-  if (!allowedPeriods.includes(period)) {
-    throw new Error('Недопустимый период статистики');
-  }
-
-  return api.get(`/statistics/history?period=${period}`);
+export function getStatisticsHistory() {
+  return api.get('/statistics/history');
 }
