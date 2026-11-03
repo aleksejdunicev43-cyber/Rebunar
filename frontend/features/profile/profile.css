@@ -976,8 +976,8 @@
 /* LOCKED CUSTOM ART OPTIONS */
 .profile-locked-customization {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 7px;
   margin-top: 12px;
 }
 .profile-locked-option {
@@ -986,15 +986,17 @@
   justify-content: center;
   gap: 7px;
   min-width: 0;
-  min-height: 40px;
-  padding: 8px 10px;
+  min-height: 36px;
+  padding: 7px 10px;
   border: 1px dashed var(--border);
   border-radius: 9px;
   background: color-mix(in srgb, var(--bg-panel-2) 55%, transparent);
   color: var(--text-muted);
   font: inherit;
   font-size: 11px;
-  line-height: 1.3;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
   opacity: .78;
   cursor: not-allowed;
 }
@@ -1003,7 +1005,20 @@
   font-size: 13px;
 }
 @media(max-width:420px) {
-  .profile-locked-customization {
-    grid-template-columns: 1fr;
+  .profile-locked-option { font-size: 10.5px; }
+}
+
+/* Keep clear space above the fixed mobile navigation. */
+@media(max-width:760px) {
+  #screen-outlet:has(.profile-screen) {
+    padding-bottom: 20px;
+    scroll-padding-bottom: 20px;
+  }
+  .profile-screen,
+  .profile-screen[data-profile-theme] {
+    padding-bottom: 20px !important;
+  }
+  .profile-screen .profile-card {
+    margin-bottom: 20px;
   }
 }
