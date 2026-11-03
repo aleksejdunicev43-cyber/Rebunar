@@ -840,3 +840,41 @@
  .profile-screen[data-profile-theme]{padding:10px;border-radius:12px}
  .profile-screen[data-profile-theme] .profile-card{padding:15px}
 }
+
+/* REBUNAR — PROFILE FULL-WIDTH / FEED-HEIGHT LAYOUT */
+.main-content:has(.profile-screen) {
+  min-height: calc(100vh - 106px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.profile-screen,
+.profile-screen[data-profile-theme] {
+  width: 100%;
+  max-width: none;
+  min-height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.profile-screen[data-profile-theme] {
+  box-sizing: border-box;
+}
+.profile-screen .profile-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 760px) {
+  .main-content:has(.profile-screen) {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+  }
+  .profile-screen,
+  .profile-screen[data-profile-theme] {
+    min-height: 100%;
+    padding: 10px;
+  }
+}
