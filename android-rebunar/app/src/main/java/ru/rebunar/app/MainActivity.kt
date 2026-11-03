@@ -238,13 +238,7 @@ class MainActivity : Activity() {
         super.onResume()
         if (!hasEnteredForeground) {
             hasEnteredForeground = true
-            return
         }
-        if (skipResumeReload) {
-            skipResumeReload = false
-            return
-        }
-        if (::webView.isInitialized && webView.url != null) webView.reload()
     }
 
     override fun onBackPressed() {
