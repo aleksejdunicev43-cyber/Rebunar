@@ -3,6 +3,7 @@
  */
 import { api } from '../../shared/api/client.js';
 import './avatar-frame-boundary.css';
+import './collection-ui.js';
 
 export function fetchAvatarFrames() {
   return api.get('/profile/frames');
