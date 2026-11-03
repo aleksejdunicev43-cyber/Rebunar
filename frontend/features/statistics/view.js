@@ -103,6 +103,12 @@ function createChart(registrations, period) {
   return `
     <svg class="statistics-chart" viewBox="0 0 ${width} ${height}"
          role="img" aria-label="График регистраций">
+      <defs>
+        <linearGradient id="statisticsAreaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ed3548" stop-opacity=".32"/>
+          <stop offset="100%" stop-color="#ed3548" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
       ${grid}
       ${area ? `<path d="${area}" class="statistics-area"/>` : ''}
       ${points.length > 1
