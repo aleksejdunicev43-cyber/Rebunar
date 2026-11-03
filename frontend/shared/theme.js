@@ -1,60 +1,51 @@
-const THEME_STORAGE_KEY = 'rebunar-theme';
+const THEME_STORAGE_PREFIX = 'rebunar.profile.theme.';
 
 export const THEMES = {
-  emerald: {
-    name: 'Яркий изумруд',
-    description: 'Насыщенный зелёный, сбалансированный и приятный для глаз.'
+  steel: {
+    name: 'Steel & Blood',
+    description: 'Стальной интерфейс с кроваво-красными акцентами.'
   },
-  neon: {
-    name: 'Неон',
-    description: 'Максимум яркости и насыщенные светящиеся оттенки.'
+  cyber: {
+    name: 'Cyberpunk',
+    description: 'Холодный тёмный интерфейс с неоновыми бирюзовыми акцентами.'
   },
-  forest: {
-    name: 'Лесной',
-    description: 'Природные оттенки зелёного, спокойный и стильный вид.'
+  sakura: {
+    name: 'Anime: Sakura',
+    description: 'Тёмная аниме-эстетика с розовыми и цветочными оттенками.'
   },
-  mint: {
-    name: 'Мятный',
-    description: 'Светлый зелёный с холодным подтоном, ощущение чистоты и простора.'
-  },
-  darkGreen: {
-    name: 'Тёмный зелёный',
-    description: 'Глубокий зелёный фон, элегантный и современный стиль.'
-  },
-  cyberNeon: {
-    name: 'Кибер-неон',
-    description: 'Футуристичный интерфейс с неоновыми зелёными и бирюзовыми акцентами.'
+  fantasy: {
+    name: 'Dark Fantasy',
+    description: 'Тёмное фэнтези с мистическим золотом и бронзой.'
   }
 };
 
-export const DEFAULT_THEME = 'emerald';
+export const DEFAULT_THEME = 'steel';
+
+function storageKey(userId) {
+  return THEME_STORAGE_PREFIX + (userId ?? 'guest');
+}
 
 export function getThemes() {
   return THEMES;
 }
 
-export function getTheme() {
-  const saved = localStorage.getItem(THEME_STORAGE_KEY);
-
-  if (Object.hasOwn(THEMES, saved)) {
-    return saved;
-  }
-
-  localStorage.setItem(THEME_STORAGE_KEY, DEFAULT_THEME);
+export function getTheme(userId = 'guest') {
+  try {
+    const saved = localStorage.getItem(storageKey(userId));
+    if (Object.hasOwn(THEMES, saved)) return saved;
+  } catch {}
   return DEFAULT_THEME;
 }
 
-export function applyTheme(theme) {
-  const selected = Object.hasOwn(THEMES, theme)
-    ? theme
-    : DEFAULT_THEME;
-
+export function applyTheme(theme, userId = 'guest') {
+  const selected = Object.hasOwn(THEMES, theme) ? theme : DEFAULT_THEME;
   document.documentElement.dataset.theme = selected;
-  localStorage.setItem(THEME_STORAGE_KEY, selected);
-
+  try {
+    localStorage.setItem(storageKey(userId), selected);
+  } catch {}
   return selected;
 }
 
-export function initializeTheme() {
-  applyTheme(getTheme());
+export function initializeTheme(user) {
+  return applyTheme(getTheme(user?.id ?? 'guest'), user?.id ?? 'guest');
 }
