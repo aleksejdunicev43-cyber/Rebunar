@@ -67,6 +67,16 @@
   box-shadow: 0 0 0 2px rgba(165, 42, 48, 0.13);
 }
 
+/*
+ * На экране входа секрет технически является обычным text-input,
+ * чтобы Android/Google Password Manager не перехватывал фокус.
+ * Визуально символы всё равно скрыты как пароль.
+ */
+.auth-form input.auth-login-secret {
+  -webkit-text-security: disc;
+  text-security: disc;
+}
+
 .auth-message {
   min-height: 20px;
   margin: 5px 0;
