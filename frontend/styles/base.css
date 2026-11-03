@@ -152,3 +152,65 @@ a {
 #app {
   min-height: 100vh;
 }
+
+
+/* REBUNAR — UNIFIED PROFILE THEMES */
+:root[data-theme="steel"] {
+  color-scheme: dark;
+  --bg-main: #101216;
+  --bg-panel: #191d22;
+  --bg-panel-2: #242a30;
+  --text-main: #f0f2f4;
+  --text-muted: #9da6af;
+  --border: #414951;
+  --accent: #e33b50;
+  --accent-bright: #ff6474;
+}
+:root[data-theme="cyber"] {
+  color-scheme: dark;
+  --bg-main: #071317;
+  --bg-panel: #0b2027;
+  --bg-panel-2: #10313a;
+  --text-main: #e4fffc;
+  --text-muted: #83b9bb;
+  --border: #17616a;
+  --accent: #00e5d4;
+  --accent-bright: #72fff2;
+}
+:root[data-theme="sakura"] {
+  color-scheme: dark;
+  --bg-main: #1a101a;
+  --bg-panel: #261827;
+  --bg-panel-2: #382238;
+  --text-main: #fff0f7;
+  --text-muted: #c9a6b9;
+  --border: #75445f;
+  --accent: #ff78b7;
+  --accent-bright: #ffadd2;
+}
+:root[data-theme="fantasy"] {
+  color-scheme: dark;
+  --bg-main: #12110f;
+  --bg-panel: #201c17;
+  --bg-panel-2: #30271d;
+  --text-main: #f5ead6;
+  --text-muted: #b9a98e;
+  --border: #665036;
+  --accent: #c69a52;
+  --accent-bright: #f0ca80;
+}
+
+/* Theme-aware shared controls and navigation */
+:root[data-theme] .mobile-navigation,
+:root[data-theme] .app-header,
+:root[data-theme] .sidebar,
+:root[data-theme] .navigation,
+:root[data-theme] .nav-panel {
+  color: var(--text-main);
+  border-color: var(--border);
+}
+:root[data-theme] button:focus-visible,
+:root[data-theme] a:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
