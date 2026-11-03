@@ -217,31 +217,6 @@
   }
 }
 
-/* Навигация чатов */
-.nav-chat {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-chat .nav-icon {
-  flex: 0 0 auto;
-}
-
-@media (max-width: 760px) {
-  .mobile-navigation .nav-chat {
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    padding: 6px 3px;
-  }
-
-  .mobile-navigation .nav-chat .nav-icon {
-    width: 25px;
-    height: 25px;
-  }
-}
-
 /* REBUNAR — ЕДИНАЯ МОБИЛЬНАЯ ОБОЛОЧКА */
 @media (max-width: 760px) {
   html,
@@ -333,7 +308,6 @@
   }
 }
 
-
 /* REBUNAR — АВАТАР ПРОФИЛЯ В ЛЕВОЙ ЧАСТИ ШАПКИ */
 .header-brand {
   display: flex;
@@ -398,7 +372,6 @@
   }
 }
 
-
 /* REBUNAR — центрированная верхняя панель */
 .app-header {
   display: grid;
@@ -413,15 +386,22 @@
 
 .header-logo {
   justify-self: center;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
 }
 
 .header-logo .app-logo-image {
   display: block;
-  width: 250px;
-  max-width: 100%;
-  height: auto;
+  width: 42px;
+  height: 42px;
+  max-width: 42px;
+  max-height: 42px;
   object-fit: contain;
+  border-radius: 10px;
   filter: drop-shadow(0 0 5px rgba(142, 45, 255, .42));
 }
 
@@ -491,8 +471,18 @@
     padding-left: 10px;
   }
 
+  .header-logo {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+  }
+
   .header-logo .app-logo-image {
-    width: 145px;
+    width: 34px;
+    height: 34px;
+    max-width: 34px;
+    max-height: 34px;
+    border-radius: 8px;
   }
 
   .header-actions {
