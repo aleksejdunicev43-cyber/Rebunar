@@ -29,30 +29,19 @@ jobs:
           pixels = np.asarray(source.convert("RGB"))
           red, green, blue = pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]
 
-          # Detect the original green outer ring to retain the full logo artwork.
+          # Verify that the uploaded source still contains its green circular frame.
           green_ring = (green > 65) & (green > red * 1.22) & (green > blue * 1.12)
-          ys, xs = np.where(green_ring)
-          if len(xs) < 100:
-              raise RuntimeError("Could not reliably detect the green outer circle; refusing to crop the logo.")
+          if int(green_ring.sum()) < 100:
+              raise RuntimeError("Could not reliably detect the green outer circle; refusing to process the logo.")
 
-          left, right = int(xs.min()), int(xs.max())
-          top, bottom = int(ys.min()), int(ys.max())
-          cx = (left + right) / 2
-          cy = (top + bottom) / 2
-          radius = min(right - left, bottom - top) / 2
-
-          # Keep the complete circle, including R, character, REBUNAR and the rim.
-          pad = 2
-          x0 = max(0, int(round(cx - radius - pad)))
-          y0 = max(0, int(round(cy - radius - pad)))
-          x1 = min(source.width, int(round(cx + radius + pad + 1)))
-          y1 = min(source.height, int(round(cy + radius + pad + 1)))
-          logo = source.crop((x0, y0, x1, y1))
-          side = min(logo.size)
-          crop_left = (logo.width - side) // 2
-          crop_top = (logo.height - side) // 2
-          logo = logo.crop((crop_left, crop_top, crop_left + side, crop_top + side))
-          logo = logo.resize((512, 512), Image.Resampling.LANCZOS)
+          # Fit the ENTIRE original image inside the fixed 512px circular icon.
+          # This keeps edge details such as the crown and moon visible instead of
+          # cropping to the detected green ring. The outer finishing rim stays fixed.
+          artwork = source.copy()
+          artwork.thumbnail((448, 448), Image.Resampling.LANCZOS)
+          logo = Image.new("RGBA", (512, 512), (7, 9, 8, 255))
+          offset = ((512 - artwork.width) // 2, (512 - artwork.height) // 2)
+          logo.alpha_composite(artwork, offset)
 
           # Apply a clean circular alpha edge.
           mask = Image.new("L", (512, 512), 0)
