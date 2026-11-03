@@ -7,6 +7,22 @@
   <title>Rebunar</title>
   <link rel="icon" type="image/png" href="/new/build/rebunar_avatar.png">
 
+  <!-- Critical startup paint: prevent the browser's default white flash before CSS loads. -->
+  <style>
+    :root { color-scheme: dark; background: #101216; }
+    html, body { min-width: 320px; min-height: 100%; margin: 0; background: #101216; }
+    body { min-height: 100vh; min-height: 100dvh; color: #f0f2f4; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    #app { min-height: 100vh; min-height: 100dvh; }
+    .rebunar-boot { display: grid; min-height: 100vh; min-height: 100dvh; place-items: center; padding: 24px; box-sizing: border-box; background: radial-gradient(ellipse at 50% 42%, rgba(227,59,80,.14), transparent 48%), #101216; text-align: center; }
+    .rebunar-boot-content { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .rebunar-boot-mark { color: #f0f2f4; font-size: clamp(30px, 9vw, 44px); font-weight: 950; letter-spacing: .2em; text-indent: .2em; text-shadow: 0 0 24px rgba(227,59,80,.35); }
+    .rebunar-boot-line { width: 112px; height: 3px; overflow: hidden; border-radius: 99px; background: #242a30; }
+    .rebunar-boot-line::after { display: block; width: 42%; height: 100%; border-radius: inherit; background: #e33b50; box-shadow: 0 0 12px #e33b50; content: ""; animation: rebunar-boot-progress 1.15s ease-in-out infinite; }
+    .rebunar-boot-caption { color: #9da6af; font-size: 11px; letter-spacing: .16em; }
+    @keyframes rebunar-boot-progress { from { transform: translateX(-110%); } to { transform: translateX(260%); } }
+    @media (prefers-reduced-motion: reduce) { .rebunar-boot-line::after { animation-duration: 2.5s; } }
+  </style>
+
   <link rel="stylesheet" href="./styles/base.css">
   <link rel="stylesheet" href="./styles/layout.css?v=purple-logo-large-20261101">
   <link rel="stylesheet" href="./features/auth/auth.css">
@@ -17,7 +33,15 @@
 </head>
 
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <section class="rebunar-boot" role="status" aria-live="polite">
+      <div class="rebunar-boot-content">
+        <div class="rebunar-boot-mark">REBUNAR</div>
+        <div class="rebunar-boot-line" aria-hidden="true"></div>
+        <div class="rebunar-boot-caption">ЗАГРУЗКА ПРИЛОЖЕНИЯ</div>
+      </div>
+    </section>
+  </div>
 
   <script type="module" src="./app/app.js?v=avatar-20261101-2"></script>
 </body>
