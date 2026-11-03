@@ -58,10 +58,14 @@ def init_db():
             CREATE TABLE IF NOT EXISTS profile_progress (
                 user_id INTEGER PRIMARY KEY,
                 xp INTEGER NOT NULL DEFAULT 0,
+                equipped_frame TEXT NOT NULL DEFAULT 'rookie',
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
+        progress_columns = {row[1] for row in con.execute("PRAGMA table_info(profile_progress)")}
+        if "equipped_frame" not in progress_columns:
+            con.execute("ALTER TABLE profile_progress ADD COLUMN equipped_frame TEXT NOT NULL DEFAULT 'rookie'")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS user_avatar_frames (
@@ -769,7 +773,6 @@ def profile_frames():
     if not user_id:
         return jsonify({"error": "Необходимо войти в аккаунт"}), 401
     with connect() as con:
-        con.execute("ALTER TABLE profile_progress ADD COLUMN equipped_frame TEXT NOT NULL DEFAULT 'rookie'") if "equipped_frame" not in {row[1] for row in con.execute("PRAGMA table_info(profile_progress)")} else None
         state = get_profile_frame_state(con, user_id)
     return jsonify(state), 200
 
