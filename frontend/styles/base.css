@@ -5,14 +5,14 @@
 :root {
   color-scheme: dark;
 
-  --bg-main: #123d27;
-  --bg-panel: #1b5938;
-  --bg-panel-2: #267347;
-  --text-main: #f0fff4;
-  --text-muted: #b5e5c2;
-  --border: #398b59;
-  --accent: #55ed83;
-  --accent-bright: #9affb4;
+  --bg-main: #101216;
+  --bg-panel: #191d22;
+  --bg-panel-2: #242a30;
+  --text-main: #f0f2f4;
+  --text-muted: #9da6af;
+  --border: #414951;
+  --accent: #e33b50;
+  --accent-bright: #ff6474;
 
   --radius-sm: 6px;
   --radius-md: 10px;
