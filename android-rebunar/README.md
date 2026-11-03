@@ -11,7 +11,7 @@ This is the Android shell for the existing Rebunar web application.
 - JavaScript is enabled for the application; no JavaScript bridge is exposed to web content.
 - Third-party cookies and mixed HTTP content are disabled.
 - Android file selection is supported for existing web upload controls.
-- Pull down to refresh, use the toolbar refresh action, or reopen the app to reload the current server version.
+- The native Android toolbar and its refresh action are not displayed; the WebView occupies the app content area directly.
 
 ## Updates
 
