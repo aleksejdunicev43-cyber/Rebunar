@@ -20,9 +20,12 @@ import {
 import { renderAuthScreen } from '../features/auth/view.js';
 import { logout } from '../features/auth/api.js';
 import { renderProfileScreen } from '../features/profile/view.js';
+import { enhanceProfileScreen } from '../features/profile/enhancements.js';
 import { renderHomeScreen } from '../features/home/view.js';
+import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js';
 import '../features/messages/messages.css';
+import '../features/favorites/favorites.css';
 import { renderStatisticsScreen } from '../features/statistics/view.js';
 import { renderSettingsScreen } from '../features/settings/view.js';
 import { startPresence, stopPresence } from '../features/statistics/presence.js';
@@ -45,6 +48,7 @@ if (!root) {
 
 const screens = {
   home: 'Главная',
+  favorites: 'Избранное',
   games: 'Игры',
   communities: 'Сообщества',
   messages: 'Сообщения',
@@ -67,13 +71,20 @@ for (const [path, title] of Object.entries(screens)) {
       return;
     }
 
+    if (path === 'favorites') {
+      renderFavoritesScreen(outlet);
+      return;
+    }
+
     if (path === 'messages') {
       renderMessagesScreen(outlet);
       return;
     }
 
     if (path === 'profile') {
-      renderProfileScreen(outlet, getUser(), handleLogout);
+      const user = getUser();
+      renderProfileScreen(outlet, user, handleLogout);
+      enhanceProfileScreen(outlet, user);
       return;
     }
 
@@ -199,8 +210,6 @@ async function startApp() {
     return;
   }
 
-  // Если сессия Rebunar отсутствует, удаляем одноразовый
-  // Matrix-токен из URL и предлагаем обычный вход.
   try {
     consumeMatrixSsoCallback();
   } catch (error) {
