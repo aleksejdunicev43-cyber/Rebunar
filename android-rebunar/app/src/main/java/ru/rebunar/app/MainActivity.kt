@@ -64,6 +64,8 @@ class MainActivity : Activity() {
         }
 
         webView = WebView(this).apply {
+            // Keep the native WebView surface dark while the first page is loading.
+            setBackgroundColor(Color.rgb(8, 9, 10))
             isFocusable = true
             isFocusableInTouchMode = true
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
