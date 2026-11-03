@@ -8,7 +8,7 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:label="Rebunar"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:theme="@style/RebunarTheme"
         android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"
