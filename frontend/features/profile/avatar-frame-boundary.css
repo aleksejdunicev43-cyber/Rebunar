@@ -1,0 +1,18 @@
+/* REBUNAR — AVATAR FRAME BOUNDARY
+   The photo owns the entire inside of the avatar circle.
+   Decorative frame pixels are allowed only from the avatar edge outward. */
+.profile-avatar-button .profile-avatar-frame {
+  inset: -19% !important;
+  overflow: visible !important;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 73%, #000 73.4% 100%);
+  mask-image: radial-gradient(circle at center, transparent 0 73%, #000 73.4% 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.profile-avatar-button .profile-avatar-frame .avatar-frame-art {
+  overflow: visible !important;
+}
