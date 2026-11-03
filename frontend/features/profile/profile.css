@@ -937,3 +937,37 @@
     box-shadow: none !important;
   }
 }
+
+/* MOBILE PROFILE SCROLL FIX — keep the outlet as the only scroll container */
+@media (max-width: 760px) {
+  #screen-outlet:has(.profile-screen) {
+    display: block !important;
+    flex: 1 1 0;
+    min-height: 0;
+    height: 0;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+
+  .profile-screen,
+  .profile-screen[data-profile-theme] {
+    display: block !important;
+    width: 100%;
+    height: auto !important;
+    min-height: 100%;
+    overflow: visible !important;
+  }
+
+  .profile-screen .profile-card {
+    display: block !important;
+    flex: none !important;
+    width: 100%;
+    height: auto !important;
+    min-height: 0;
+    overflow: visible !important;
+  }
+}
+
