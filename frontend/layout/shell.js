@@ -78,7 +78,13 @@ export function createShell(root) {
           </button>
         </div>
 
-        <div class="app-logo" aria-label="REBUNAR">REBUNAR</div>
+        <div class="app-logo-image-wrap" aria-label="REBUNAR">
+          <img
+            class="app-logo-image"
+            src="/new/build/rebunar-header.png"
+            alt="REBUNAR"
+          />
+        </div>
 
         <div class="header-actions">
           <button type="button" class="header-icon-button"
