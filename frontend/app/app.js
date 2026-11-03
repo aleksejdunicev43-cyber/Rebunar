@@ -201,9 +201,12 @@ function mountApp() {
 
 async function startApp() {
   root.innerHTML = `
-    <section class="screen">
-      <h1>Rebunar</h1>
-      <p>Проверка подключения и авторизации...</p>
+    <section class="rebunar-splash" role="status" aria-live="polite">
+      <div class="rebunar-splash-content">
+        <div class="rebunar-splash-mark">REBUNAR</div>
+        <div class="rebunar-splash-line" aria-hidden="true"></div>
+        <div class="rebunar-splash-caption">ВОЗВРАЩАЕМ ТВОЙ МИР</div>
+      </div>
     </section>
   `;
 
