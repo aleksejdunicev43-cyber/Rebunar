@@ -23,8 +23,9 @@ jobs:
           from PIL import Image, ImageDraw, ImageFilter, ImageChops
           import numpy as np
 
-          path = "android-rebunar/app/src/main/res/drawable/rebunar_logo.png"
-          source = Image.open(path).convert("RGBA")
+          source_path = "rebunar_avatar.png"
+          output_path = "android-rebunar/app/src/main/res/drawable/rebunar_logo.png"
+          source = Image.open(source_path).convert("RGBA")
           pixels = np.asarray(source.convert("RGB"))
           red, green, blue = pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]
 
@@ -70,7 +71,7 @@ jobs:
 
           # Re-apply the circular mask so all four outside corners stay transparent.
           logo.putalpha(ImageChops.multiply(logo.getchannel("A"), mask))
-          logo.save(path, format="PNG", optimize=True)
+          logo.save(output_path, format="PNG", optimize=True)
           logo.save("rebunar-logo-preview.png", format="PNG", optimize=True)
           print(f"Detected green ring bounds: ({left}, {top}) - ({right}, {bottom})")
           print(f"Original image: {source.size}; circular logo exported: {logo.size}")
