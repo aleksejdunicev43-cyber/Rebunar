@@ -88,17 +88,13 @@ export function renderProfileScreen(container, user, onLogout) {
     .addEventListener('click', onLogout);
 
   container.querySelector('.profile-copy-id')
-    .addEventListener('click', async (event) => {
-      const button = event.currentTarget;
-
+    .addEventListener('click', async () => {
       try {
-        await navigator.clipboard.writeText(userId);
-        button.textContent = '✓';
-        button.setAttribute('aria-label', 'ID скопирован');
-        button.title = 'ID скопирован';
+        await copyProfileText(userId);
+        showProfileToast(container, 'ID скопирован в буфер обмена');
       } catch (error) {
         console.warn('Rebunar: не удалось скопировать ID:', error);
-        button.title = 'Не удалось скопировать ID';
+        showProfileToast(container, 'Не удалось скопировать ID');
       }
     });
 
@@ -497,4 +493,17 @@ function escapeHTML(value) {
     '"': '&quot;',
     "'": '&#039;'
   })[character]);
+}
+
+async function copyProfileText(value) {
+  if(navigator.clipboard?.writeText&&window.isSecureContext) return navigator.clipboard.writeText(value);
+  const field=document.createElement('textarea');field.value=value;field.setAttribute('readonly','');
+  field.style.position='fixed';field.style.opacity='0';document.body.appendChild(field);field.select();
+  const copied=document.execCommand('copy');field.remove();if(!copied)throw new Error('Clipboard copy failed');
+}
+function showProfileToast(container,message) {
+  let toast=container.querySelector('.profile-toast');
+  if(!toast){toast=document.createElement('div');toast.className='profile-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');container.appendChild(toast);}
+  toast.textContent=message;toast.classList.add('is-visible');clearTimeout(toast._hideTimer);
+  toast._hideTimer=setTimeout(()=>toast.classList.remove('is-visible'),2400);
 }
