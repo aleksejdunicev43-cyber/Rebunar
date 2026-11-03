@@ -11,6 +11,11 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
 
   function render(message = '') {
     const isRegister = mode === 'register';
+    const passwordFieldId = isRegister ? 'auth-password' : 'auth-login-secret';
+    const passwordFieldName = isRegister ? 'password' : 'login-secret';
+    const passwordFieldType = isRegister ? 'password' : 'text';
+    const passwordAutocomplete = isRegister ? 'new-password' : 'off';
+    const passwordFieldClass = isRegister ? '' : 'auth-login-secret';
 
     container.innerHTML = `
       <section class="auth-screen">
@@ -36,13 +41,17 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
               required
             >
 
-            <label for="auth-password">Пароль</label>
+            <label for="${passwordFieldId}">Пароль</label>
             <input
-              id="auth-password"
-              name="password"
-              type="password"
+              id="${passwordFieldId}"
+              name="${passwordFieldName}"
+              type="${passwordFieldType}"
+              class="${passwordFieldClass}"
               minlength="4"
-              autocomplete="${isRegister ? 'new-password' : 'off'}"
+              autocomplete="${passwordAutocomplete}"
+              inputmode="text"
+              autocapitalize="none"
+              spellcheck="false"
               placeholder="Твой пароль"
               required
             >
@@ -78,7 +87,7 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
       event.preventDefault();
 
       const username = form.elements.username.value.trim();
-      const password = form.elements.password.value;
+      const password = form.elements[passwordFieldName].value;
       const submitButton = form.querySelector('.auth-submit');
 
       submitButton.disabled = true;
