@@ -12,11 +12,11 @@ export function renderSettingsScreen(outlet) {
   outlet.innerHTML = `
     <section class="screen settings-screen">
       <div class="settings-heading">
-        <button class="screen-back" type="button" data-route="profile"
+        <button class="settings-breadcrumb" type="button" data-route="profile"
           aria-label="Вернуться в профиль" title="Вернуться в профиль">
-          <span aria-hidden="true">⤺</span>
+          <span class="settings-breadcrumb-arrow" aria-hidden="true">↩</span>
+          <span class="settings-eyebrow">REBUNAR / CONTROL</span>
         </button>
-        <span class="settings-eyebrow">REBUNAR / CONTROL</span>
         <h1>Настройки</h1>
         <p>Управление аккаунтом и приложением</p>
       </div>
@@ -35,7 +35,10 @@ export function renderSettingsScreen(outlet) {
         </button>
 
         <button class="settings-item" type="button" data-action="matrix">
-          <span class="settings-icon">⌘</span>
+          <span class="settings-icon settings-icon-matrix">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Matrix_icon.svg"
+              alt="Официальный символ Matrix" width="26" height="30" loading="lazy">
+          </span>
           <span class="settings-item-content">
             <strong>Matrix и E2EE</strong>
             <small>Защищённые сообщения и сквозное шифрование</small>
@@ -96,6 +99,10 @@ async function openMatrixEditor(outlet) {
       <p class="security-editor-description">
         Подключение Matrix для защищённого обмена сообщениями
         со сквозным шифрованием.
+        <span class="matrix-trademark-note">
+          Matrix — товарный знак The Matrix.org Foundation. Rebunar не связан с Foundation.
+          <a href="https://matrix.org/" target="_blank" rel="noopener noreferrer">matrix.org</a>
+        </span>
       </p>
 
       <div class="matrix-editor-status">Проверка подключения...</div>
