@@ -878,3 +878,62 @@
     padding: 10px;
   }
 }
+
+/* EDGE-TO-EDGE PROFILE: remove the remaining green application frame */
+@media (max-width: 760px) {
+  .app-layout:has(.profile-screen) {
+    padding: 0 !important;
+    gap: 0;
+  }
+
+  .main-content:has(.profile-screen) {
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 0;
+    padding: 0 !important;
+    margin: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: hidden;
+  }
+
+  #screen-outlet:has(.profile-screen) {
+    display: flex;
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .profile-screen,
+  .profile-screen[data-profile-theme] {
+    display: flex;
+    flex: 1 0 100%;
+    flex-direction: column;
+    width: 100%;
+    max-width: none;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0;
+    box-shadow: none !important;
+  }
+
+  .profile-screen .profile-card {
+    flex: 1 0 100%;
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
