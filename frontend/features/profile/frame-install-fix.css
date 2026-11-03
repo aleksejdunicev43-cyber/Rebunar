@@ -1,0 +1,48 @@
+/* REBUNAR — FINAL AVATAR FRAME INSTALL FIX */
+
+.profile-avatar-button {
+  position: relative !important;
+  overflow: visible !important;
+  border: 0 !important;
+}
+
+.profile-avatar-button .profile-avatar-image,
+.profile-avatar-button .profile-avatar-placeholder {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.profile-avatar-button .profile-avatar-frame {
+  position: absolute !important;
+  left: -19% !important;
+  top: -19% !important;
+  width: 138% !important;
+  height: 138% !important;
+  z-index: 20 !important;
+  display: block !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+.profile-avatar-button .profile-avatar-frame .avatar-frame-art {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.profile-avatar-button .profile-avatar-frame.frame-rookie::before {
+  z-index: 21 !important;
+}
+
+.profile-avatar-button:has(.profile-avatar-frame) {
+  isolation: isolate !important;
+}
