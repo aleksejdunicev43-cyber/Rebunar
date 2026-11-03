@@ -37,3 +37,63 @@ jobs:
           path: frontend/build/
           if-no-files-found: error
           retention-days: 7
+
+      - name: Deploy to PythonAnywhere
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          PA_USERNAME: ${{ secrets.PA_USERNAME }}
+          PA_API_TOKEN: ${{ secrets.PA_API_TOKEN }}
+          PA_HOST: ${{ secrets.PA_HOST }}
+        run: |
+          python -m pip install requests
+          python - <<'PY'
+          import os
+          import time
+          from pathlib import Path
+          from urllib.parse import quote
+          import requests
+
+          username = os.environ["PA_USERNAME"].strip()
+          token = os.environ["PA_API_TOKEN"].strip()
+          host = os.environ["PA_HOST"].strip().removeprefix("https://").rstrip("/")
+          if host not in {"www.pythonanywhere.com", "eu.pythonanywhere.com"}:
+              raise SystemExit("PA_HOST must be www.pythonanywhere.com or eu.pythonanywhere.com")
+
+          build = Path("frontend/build")
+          files = sorted(p for p in build.rglob("*") if p.is_file())
+          if not files:
+              raise SystemExit("frontend/build is empty; deployment cancelled")
+
+          headers = {"Authorization": f"Token {token}"}
+          base = f"https://{host}/api/v0/user/{quote(username, safe='')}/files/path"
+          for index, file in enumerate(files, 1):
+              relative = file.relative_to(build).as_posix()
+              remote = f"/home/{username}/rebunar_next/frontend/build/{relative}"
+              url = base + quote(remote, safe="/")
+              with file.open("rb") as stream:
+                  response = requests.post(
+                      url,
+                      headers=headers,
+                      files={"content": (file.name, stream, "application/octet-stream")},
+                      timeout=60,
+                  )
+              if response.status_code not in (200, 201):
+                  raise SystemExit(
+                      f"Upload failed for {relative}: HTTP {response.status_code} "
+                      f"{response.text[:500]}"
+                  )
+              print(f"[{index}/{len(files)}] uploaded {relative}")
+              if index < len(files):
+                  time.sleep(1.6)
+
+          reload_url = (
+              f"https://{host}/api/v0/user/{quote(username, safe='')}"
+              "/webapps/rebunar.pythonanywhere.com/reload/"
+          )
+          response = requests.post(reload_url, headers=headers, timeout=60)
+          if response.status_code not in (200, 201, 202, 204):
+              raise SystemExit(
+                  f"Webapp reload failed: HTTP {response.status_code} {response.text[:500]}"
+              )
+          print("PythonAnywhere deployment and webapp reload completed.")
+          PY
