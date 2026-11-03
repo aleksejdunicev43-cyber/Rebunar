@@ -350,7 +350,7 @@ function openAppearanceEditor(outlet) {
   const overlay = document.createElement('div');
   overlay.className = 'appearance-editor-overlay';
 
-  const currentTheme = getTheme();
+  const currentTheme = getTheme(getUser()?.id ?? "guest");
   const themes = getThemes();
 
   overlay.innerHTML = `
@@ -372,7 +372,7 @@ function openAppearanceEditor(outlet) {
       <div class="appearance-editor-section">
         <div class="appearance-editor-section-heading">
           <strong>Выбери свою тему</strong>
-          <span>Шесть вариантов оформления Rebunar</span>
+          <span>Четыре единые темы для всего Rebunar</span>
         </div>
 
         <div class="appearance-theme-options">
@@ -400,7 +400,7 @@ function openAppearanceEditor(outlet) {
       </div>
 
       <p class="appearance-editor-note">
-        Яркий изумруд установлен по умолчанию. Другие темы можно выбрать в любое время.
+        Тема применяется ко всем разделам приложения и сохраняется для этого аккаунта.
       </p>
     </div>
   `;
@@ -423,7 +423,7 @@ function openAppearanceEditor(outlet) {
   overlay.querySelectorAll('[data-theme]').forEach((button) => {
     button.addEventListener('click', () => {
       const theme = button.dataset.theme;
-      applyTheme(theme);
+      applyTheme(theme, getUser()?.id ?? "guest");
 
       overlay.querySelectorAll('[data-theme]').forEach((item) => {
         item.classList.toggle(
