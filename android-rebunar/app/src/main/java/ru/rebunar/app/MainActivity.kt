@@ -66,6 +66,7 @@ class MainActivity : Activity() {
         webView = WebView(this).apply {
             isFocusable = true
             isFocusableInTouchMode = true
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
             requestFocus(View.FOCUS_DOWN)
         }
 
