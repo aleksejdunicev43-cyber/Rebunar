@@ -145,6 +145,7 @@ async function handleLogout(event) {
     }
 
     clearUser();
+    initializeTheme(null);
 
     appStarted = false;
 
@@ -173,6 +174,7 @@ function mountApp() {
   if (appStarted) return;
 
   appStarted = true;
+  initializeTheme(getUser());
   startPresence();
 
   createShell(root);
