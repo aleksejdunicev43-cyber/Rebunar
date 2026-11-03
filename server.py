@@ -738,7 +738,9 @@ def get_profile_frame_state(con, user_id):
     ).fetchone()
     xp = max(0, int(progress[0] or 0))
     level = 1 + xp // 100
-    unlocked = [frame for frame in AVATAR_FRAMES if level >= frame["level"]]
+    unlocked_ids = {frame["id"] for frame in AVATAR_FRAMES if level >= frame["level"]}
+    unlocked_ids.add("rookie")  # Стартовая рамка доступна каждому аккаунту
+    unlocked = [frame for frame in AVATAR_FRAMES if frame["id"] in unlocked_ids]
     for frame in unlocked:
         con.execute(
             "INSERT OR IGNORE INTO user_avatar_frames (user_id, frame_id) VALUES (?, ?)",
