@@ -112,6 +112,19 @@ async function renderAvatarFrameCollection(container, customization, user) {
     const avatarButton = container.querySelector('.profile-avatar-button');
 
     progress.innerHTML = `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
+    const xpCard = container.querySelector('.profile-xp-card');
+    if (xpCard) {
+      const levelTitle = xpCard.querySelector('.profile-feature-heading strong');
+      const xpValue = xpCard.querySelector('.profile-xp-value');
+      const xpFill = xpCard.querySelector('.profile-xp-fill');
+      const xpTrack = xpCard.querySelector('[role="progressbar"]');
+      const currentXp = Number(state.xp) || 0;
+      const xpNeeded = Number(state.xp_to_next) || 100;
+      if (levelTitle) levelTitle.textContent = 'Уровень ' + (Number(state.level) || 1);
+      if (xpValue) xpValue.textContent = currentXp + ' / ' + xpNeeded + ' XP';
+      if (xpFill) xpFill.style.width = Math.min(100, currentXp / xpNeeded * 100) + '%';
+      if (xpTrack) xpTrack.setAttribute('aria-valuenow', String(currentXp));
+    }
     if (avatarButton) {
       let overlay = avatarButton.querySelector('.profile-avatar-frame');
       if (!overlay) {
@@ -124,7 +137,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
     }
 
     grid.innerHTML = (state.frames || []).map(frame => {
-      const unlocked = Boolean(frame.unlocked);
+      const unlocked = frame.id === 'rookie' || Boolean(frame.unlocked);
       const equipped = Boolean(frame.equipped);
       return `
         <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped' : ''}"
@@ -171,7 +184,7 @@ function renderFrameState(container, section, state) {
   section.querySelector('.profile-frame-progress').innerHTML =
     `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
   section.querySelector('.profile-frame-grid').innerHTML = (state.frames || []).map(frame => {
-    const unlocked = Boolean(frame.unlocked);
+    const unlocked = frame.id === 'rookie' || Boolean(frame.unlocked);
     const equipped = Boolean(frame.equipped);
     return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${unlocked ? '' : 'disabled'} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надета' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
   }).join('');
