@@ -2,25 +2,15 @@
  * REBUNAR — APPLICATION ENTRY POINT
  */
 
-import {
-  registerRoute,
-  navigate,
-  initRouter,
-  subscribeToRoute
-} from './router.js';
-
+import { registerRoute, navigate, initRouter, subscribeToRoute } from './router.js';
 import { createShell } from '../layout/shell.js?v=avatar-20261101-2';
 import { initNavigation } from '../layout/navigation.js';
-import {
-  initializeAuth,
-  getUser,
-  clearUser
-} from '../features/auth/session.js';
-
+import { initializeAuth, getUser, clearUser } from '../features/auth/session.js';
 import { renderAuthScreen } from '../features/auth/view.js';
 import { logout } from '../features/auth/api.js';
 import { renderProfileScreen } from '../features/profile/view.js';
 import { enhanceProfileScreen } from '../features/profile/enhancements.js';
+import { initProfileCollectionButton } from '../features/profile/collection-button.js';
 import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js';
@@ -35,90 +25,34 @@ import '../features/statistics/statistics.css';
 import { renderSettingsScreen } from '../features/settings/view.js';
 import { startPresence, stopPresence } from '../features/statistics/presence.js';
 import { initializeTheme } from '../shared/theme.js';
-import {
-  completeMatrixConnection
-} from '../infrastructure/matrix/connection.js';
-import {
-  consumeMatrixSsoCallback
-} from '../infrastructure/matrix/sso.js';
-import {
-  disconnectMatrix
-} from '../infrastructure/matrix/client.js';
+import { completeMatrixConnection } from '../infrastructure/matrix/connection.js';
+import { consumeMatrixSsoCallback } from '../infrastructure/matrix/sso.js';
+import { disconnectMatrix } from '../infrastructure/matrix/client.js';
 
 const root = document.getElementById('app');
+if (!root) throw new Error('Rebunar: элемент #app не найден');
 
-if (!root) {
-  throw new Error('Rebunar: элемент #app не найден');
-}
-
-const screens = {
-  home: 'Главная',
-  favorites: 'Избранное',
-  games: 'Игры',
-  communities: 'Сообщества',
-  messages: 'Сообщения',
-  profile: 'Профиль',
-  search: 'Поиск',
-  notifications: 'Уведомления',
-  composer: 'Создание публикации',
-  settings: 'Настройки',
-  statistics: 'Статистика'
-};
+const screens = { home:'Главная', favorites:'Избранное', games:'Игры', communities:'Сообщества', messages:'Сообщения', profile:'Профиль', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика' };
 
 for (const [path, title] of Object.entries(screens)) {
   registerRoute(path, () => {
     const outlet = document.getElementById('screen-outlet');
-
     if (!outlet) return;
-
-    if (path === 'home') {
-      renderHomeScreen(outlet);
-      return;
-    }
-
-    if (path === 'favorites') {
-      renderFavoritesScreen(outlet);
-      return;
-    }
-
-    if (path === 'messages') {
-      renderMessagesScreen(outlet);
-      return;
-    }
-
-    if (path === 'games') {
-      renderGamesScreen(outlet);
-      return;
-    }
-
-    if (path === 'communities') {
-      renderCommunitiesScreen(outlet);
-      return;
-    }
-
+    if (path === 'home') return renderHomeScreen(outlet);
+    if (path === 'favorites') return renderFavoritesScreen(outlet);
+    if (path === 'messages') return renderMessagesScreen(outlet);
+    if (path === 'games') return renderGamesScreen(outlet);
+    if (path === 'communities') return renderCommunitiesScreen(outlet);
     if (path === 'profile') {
       const user = getUser();
       renderProfileScreen(outlet, user, handleLogout);
       enhanceProfileScreen(outlet, user);
+      initProfileCollectionButton(outlet);
       return;
     }
-
-    if (path === 'settings') {
-      renderSettingsScreen(outlet);
-      return;
-    }
-
-    if (path === 'statistics') {
-      renderStatisticsScreen(outlet);
-      return;
-    }
-
-    outlet.innerHTML = `
-      <section class="screen">
-        <h1>${title}</h1>
-        <p>Раздел Rebunar подготовлен к разработке.</p>
-      </section>
-    `;
+    if (path === 'settings') return renderSettingsScreen(outlet);
+    if (path === 'statistics') return renderStatisticsScreen(outlet);
+    outlet.innerHTML = `<section class="screen"><h1>${title}</h1><p>Раздел Rebunar подготовлен к разработке.</p></section>`;
   });
 }
 
@@ -129,117 +63,36 @@ let routerInitialized = false;
 async function handleLogout(event) {
   const button = event?.currentTarget;
   stopPresence();
-
-  if (button) {
-    button.disabled = true;
-    button.textContent = 'Выходим...';
-  }
-
+  if (button) { button.disabled = true; button.textContent = 'Выходим...'; }
   try {
     await logout();
-
-    try {
-      await disconnectMatrix();
-    } catch (matrixError) {
-      console.warn('Rebunar: Matrix-соединение не удалось остановить');
-    }
-
-    clearUser();
-    initializeTheme(null);
-
-    appStarted = false;
-
-    renderAuthScreen(root, mountApp);
-
-    console.log('Rebunar: выход из аккаунта выполнен');
+    try { await disconnectMatrix(); } catch { console.warn('Rebunar: Matrix-соединение не удалось остановить'); }
+    clearUser(); initializeTheme(null); appStarted = false; renderAuthScreen(root, mountApp);
   } catch (error) {
     startPresence();
-    console.error('Rebunar: ошибка выхода:', error);
-
-    if (button) {
-      button.disabled = false;
-      button.textContent = 'Выйти из аккаунта';
-    }
-
-    const message = document.createElement('p');
-    message.className = 'profile-logout-error';
-    message.textContent = 'Не удалось выйти: ' + error.message;
-
-    const card = root.querySelector('.profile-card');
-    if (card) card.appendChild(message);
+    if (button) { button.disabled = false; button.textContent = 'Выйти из аккаунта'; }
+    const message = document.createElement('p'); message.className = 'profile-logout-error'; message.textContent = 'Не удалось выйти: ' + error.message;
+    root.querySelector('.profile-card')?.appendChild(message);
   }
 }
 
 function mountApp() {
   if (appStarted) return;
-
-  appStarted = true;
-  initializeTheme(getUser());
-  startPresence();
-
-  createShell(root);
-
-  if (!navigationInitialized) {
-    initNavigation(root, navigate, subscribeToRoute);
-    navigationInitialized = true;
-  }
-
-  const user = getUser();
-
-  console.log(
-    'Rebunar: пользователь авторизован:',
-    user ? user.username : 'неизвестен'
-  );
-
-  if (!routerInitialized) {
-    initRouter('home');
-    routerInitialized = true;
-  } else {
-    navigate('home');
-  }
-
-  console.log('Rebunar: приложение запущено');
+  appStarted = true; initializeTheme(getUser()); startPresence(); createShell(root);
+  if (!navigationInitialized) { initNavigation(root, navigate, subscribeToRoute); navigationInitialized = true; }
+  if (!routerInitialized) { initRouter('home'); routerInitialized = true; } else navigate('home');
 }
 
 async function startApp() {
-  root.innerHTML = `
-    <section class="rebunar-splash" role="status" aria-live="polite">
-      <div class="rebunar-splash-content">
-        <div class="rebunar-splash-mark">REBUNAR</div>
-        <div class="rebunar-splash-line" aria-hidden="true"></div>
-        <div class="rebunar-splash-caption">ВОЗВРАЩАЕМ ТВОЙ МИР</div>
-      </div>
-    </section>
-  `;
-
-  await initializeAuth();
-  initializeTheme(getUser());
-
+  root.innerHTML = `<section class="rebunar-splash" role="status" aria-live="polite"><div class="rebunar-splash-content"><div class="rebunar-splash-mark">REBUNAR</div><div class="rebunar-splash-line" aria-hidden="true"></div><div class="rebunar-splash-caption">ВОЗВРАЩАЕМ ТВОЙ МИР</div></div></section>`;
+  await initializeAuth(); initializeTheme(getUser());
   if (getUser()) {
     mountApp();
-
-    if (new URLSearchParams(window.location.search).has('loginToken')) {
-      completeMatrixConnection().then(result => {
-        if (result) {
-          console.log('Rebunar: Matrix подключён, E2EE инициализирован');
-        }
-      }).catch(error => {
-        console.error('Rebunar: ошибка подключения Matrix:', error.message);
-      });
-    }
-
+    if (new URLSearchParams(window.location.search).has('loginToken')) completeMatrixConnection().catch(() => {});
     return;
   }
-
-  try {
-    consumeMatrixSsoCallback();
-  } catch (error) {
-    console.warn('Rebunar: Matrix callback не принят');
-  }
-
+  try { consumeMatrixSsoCallback(); } catch {}
   renderAuthScreen(root, mountApp);
-
-  console.log('Rebunar: ожидается вход пользователя');
 }
 
 startApp();
