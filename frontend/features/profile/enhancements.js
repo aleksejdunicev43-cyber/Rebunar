@@ -2,6 +2,7 @@
  * REBUNAR — PROFILE STATUS / XP / ACHIEVEMENTS / CUSTOMIZATION
  */
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
+import { fetchAvatarFrames, equipAvatarFrame } from './frames.js';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
@@ -72,6 +73,7 @@ export function enhanceProfileScreen(container, user) {
     </div>
     <div class="profile-locked-customization" aria-label="Будущие возможности персонализации"><button class="profile-locked-option" type="button" disabled aria-disabled="true"><span aria-hidden="true">🔒</span> Загрузить свой арт</button><button class="profile-locked-option" type="button" disabled aria-disabled="true"><span aria-hidden="true">🔒</span> Авторская аниме-обложка</button></div>`;
   details.appendChild(customization);
+  renderAvatarFrameCollection(container, customization, user);
   customization.querySelectorAll('[data-profile-theme]').forEach(button => {
     button.addEventListener('click', () => {
       applyTheme(button.dataset.profileTheme);
@@ -85,6 +87,106 @@ export function enhanceProfileScreen(container, user) {
       });
     });
   });
+}
+
+
+async function renderAvatarFrameCollection(container, customization, user) {
+  const section = document.createElement('section');
+  section.className = 'profile-frame-collection';
+  section.innerHTML = `
+    <div class="profile-feature-heading">
+      <div><span class="profile-feature-kicker">Коллекция</span><strong>Рамки аватара</strong></div>
+      <span class="profile-customization-symbol" aria-hidden="true">◈</span>
+    </div>
+    <p class="profile-customization-description">Открывай рамки за уровни. Награды выдаются только на особых рубежах — не на каждом уровне.</p>
+    <div class="profile-frame-progress" aria-live="polite">Загружаем коллекцию…</div>
+    <div class="profile-frame-grid"></div>
+    <p class="profile-frame-footnote">Новые рамки открываются на уровнях 5, 10, 20, 35 и 50. Между ними ты получаешь только уровень.</p>
+  `;
+  customization.appendChild(section);
+
+  try {
+    const state = await fetchAvatarFrames();
+    const progress = section.querySelector('.profile-frame-progress');
+    const grid = section.querySelector('.profile-frame-grid');
+    const avatarButton = container.querySelector('.profile-avatar-button');
+
+    progress.innerHTML = `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
+    if (avatarButton) {
+      let overlay = avatarButton.querySelector('.profile-avatar-frame');
+      if (!overlay) {
+        overlay = document.createElement('span');
+        overlay.className = 'profile-avatar-frame';
+        overlay.setAttribute('aria-hidden', 'true');
+        avatarButton.appendChild(overlay);
+      }
+      overlay.className = 'profile-avatar-frame frame-' + safeFrameId(state.equipped || 'rookie');
+    }
+
+    grid.innerHTML = (state.frames || []).map(frame => {
+      const unlocked = Boolean(frame.unlocked);
+      const equipped = Boolean(frame.equipped);
+      return `
+        <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped' : ''}"
+          data-frame-id="${escapeHTML(frame.id)}" ${unlocked ? '' : 'disabled'}
+          aria-pressed="${equipped}" title="${escapeHTML(frame.description)}">
+          <span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span>
+          <span class="profile-frame-name">${escapeHTML(frame.name)}</span>
+          <span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span>
+          <span class="profile-frame-level">${unlocked ? (equipped ? 'Надета' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span>
+        </button>`;
+    }).join('');
+
+    grid.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
+      button.addEventListener('click', async () => {
+        if (button.classList.contains('is-equipped')) return;
+        button.disabled = true;
+        try {
+          const updated = await equipAvatarFrame(button.dataset.frameId);
+          renderFrameState(container, section, updated);
+        } catch (error) {
+          showProfileToast(container, error.message || 'Не удалось надеть рамку');
+          button.disabled = false;
+        }
+      });
+    });
+  } catch (error) {
+    section.querySelector('.profile-frame-progress').textContent =
+      error.message || 'Не удалось загрузить коллекцию рамок';
+  }
+}
+
+function renderFrameState(container, section, state) {
+  const avatarButton = container.querySelector('.profile-avatar-button');
+  if (avatarButton) {
+    let overlay = avatarButton.querySelector('.profile-avatar-frame');
+    if (!overlay) {
+      overlay = document.createElement('span');
+      overlay.className = 'profile-avatar-frame';
+      overlay.setAttribute('aria-hidden', 'true');
+      avatarButton.appendChild(overlay);
+    }
+    overlay.className = 'profile-avatar-frame frame-' + safeFrameId(state.equipped || 'rookie');
+  }
+  section.querySelector('.profile-frame-progress').innerHTML =
+    `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
+  section.querySelector('.profile-frame-grid').innerHTML = (state.frames || []).map(frame => {
+    const unlocked = Boolean(frame.unlocked);
+    const equipped = Boolean(frame.equipped);
+    return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${unlocked ? '' : 'disabled'} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надета' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
+  }).join('');
+  section.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
+    button.addEventListener('click', async () => {
+      if (button.classList.contains('is-equipped')) return;
+      button.disabled = true;
+      try { renderFrameState(container, section, await equipAvatarFrame(button.dataset.frameId)); }
+      catch (error) { showProfileToast(container, error.message || 'Не удалось надеть рамку'); button.disabled = false; }
+    });
+  });
+}
+
+function safeFrameId(value) {
+  return String(value || 'rookie').replace(/[^a-z0-9-]/gi, '');
 }
 
 function openFounderAchievement(container) {
