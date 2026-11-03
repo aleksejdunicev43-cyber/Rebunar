@@ -23,7 +23,7 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
               : 'Войди в свой аккаунт Rebunar.'}
           </p>
 
-          <form class="auth-form">
+          <form class="auth-form" autocomplete="off">
             <label for="auth-username">Логин</label>
             <input
               id="auth-username"
@@ -42,7 +42,7 @@ export function renderAuthScreen(container, onSuccess = () => {}) {
               name="password"
               type="password"
               minlength="4"
-              autocomplete="${isRegister ? 'new-password' : 'current-password'}"
+              autocomplete="${isRegister ? 'new-password' : 'off'}"
               placeholder="Твой пароль"
               required
             >
