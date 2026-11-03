@@ -24,8 +24,10 @@ import { enhanceProfileScreen } from '../features/profile/enhancements.js';
 import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js';
+import { renderGamesScreen } from '../features/games/view.js';
 import '../features/messages/messages.css';
 import '../features/favorites/favorites.css';
+import '../features/games/games.css';
 import { renderStatisticsScreen } from '../features/statistics/view.js';
 import { renderSettingsScreen } from '../features/settings/view.js';
 import { startPresence, stopPresence } from '../features/statistics/presence.js';
@@ -78,6 +80,11 @@ for (const [path, title] of Object.entries(screens)) {
 
     if (path === 'messages') {
       renderMessagesScreen(outlet);
+      return;
+    }
+
+    if (path === 'games') {
+      renderGamesScreen(outlet);
       return;
     }
 
