@@ -732,3 +732,111 @@
 .profile-theme-check{margin-left:auto;color:var(--accent);font-weight:900}
 .profile-theme-note{margin:12px 0 0;color:var(--text-muted);font-size:10px;line-height:1.45}
 @media(max-width:480px){.profile-cover{margin-right:-18px;margin-left:-18px;min-height:112px;padding:16px 18px}}
+
+
+
+/* REBUNAR — FULL PROFILE THEMES (not cover-only) */
+.profile-screen[data-profile-theme]{
+  --profile-glow:rgba(220,35,58,.2);
+  position:relative;
+  isolation:isolate;
+  box-sizing:border-box;
+  padding:clamp(12px,2.5vw,22px);
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:
+    radial-gradient(ellipse at 92% 3%,var(--profile-glow),transparent 34%),
+    linear-gradient(155deg,var(--bg-panel),var(--bg-main));
+  transition:background .25s,border-color .25s,color .25s;
+}
+.profile-screen[data-profile-theme="steel"]{
+  --accent:#e33b50;--accent-bright:#ff6474;
+  --bg-main:#101216;--bg-panel:#191d22;--bg-panel-2:#242a30;
+  --border:#414951;--text-main:#f0f2f4;--text-muted:#9da6af;
+  --profile-glow:rgba(225,42,63,.24);
+}
+.profile-screen[data-profile-theme="cyber"]{
+  --accent:#00e5d4;--accent-bright:#72fff2;
+  --bg-main:#071317;--bg-panel:#0b2027;--bg-panel-2:#10313a;
+  --border:#17616a;--text-main:#e4fffc;--text-muted:#83b9bb;
+  --profile-glow:rgba(0,229,212,.23);
+  background-image:linear-gradient(rgba(0,229,212,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,212,.035) 1px,transparent 1px),radial-gradient(ellipse at 92% 3%,var(--profile-glow),transparent 38%),linear-gradient(155deg,var(--bg-panel),var(--bg-main));
+  background-size:24px 24px,24px 24px,auto,auto;
+}
+.profile-screen[data-profile-theme="sakura"]{
+  --accent:#ff78b7;--accent-bright:#ffadd2;
+  --bg-main:#1a101a;--bg-panel:#261827;--bg-panel-2:#382238;
+  --border:#75445f;--text-main:#fff0f7;--text-muted:#c9a6b9;
+  --profile-glow:rgba(255,105,175,.22);
+  background-image:radial-gradient(ellipse at 90% 4%,rgba(255,145,194,.18),transparent 34%),radial-gradient(circle at 8% 35%,rgba(255,160,205,.07) 0 2px,transparent 3px),linear-gradient(155deg,var(--bg-panel),var(--bg-main));
+  background-size:auto,32px 32px,auto;
+}
+.profile-screen[data-profile-theme="fantasy"]{
+  --accent:#c69a52;--accent-bright:#f0ca80;
+  --bg-main:#12110f;--bg-panel:#201c17;--bg-panel-2:#30271d;
+  --border:#665036;--text-main:#f5ead6;--text-muted:#b9a98e;
+  --profile-glow:rgba(190,139,65,.2);
+  background-image:radial-gradient(ellipse at 90% 3%,rgba(190,139,65,.2),transparent 35%),linear-gradient(135deg,rgba(180,135,65,.035) 25%,transparent 25% 50%,rgba(180,135,65,.035) 50% 75%,transparent 75%),linear-gradient(155deg,var(--bg-panel),var(--bg-main));
+  background-size:auto,36px 36px,auto;
+}
+.profile-screen[data-profile-theme] .profile-heading h1,
+.profile-screen[data-profile-theme] .profile-identity h2{color:var(--text-main)}
+.profile-screen[data-profile-theme] .profile-status,
+.profile-screen[data-profile-theme] .profile-card,
+.profile-screen[data-profile-theme] .profile-detail,
+.profile-screen[data-profile-theme] .profile-bio,
+.profile-screen[data-profile-theme] .profile-xp-card,
+.profile-screen[data-profile-theme] .profile-achievements-card,
+.profile-screen[data-profile-theme] .profile-status-card,
+.profile-screen[data-profile-theme] .profile-customization-card{
+  color:var(--text-main);border-color:var(--border);
+}
+.profile-screen[data-profile-theme] .profile-card{
+  background:linear-gradient(145deg,color-mix(in srgb,var(--bg-panel-2) 92%,transparent),var(--bg-panel));
+  box-shadow:0 16px 42px rgba(0,0,0,.22);
+}
+.profile-screen[data-profile-theme] .profile-detail,
+.profile-screen[data-profile-theme] .profile-bio{
+  background:var(--bg-main);border-color:var(--border);
+}
+.profile-screen[data-profile-theme] .profile-edit,
+.profile-screen[data-profile-theme] .profile-copy-id,
+.profile-screen[data-profile-theme] .profile-settings-button{
+  color:var(--text-main);background:var(--bg-panel-2);border-color:var(--border);
+}
+.profile-screen[data-profile-theme] .profile-edit:hover,
+.profile-screen[data-profile-theme] .profile-copy-id:hover:not(:disabled),
+.profile-screen[data-profile-theme] .profile-settings-button:hover{
+  color:var(--text-main);background:color-mix(in srgb,var(--accent) 17%,var(--bg-panel));border-color:var(--accent);
+}
+.profile-screen[data-profile-theme] .profile-avatar-button{
+  border-color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 13%,transparent),0 0 26px color-mix(in srgb,var(--accent) 28%,transparent);
+}
+.profile-screen[data-profile-theme] .profile-logout,
+.profile-screen[data-profile-theme] .profile-achievement-share{
+  background:linear-gradient(110deg,color-mix(in srgb,var(--accent) 78%,#111),var(--accent));
+  border-color:var(--accent);color:#fff;
+}
+.profile-screen[data-profile-theme] .profile-xp-card{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--bg-panel)),var(--bg-main));
+}
+.profile-screen[data-profile-theme] .profile-xp-fill{background:linear-gradient(90deg,var(--accent),var(--accent-bright));box-shadow:0 0 13px color-mix(in srgb,var(--accent) 55%,transparent)}
+.profile-screen[data-profile-theme] .profile-theme-option{color:var(--text-main);background:var(--bg-main);border-color:var(--border)}
+.profile-screen[data-profile-theme] .profile-theme-option.is-selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--bg-main))}
+.profile-screen[data-profile-theme] .profile-theme-check,
+.profile-screen[data-profile-theme] .profile-customization-symbol,
+.profile-screen[data-profile-theme] .profile-settings-gear{color:var(--accent);text-shadow:0 0 12px color-mix(in srgb,var(--accent) 60%,transparent)}
+.profile-screen[data-profile-theme] .profile-cover[data-theme="steel"]::before{background:radial-gradient(ellipse at 78% 18%,rgba(255,55,70,.38),transparent 38%),linear-gradient(115deg,#101316,#25292d 48%,#450d17)}
+.profile-screen[data-profile-theme] .profile-cover[data-theme="cyber"]::before{background:linear-gradient(120deg,rgba(0,229,212,.15),transparent 40%),repeating-linear-gradient(90deg,transparent 0 22px,rgba(0,229,212,.1) 23px 24px),linear-gradient(115deg,#06151a,#10333b 55%,#09242b)}
+.profile-screen[data-profile-theme] .profile-cover[data-theme="sakura"]::before{background:radial-gradient(circle at 82% 25%,rgba(255,174,211,.45),transparent 22%),radial-gradient(circle at 70% 65%,rgba(255,113,178,.2),transparent 30%),linear-gradient(115deg,#211321,#512b49 58%,#7b3d65)}
+.profile-screen[data-profile-theme] .profile-cover[data-theme="fantasy"]::before{background:radial-gradient(ellipse at 78% 20%,rgba(226,174,91,.25),transparent 30%),linear-gradient(115deg,#100f0c,#30251a 55%,#50351c)}
+.profile-screen[data-profile-theme="sakura"] .profile-cover::after{border-color:rgba(255,190,220,.3);box-shadow:0 0 0 18px rgba(255,190,220,.06),0 0 0 38px rgba(255,190,220,.035)}
+.profile-screen[data-profile-theme="fantasy"] .profile-cover::after{border-color:rgba(224,183,111,.3);box-shadow:0 0 0 18px rgba(224,183,111,.05),0 0 0 38px rgba(224,183,111,.03)}
+.profile-screen[data-profile-theme] .profile-feature-kicker{color:var(--accent)}
+.profile-screen[data-profile-theme] .profile-achievement-button:hover{border-color:var(--accent)}
+.profile-screen[data-profile-theme] .profile-achievement-icon{color:var(--accent)}
+.profile-screen[data-profile-theme] .profile-settings-button:hover .profile-settings-gear{color:var(--accent)}
+@media(max-width:480px){
+ .profile-screen[data-profile-theme]{padding:10px;border-radius:12px}
+ .profile-screen[data-profile-theme] .profile-card{padding:15px}
+}
