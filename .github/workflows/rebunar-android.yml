@@ -62,7 +62,7 @@ jobs:
           logo.putalpha(ImageChops.multiply(logo.getchannel("A"), mask))
           logo.save(output_path, format="PNG", optimize=True)
           logo.save("rebunar-logo-preview.png", format="PNG", optimize=True)
-          print(f"Detected green ring bounds: ({left}, {top}) - ({right}, {bottom})")
+          print("Full avatar fitted inside fixed circular frame.")
           print(f"Original image: {source.size}; circular logo exported: {logo.size}")
           PY
 
