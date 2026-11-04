@@ -1190,3 +1190,43 @@
 .profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant {
   filter: none !important;
 }
+
+
+/* Кнопка каталога пользователей под аватаром */
+.profile-users-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: min(100%, 300px);
+  min-height: 44px;
+  margin: 16px auto 4px;
+  padding: 10px 16px;
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.profile-users-button > span:first-child {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}
+.profile-users-button-arrow {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 21px;
+  line-height: 1;
+}
+.profile-users-button:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-panel-2));
+  border-color: var(--accent);
+}
+.profile-users-button:active {
+  transform: scale(.985);
+}
