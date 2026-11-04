@@ -4,6 +4,7 @@
  */
 import { getUsers } from './api.js';
 import { frameArtwork } from '../profile/enhancements.js';
+import { navigate } from '../../app/router.js';
 import './users.css';
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -74,7 +75,7 @@ export function renderUsersScreen(container) {
       const isMe = Boolean(user.is_me);
 
       return `
-        <article class="users-item">
+        <article class="users-item" data-open-user="${Number(user.id)}" role="button" tabindex="0" aria-label="Открыть профиль ${escapeHTML(name)}">
           <span class="users-avatar-wrap">
             <span class="users-avatar">${avatar}</span>
             <span class="users-avatar-frame frame-${frame}" aria-hidden="true">${frameArtwork(frame)}</span>
@@ -142,6 +143,18 @@ export function renderUsersScreen(container) {
     page = 1;
     load();
     searchInput.focus();
+  });
+
+  list.addEventListener('click', event => {
+    const item = event.target.closest('[data-open-user]');
+    if (item) navigate('user-profile', { userId: Number(item.dataset.openUser) });
+  });
+  list.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    const item = event.target.closest('[data-open-user]');
+    if (!item) return;
+    event.preventDefault();
+    navigate('user-profile', { userId: Number(item.dataset.openUser) });
   });
 
   load();
