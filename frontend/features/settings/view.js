@@ -97,8 +97,9 @@ async function openMatrixEditor(outlet) {
       </div>
 
       <p class="security-editor-description">
-        Подключение Matrix для защищённого обмена сообщениями
-        со сквозным шифрованием.
+        Дополнительное подключение сторонней системы Matrix для сквозного шифрования.
+        <strong class="matrix-optional-note">Важно: для обычных личных чатов Rebunar Matrix не нужен. Ты можешь искать пользователей и переписываться прямо здесь.</strong>
+        <span class="matrix-optional-note">При подключении откроется официальный вход Matrix во внешнем браузере — это отдельная авторизация, а не вход в Rebunar. Если ты просто хочешь общаться в Rebunar, ничего подключать не нужно.</span>
         <span class="matrix-trademark-note">
           Matrix — товарный знак The Matrix.org Foundation. Rebunar не связан с Foundation.
           <a href="https://matrix.org/" target="_blank" rel="noopener noreferrer">matrix.org</a>
@@ -110,7 +111,7 @@ async function openMatrixEditor(outlet) {
 
       <div class="security-editor-actions matrix-editor-actions">
         <button class="security-editor-save matrix-editor-connect" type="button">
-          Подключить Matrix
+          Подключить Matrix (дополнительно)
         </button>
         <button class="security-editor-cancel matrix-editor-disconnect" type="button">
           Отвязать аккаунт
@@ -153,7 +154,7 @@ async function openMatrixEditor(outlet) {
       } else {
         status.textContent = 'Matrix не подключён';
         connectButton.hidden = false;
-        connectButton.textContent = 'Подключить Matrix';
+        connectButton.textContent = 'Подключить Matrix (дополнительно)';
         disconnectButton.hidden = true;
       }
     } catch (err) {
