@@ -124,7 +124,6 @@ export function createShell(root) {
             <button type="button" data-route="games">Игры</button>
             <button type="button" data-route="communities">Сообщества</button>
             ${chatButton()}
-            <button type="button" data-route="users">Пользователи</button>
           </nav>
         </aside>
 
