@@ -25,6 +25,18 @@ def connect():
     return sqlite3.connect(DB)
 
 
+@app.after_request
+def disable_api_caching(response):
+    # Authentication state must always be fetched from the server.
+    # In particular, a stale cached /api/me response must never restore
+    # a previously authenticated UI after logout.
+    if request.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 def get_messages_time_column(con):
     columns = {row[1] for row in con.execute("PRAGMA table_info(messages)")}
     if "created_at" in columns:
@@ -934,7 +946,16 @@ def logout():
             )
 
     session.clear()
-    return jsonify({"logged_in": False}), 200
+    response = jsonify({"logged_in": False})
+    response.delete_cookie(
+        app.config.get("SESSION_COOKIE_NAME", "session"),
+        path=app.config.get("SESSION_COOKIE_PATH") or "/",
+        domain=app.config.get("SESSION_COOKIE_DOMAIN"),
+        secure=app.config.get("SESSION_COOKIE_SECURE", False),
+        httponly=app.config.get("SESSION_COOKIE_HTTPONLY", True),
+        samesite=app.config.get("SESSION_COOKIE_SAMESITE"),
+    )
+    return response, 200
 
 
 @app.get("/api/communities")
