@@ -99,10 +99,10 @@ async function renderAvatarFrameCollection(container, customization, user) {
       <div><span class="profile-feature-kicker">Коллекция</span><strong>Рамки аватара</strong></div>
       <span class="profile-customization-symbol" aria-hidden="true">◈</span>
     </div>
-    <p class="profile-customization-description">Открывай рамки за уровни. Награды выдаются только на особых рубежах — не на каждом уровне.</p>
+    <p class="profile-customization-description">Выбирай одну из 13 новых рамок или оставь аватар без рамки.</p>
     <div class="profile-frame-progress" aria-live="polite">Загружаем коллекцию…</div>
     <div class="profile-frame-grid"></div>
-    <p class="profile-frame-footnote">Вся коллекция рамок бесплатна и доступна каждому участнику Rebunar.</p>
+    <p class="profile-frame-footnote">Все 13 рамок доступны каждому участнику Rebunar.</p>
   `;
   customization.appendChild(section);
 
