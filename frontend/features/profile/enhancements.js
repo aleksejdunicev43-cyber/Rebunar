@@ -106,7 +106,18 @@ async function renderAvatarFrameCollection(container, customization, user) {
   customization.appendChild(section);
 
   try {
-    const state = await fetchAvatarFrames();
+    let state = await fetchAvatarFrames();
+
+    // The founder account starts with the Inferno frame equipped.
+    // Other accounts keep the existing level/unlock progression.
+    if (Number(user?.id) === 1 && state.equipped === 'rookie' &&
+        state.frames?.some(frame => frame.id === 'inferno' && frame.unlocked)) {
+      try {
+        state = await equipAvatarFrame('inferno');
+      } catch (error) {
+        console.warn('Rebunar: не удалось автоматически надеть рамку Инферно:', error);
+      }
+    }
     const progress = section.querySelector('.profile-frame-progress');
     const grid = section.querySelector('.profile-frame-grid');
     const avatarButton = container.querySelector('.profile-avatar-button');
