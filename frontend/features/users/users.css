@@ -43,56 +43,5 @@
 .users-item{cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}.users-item:hover,.users-item:focus-visible{border-color:rgba(226,61,79,.55);background:rgba(155,35,52,.09);outline:none}.users-item:focus-visible{box-shadow:0 0 0 2px rgba(226,61,79,.22)}
 
 
-/* USERS DIRECTORY — use the exact same rookie SVG artwork as the profile.
-   The list avatar is smaller, so scale the frame to preserve the same proportions. */
-.users-avatar-frame.frame-rookie {
-  inset: -4%;
-  border: 0;
-  border-radius: 0;
-  overflow: visible;
-}
-
-.users-avatar-frame.frame-rookie .avatar-frame-art {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: none;
-}
-
-/* Remove square outer corners from every other frame except the red
-   Steel & Blood frame, whose artwork is already correct. */
-.users-avatar-frame:not(.frame-rookie):not(.frame-steel-blood) {
-  overflow: hidden;
-  border-radius: 50%;
-}
-
-/* Inferno Ascendant is a raster PNG with a solid square canvas.
-   Keep only its circular outer ring visible. */
-.users-avatar-frame.frame-inferno-ascendant .avatar-frame-image {
-  -webkit-mask-image: radial-gradient(circle at center, transparent 0 49%, #000 53% 100%);
-  mask-image: radial-gradient(circle at center, transparent 0 49%, #000 53% 100%);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  clip-path: circle(50% at 50% 50%);
-}
-
-/* STEEL & BLOOD — hide the square SVG canvas in the users directory. */
-.users-avatar-frame.frame-steel-blood .avatar-frame-art {
-  clip-path: circle(50% at 50% 50%);
-}
-
-/* STEEL & BLOOD — remove the global square border/shadow from its wrapper.
-   The circular SVG artwork itself provides the visible frame. */
-.users-avatar-frame.frame-steel-blood {
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  overflow: visible !important;
-}
-.users-avatar-frame.frame-steel-blood .avatar-frame-art {
-  clip-path: none !important;
-}
+.users-item>.rb-avatar{margin:0 5px}
+@media(max-width:480px){.users-item>.rb-avatar{margin:0 3px}}
