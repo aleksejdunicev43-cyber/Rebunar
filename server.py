@@ -483,7 +483,8 @@ def me():
         "username": user["username"],
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
-        "avatar": user["avatar"] or ""
+        "avatar": user["avatar"] or "",
+        "equipped_frame": user["equipped_frame"] or "rookie"
     }), 200
 
 
