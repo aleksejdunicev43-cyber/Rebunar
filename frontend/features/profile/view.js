@@ -4,11 +4,10 @@
 
 import { uploadAvatar, updateProfile } from './api.js';
 import { getUser, setUser } from '../auth/session.js';
+import { avatarMarkup } from '../../shared/avatar.js';
 
 export function renderProfileScreen(container, user, onLogout) {
-  const avatar = user.avatar
-    ? `<img class="profile-avatar-image" src="${escapeHTML(user.avatar)}" alt="Аватар">`
-    : `<div class="profile-avatar-placeholder">R</div>`;
+  const avatar = avatarMarkup(user, { size: 'profile', label: 'Аватар профиля' });
 
   const displayName = user.display_name || user.username || 'Пользователь';
   const username = user.username || '—';
