@@ -108,7 +108,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
 
   try {
     const state = await fetchAvatarFrames();
-    syncEquippedFrame(user, state.equipped || 'rookie');
+    syncEquippedFrame(user, state.equipped || 'none');
     const progress = section.querySelector('.profile-frame-progress');
     const grid = section.querySelector('.profile-frame-grid');
     const avatarButton = container.querySelector('.profile-avatar-button');
@@ -128,11 +128,11 @@ async function renderAvatarFrameCollection(container, customization, user) {
       if (xpTrack) xpTrack.setAttribute('aria-valuenow', String(currentXp));
     }
     if (avatarButton) {
-      setAvatarFrameArtwork(avatarButton, state.equipped || 'rookie');
+      setAvatarFrameArtwork(avatarButton, state.equipped || 'none');
     }
 
     grid.innerHTML = (state.frames || []).map(frame => {
-      const unlocked = frame.id === 'rookie' || Boolean(frame.unlocked);
+      const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
       const equipped = Boolean(frame.equipped);
       return `
         <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}"
@@ -169,15 +169,15 @@ async function renderAvatarFrameCollection(container, customization, user) {
 }
 
 function renderFrameState(container, section, state, user) {
-  syncEquippedFrame(user, state.equipped || 'rookie');
+  syncEquippedFrame(user, state.equipped || 'none');
   const avatarButton = container.querySelector('.profile-avatar-button');
   if (avatarButton) {
-    setAvatarFrameArtwork(avatarButton, state.equipped || 'rookie');
+    setAvatarFrameArtwork(avatarButton, state.equipped || 'none');
   }
   section.querySelector('.profile-frame-progress').innerHTML =
     `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
   section.querySelector('.profile-frame-grid').innerHTML = (state.frames || []).map(frame => {
-    const unlocked = frame.id === 'rookie' || Boolean(frame.unlocked);
+    const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
     const equipped = Boolean(frame.equipped);
     return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
   }).join('');
@@ -206,7 +206,7 @@ function syncEquippedFrame(user, frameId) {
 function framePreviewMarkup(frame, user) {
   const avatar = user?.avatar
     ? '<img class="profile-frame-avatar" src="' + escapeHTML(user.avatar) + '" alt="" draggable="false">'
-    : '<span class="profile-frame-avatar-placeholder" aria-hidden="true">' + escapeHTML((user?.display_name || user?.username || 'R').slice(0, 1).toUpperCase()) + '</span>';
+    : '<span class="profile-frame-avatar-placeholder" aria-hidden="true">' + escapeHTML('Р') + '</span>';
   return avatar + frameArtwork(frame.id);
 }
 
@@ -224,33 +224,17 @@ function setAvatarFrameArtwork(button, frameId) {
 }
 
 export function frameArtwork(frameId) {
-  if (safeFrameId(frameId) === 'inferno-ascendant') {
-    return '<img class="avatar-frame-art avatar-frame-image" src="/new/frames/rebunar-frame-inferno-ascension-ready.png" alt="" draggable="false">';
-  }
-  const colors = {
-    rookie: ['#e4edf4','#596875','#aebbc7'],
-    'steel-blood': ['#ffd1d7','#781528','#ff5268'],
-    'cyber-edge': ['#c9fffb','#087f83','#42fff0'],
-    inferno: ['#fff0b0','#a51f20','#ffb34f'],
-    'royal-blood': ['#fff4cf','#93601d','#ffe08a'],
-    'void-dragon': ['#f5dcff','#5623a0','#d5a0ff']
-  };
-  const c = colors[safeFrameId(frameId)] || colors.rookie;
-  const [shine, dark, glow] = c;
-  const shapes = {
-    rookie: '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="7"/><circle cx="128" cy="128" r="96" fill="none" stroke="#fff" stroke-opacity=".55" stroke-dasharray="2 7"/>',
-    'steel-blood': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="13"/><circle cx="128" cy="128" r="93" fill="none" stroke="#ffd1d7" stroke-width="2"/><path d="M128 5 144 24 128 42 112 24ZM128 214 144 233 128 251 112 233ZM5 128 24 112 42 128 24 144ZM214 128 233 112 251 128 233 144Z" fill="url(#g)" stroke="#fff" stroke-width="2"/><path d="M52 52 69 61 61 78 44 69ZM204 52 212 69 195 78 187 61ZM52 204 69 195 61 178 44 187ZM204 204 212 187 195 178 187 195Z" fill="#fff"/>',
-    'cyber-edge': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="8" stroke-dasharray="38 8 8 8"/><circle cx="128" cy="128" r="95" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 7"/><path d="M128 4 146 22 128 40 110 22ZM128 216 146 234 128 252 110 234ZM4 128 22 110 40 128 22 146ZM216 128 234 110 252 128 234 146Z" fill="url(#g)" stroke="#fff" stroke-width="2"/>',
-    inferno: '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="15"/><circle cx="128" cy="128" r="92" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="12 5"/><path d="M128 3c-17 24-5 32 0 43 11-13 20-23 0-43Zm0 207c-17 24-5 32 0 43 11-13 20-23 0-43ZM3 128c24-17 32-5 43 0-13 11-23 20-43 0Zm207 0c24-17 32-5 43 0-13 11-23 20-43 0Z" fill="#fff" stroke="url(#g)" stroke-width="2"/>',
-    'inferno-ascendant': '',
-    'royal-blood': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="12"/><circle cx="128" cy="128" r="94" fill="none" stroke="#fff" stroke-width="2"/><path d="M82 25 95 9 110 25 128 4 146 25 161 9 174 25 165 52 91 52ZM82 231 95 247 110 231 128 252 146 231 161 247 174 231 165 204 91 204Z" fill="url(#g)" stroke="#fff" stroke-width="3"/><path d="M25 82 9 95 25 110 4 128 25 146 9 161 25 174 52 165 52 91ZM231 82 247 95 231 110 252 128 231 146 247 161 231 174 204 165 204 91Z" fill="url(#g)" stroke="#fff" stroke-width="3"/>',
-    'void-dragon': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="12"/><circle cx="128" cy="128" r="94" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5 5"/><path d="M128 3c-12 20-34 22-37 42 17-8 27-5 37 9 10-14 20-17 37-9-3-20-25-22-37-42ZM128 253c-12-20-34-22-37-42 17 8 27 5 37-9 10 14 20 17 37 9-3 20-25 22-37 42Z" fill="url(#g)" stroke="#fff" stroke-width="2"/><path d="M3 128c20-12 22-34 42-37-8 17-5 27 9 37-14 10-17 20-9 37-20-3-22-25-42-37ZM253 128c-20-12-22-34-42-37 8 17 5 27-9 37 14 10 17 20 9 37 20-3 22-25 42-37Z" fill="url(#g)" stroke="#fff" stroke-width="2"/>'
-  };
-  return '<svg class="avatar-frame-art" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="' + shine + '"/><stop offset=".5" stop-color="' + glow + '"/><stop offset="1" stop-color="' + dark + '"/></linearGradient></defs>' + (shapes[safeFrameId(frameId)] || shapes.rookie) + '<circle cx="128" cy="128" r="83" fill="none" stroke="' + glow + '" stroke-opacity=".45" stroke-width="1.5"/></svg>';
+  const id = safeFrameId(frameId);
+  const match = id.match(/^frame-(\\d{1,2})$/);
+  if (!match) return '';
+  const number = Number(match[1]);
+  if (number < 1 || number > 13) return '';
+  return '<img class="avatar-frame-art avatar-frame-image" src="/new/assets/frames/rebunar_avatar_' + number + '.png" alt="" draggable="false">';
 }
 
 function safeFrameId(value) {
-  return String(value || 'rookie').replace(/[^a-z0-9-]/gi, '');
+  const id = String(value || 'none').replace(/[^a-z0-9-]/gi, '');
+  return id === 'none' || /^frame-(?:[1-9]|1[0-3])$/.test(id) ? id : 'none';
 }
 
 function openFounderAchievement(container) {
