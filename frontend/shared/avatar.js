@@ -28,7 +28,7 @@ export function avatarMarkup(user = {}, options = {}) {
     : '';
   const frameUrl = frameImageUrl(frameId);
   const frameMarkup = frameUrl
-    ? '<img class="rb-avatar__frame" src="' + frameUrl + '" alt="" aria-hidden="true" draggable="false">'
+    ? '<img class="rb-avatar__frame" src="' + frameUrl + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
     : '';
   return '<span class="' + classes + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
     '<span class="rb-avatar__photo-layer">' + photoMarkup + '<span class="rb-avatar__fallback" aria-hidden="true">Р</span></span>' +
