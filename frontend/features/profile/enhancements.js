@@ -4,6 +4,7 @@
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
 import { fetchAvatarFrames, equipAvatarFrame } from './frames.js';
 import { getUser, setUser } from '../auth/session.js';
+import { avatarMarkup, frameImageUrl, normalizeFrameId } from '../../shared/avatar.js';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
@@ -128,7 +129,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
       if (xpTrack) xpTrack.setAttribute('aria-valuenow', String(currentXp));
     }
     if (avatarButton) {
-      setAvatarFrameArtwork(avatarButton, state.equipped || 'none');
+      setAvatarFrameArtwork(avatarButton, state.equipped || 'none', user);
     }
 
     grid.innerHTML = (state.frames || []).map(frame => {
@@ -172,7 +173,7 @@ function renderFrameState(container, section, state, user) {
   syncEquippedFrame(user, state.equipped || 'none');
   const avatarButton = container.querySelector('.profile-avatar-button');
   if (avatarButton) {
-    setAvatarFrameArtwork(avatarButton, state.equipped || 'none');
+    setAvatarFrameArtwork(avatarButton, state.equipped || 'none', user);
   }
   section.querySelector('.profile-frame-progress').innerHTML =
     `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
@@ -204,37 +205,21 @@ function syncEquippedFrame(user, frameId) {
 }
 
 function framePreviewMarkup(frame, user) {
-  const avatar = user?.avatar
-    ? '<img class="profile-frame-avatar" src="' + escapeHTML(user.avatar) + '" alt="" draggable="false">'
-    : '<span class="profile-frame-avatar-placeholder" aria-hidden="true">' + escapeHTML('Р') + '</span>';
-  return avatar + frameArtwork(frame.id);
+  return avatarMarkup({ ...user, equipped_frame: frame.id }, { size: 'preview' });
 }
 
-function setAvatarFrameArtwork(button, frameId) {
+function setAvatarFrameArtwork(button, frameId, user = getUser()) {
   if (!button) return;
-  let overlay = button.querySelector('.profile-avatar-frame');
-  if (!overlay) {
-    overlay = document.createElement('span');
-    overlay.className = 'profile-avatar-frame';
-    overlay.setAttribute('aria-hidden', 'true');
-    button.appendChild(overlay);
-  }
-  overlay.className = 'profile-avatar-frame frame-' + safeFrameId(frameId);
-  overlay.innerHTML = frameArtwork(frameId);
+  button.innerHTML = avatarMarkup({ ...user, equipped_frame: frameId }, { size: 'profile', label: 'Аватар профиля' });
 }
 
 export function frameArtwork(frameId) {
-  const id = safeFrameId(frameId);
-  const match = id.match(/^frame-(\\d{1,2})$/);
-  if (!match) return '';
-  const number = Number(match[1]);
-  if (number < 1 || number > 13) return '';
-  return '<img class="avatar-frame-art avatar-frame-image" src="/new/assets/frames/rebunar_avatar_' + number + '.png" alt="" draggable="false">';
+  const url = frameImageUrl(frameId);
+  return url ? '<img class="avatar-frame-art avatar-frame-image" src="' + url + '" alt="" draggable="false">' : '';
 }
 
 function safeFrameId(value) {
-  const id = String(value || 'none').replace(/[^a-z0-9-]/gi, '');
-  return id === 'none' || /^frame-(?:[1-9]|1[0-3])$/.test(id) ? id : 'none';
+  return normalizeFrameId(value);
 }
 
 function openFounderAchievement(container) {
