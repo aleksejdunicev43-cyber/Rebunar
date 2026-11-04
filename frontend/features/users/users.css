@@ -43,8 +43,21 @@
 .users-item{cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}.users-item:hover,.users-item:focus-visible{border-color:rgba(226,61,79,.55);background:rgba(155,35,52,.09);outline:none}.users-item:focus-visible{box-shadow:0 0 0 2px rgba(226,61,79,.22)}
 
 
-/* USERS DIRECTORY — remove square outer corners from every frame except
-   the standard grey Rookie and red Steel & Blood frames. */
+/* USERS DIRECTORY — match the standard grey frame to the profile avatar. */
+.users-avatar-frame.frame-rookie {
+  inset: -7px;
+  box-sizing: border-box;
+  border: 3px solid #9da8b1;
+  border-radius: 50%;
+  overflow: visible;
+}
+
+.users-avatar-frame.frame-rookie .avatar-frame-art {
+  display: none;
+}
+
+/* Remove square outer corners from every other frame except the red
+   Steel & Blood frame, whose artwork is already correct. */
 .users-avatar-frame:not(.frame-rookie):not(.frame-steel-blood) {
   overflow: hidden;
   border-radius: 50%;
