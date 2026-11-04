@@ -3,18 +3,13 @@
  * Каталог зарегистрированных аккаунтов с настоящими аватарами и рамками.
  */
 import { getUsers } from './api.js';
-import { frameArtwork } from '../profile/enhancements.js';
+import { avatarMarkup } from '../../shared/avatar.js';
 import { navigate } from '../../app/router.js';
 import './users.css';
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[char]);
-
-const safeFrameId = value => {
-  const id = String(value || 'none').replace(/[^a-z0-9-]/gi, '');
-  return id || 'none';
-};
 
 export function renderUsersScreen(container) {
   let page = 1;
@@ -60,11 +55,7 @@ export function renderUsersScreen(container) {
 
     list.innerHTML = users.map(user => {
       const name = user.display_name || user.username || 'Пользователь';
-      const initial = escapeHTML(name.trim().slice(0, 1).toUpperCase() || 'R');
-      const frame = safeFrameId(user.equipped_frame);
-      const avatar = user.avatar
-        ? `<img class="users-avatar-image" src="${escapeHTML(user.avatar)}" alt="" loading="lazy" onerror="this.hidden=true">`
-        : `<span class="users-avatar-placeholder">${initial}</span>`;
+      const avatar = avatarMarkup(user, { size: 'directory' });
       const status = user.online
         ? '<span class="users-status is-online"><i></i>В сети</span>'
         : '<span class="users-status"><i></i>Участник Rebunar</span>';
@@ -72,10 +63,7 @@ export function renderUsersScreen(container) {
 
       return `
         <article class="users-item" data-open-user="${Number(user.id)}" role="button" tabindex="0" aria-label="Открыть профиль ${escapeHTML(name)}">
-          <span class="users-avatar-wrap">
-            <span class="users-avatar">${avatar}</span>
-            <span class="users-avatar-frame frame-${frame}" aria-hidden="true">${frameArtwork(frame)}</span>
-          </span>
+          ${avatar}
           <span class="users-identity">
             <strong>${escapeHTML(name)}</strong>
             <span class="users-username">@${escapeHTML(user.username || 'user')}</span>
