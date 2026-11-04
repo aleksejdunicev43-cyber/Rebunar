@@ -70,14 +70,14 @@ def init_db():
             CREATE TABLE IF NOT EXISTS profile_progress (
                 user_id INTEGER PRIMARY KEY,
                 xp INTEGER NOT NULL DEFAULT 0,
-                equipped_frame TEXT NOT NULL DEFAULT 'rookie',
+                equipped_frame TEXT NOT NULL DEFAULT '',
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
         progress_columns = {row[1] for row in con.execute("PRAGMA table_info(profile_progress)")}
         if "equipped_frame" not in progress_columns:
-            con.execute("ALTER TABLE profile_progress ADD COLUMN equipped_frame TEXT NOT NULL DEFAULT 'rookie'")
+            con.execute("ALTER TABLE profile_progress ADD COLUMN equipped_frame TEXT NOT NULL DEFAULT ''")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS user_avatar_frames (
@@ -373,7 +373,7 @@ def login():
         user = con.execute(
             """
             SELECT u.id, u.username, u.password, u.display_name, u.bio, u.avatar,
-                   COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+                   COALESCE(pp.equipped_frame, '') AS equipped_frame
             FROM users u
             LEFT JOIN profile_progress pp ON pp.user_id = u.id
             WHERE u.username = ?
@@ -405,7 +405,7 @@ def login():
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
         "avatar": user["avatar"] or "",
-        "equipped_frame": user["equipped_frame"] or "rookie"
+        "equipped_frame": user["equipped_frame"] or ""
     }), 200
 
 
@@ -466,7 +466,7 @@ def me():
         con.row_factory = sqlite3.Row
         user = con.execute(
             """SELECT u.id, u.username, u.display_name, u.bio, u.avatar,
-                      COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+                      COALESCE(pp.equipped_frame, '') AS equipped_frame
                FROM users u
                LEFT JOIN profile_progress pp ON pp.user_id = u.id
                WHERE u.id = ?""",
@@ -484,7 +484,7 @@ def me():
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
         "avatar": user["avatar"] or "",
-        "equipped_frame": user["equipped_frame"] or "rookie"
+        "equipped_frame": user["equipped_frame"] or ""
     }), 200
 
 
@@ -650,7 +650,7 @@ def search_users():
         con.row_factory = sqlite3.Row
         rows = con.execute("""
             SELECT u.id, u.username, u.display_name, u.avatar,
-                   COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+                   COALESCE(pp.equipped_frame, '') AS equipped_frame
             FROM users u
             LEFT JOIN profile_progress pp ON pp.user_id = u.id
             WHERE u.id != ?
@@ -669,7 +669,7 @@ def search_users():
             "username": row["username"],
             "display_name": row["display_name"] or row["username"],
             "avatar": row["avatar"] or "",
-            "equipped_frame": row["equipped_frame"] or "rookie"
+            "equipped_frame": row["equipped_frame"] or ""
         }
         for row in rows
     ]), 200
@@ -713,7 +713,7 @@ def list_users():
                 u.username,
                 u.display_name,
                 u.avatar,
-                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame,
+                COALESCE(pp.equipped_frame, '') AS equipped_frame,
                 EXISTS(
                     SELECT 1 FROM user_presence p
                     WHERE p.user_id = u.id
@@ -737,7 +737,7 @@ def list_users():
                 "username": row["username"],
                 "display_name": row["display_name"] or row["username"],
                 "avatar": row["avatar"] or "",
-                "equipped_frame": row["equipped_frame"] or "rookie",
+                "equipped_frame": row["equipped_frame"] or "",
                 "online": bool(row["online"]),
                 "is_me": row["id"] == session["user_id"]
             }
@@ -756,7 +756,7 @@ def get_public_user_profile(profile_user_id):
         row = con.execute("""
             SELECT
                 u.id, u.username, u.display_name, u.avatar, u.bio,
-                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame,
+                COALESCE(pp.equipped_frame, '') AS equipped_frame,
                 EXISTS(
                     SELECT 1 FROM user_presence p
                     WHERE p.user_id = u.id
@@ -776,7 +776,7 @@ def get_public_user_profile(profile_user_id):
         "display_name": row["display_name"] or row["username"],
         "avatar": row["avatar"] or "",
         "bio": row["bio"] or "",
-        "equipped_frame": row["equipped_frame"] or "rookie",
+        "equipped_frame": row["equipped_frame"] or "",
         "online": bool(row["online"]),
         "is_me": row["id"] == session["user_id"]
     }), 200
@@ -853,13 +853,20 @@ def upload_profile_avatar():
 
 
 AVATAR_FRAMES = [
-    {"id": "rookie", "name": "Новичок", "rarity": "Обычная", "level": 1, "description": "Первая рамка участника Rebunar."},
-    {"id": "steel-blood", "name": "Стальная кровь", "rarity": "Редкая", "level": 5, "description": "Стальные грани и алое свечение."},
-    {"id": "cyber-edge", "name": "Кибер-контур", "rarity": "Эпическая", "level": 10, "description": "Неоновые сегменты и цифровая энергия."},
-    {"id": "inferno", "name": "Инферно", "rarity": "Легендарная", "level": 20, "description": "Пылающая рамка с раскалёнными деталями."},
-    {"id": "inferno-ascendant", "name": "Инферно: Вознесение", "rarity": "Мифическая", "level": 65, "description": "Отдельная авторская рамка с загруженным пламенным артом."},
-    {"id": "royal-blood", "name": "Королевская кровь", "rarity": "Легендарная", "level": 35, "description": "Корона, крылья и алые драгоценности."},
-    {"id": "void-dragon", "name": "Дракон пустоты", "rarity": "Мифическая", "level": 50, "description": "Редкая мифическая рамка с энергией бездны."}
+    {"id": "frame-1", "name": "Рамка 1", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №1."},
+    {"id": "frame-2", "name": "Рамка 2", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №2."},
+    {"id": "frame-3", "name": "Рамка 3", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №3."},
+    {"id": "frame-4", "name": "Рамка 4", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №4."},
+    {"id": "frame-5", "name": "Рамка 5", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №5."},
+    {"id": "frame-6", "name": "Рамка 6", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №6."},
+    {"id": "frame-7", "name": "Рамка 7", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №7."},
+    {"id": "frame-8", "name": "Рамка 8", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №8."},
+    {"id": "frame-9", "name": "Рамка 9", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №9."},
+    {"id": "frame-10", "name": "Рамка 10", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №10."},
+    {"id": "frame-11", "name": "Рамка 11", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №11."},
+    {"id": "frame-12", "name": "Рамка 12", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №12."},
+    {"id": "frame-13", "name": "Рамка 13", "rarity": "Коллекционная", "level": 1, "description": "Коллекционная рамка Rebunar №13."},
+    {"id": "none", "name": "Без рамки", "rarity": "Стандарт", "level": 1, "description": "Аватар без декоративной рамки."}
 ]
 
 def get_profile_frame_state(con, user_id):
@@ -874,8 +881,7 @@ def get_profile_frame_state(con, user_id):
     xp = max(0, int(progress[0] or 0))
     level = 1 + xp // 100
     # На стартовом этапе вся коллекция рамок бесплатна и открыта каждому аккаунту.
-    unlocked_ids = {frame["id"] for frame in AVATAR_FRAMES}
-    unlocked = [frame for frame in AVATAR_FRAMES if frame["id"] in unlocked_ids]
+    unlocked = [frame for frame in AVATAR_FRAMES if frame["id"] != "none"]
     for frame in unlocked:
         con.execute(
             "INSERT OR IGNORE INTO user_avatar_frames (user_id, frame_id) VALUES (?, ?)",
@@ -887,10 +893,11 @@ def get_profile_frame_state(con, user_id):
     ).fetchall()
     owned = {row[0] for row in owned_rows}
     equipped_row = con.execute(
-        "SELECT frame_id FROM user_avatar_frames WHERE user_id = ? AND frame_id = (SELECT equipped_frame FROM profile_progress WHERE user_id = ?)",
-        (user_id, user_id)
+        "SELECT equipped_frame FROM profile_progress WHERE user_id = ?",
+        (user_id,)
     ).fetchone()
-    equipped = equipped_row[0] if equipped_row else "rookie"
+    equipped_value = str(equipped_row[0] or "") if equipped_row else ""
+    equipped = equipped_value if equipped_value in {frame["id"] for frame in AVATAR_FRAMES} else "none"
     current_xp = xp % 100
     return {
         "level": level,
@@ -925,10 +932,11 @@ def equip_profile_frame():
     with connect() as con:
         con.execute("INSERT OR IGNORE INTO profile_progress (user_id, xp) VALUES (?, 0)", (user_id,))
         state = get_profile_frame_state(con, user_id)
-        owned = next((frame for frame in state["frames"] if frame["id"] == frame_id and frame["unlocked"]), None)
+        owned = frame_id == "none" or next((frame for frame in state["frames"] if frame["id"] == frame_id and frame["unlocked"]), None)
         if not owned:
             return jsonify({"error": "Эта рамка ещё не открыта"}), 403
-        con.execute("UPDATE profile_progress SET equipped_frame = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?", (frame_id, user_id))
+        stored_frame_id = "" if frame_id == "none" else frame_id
+        con.execute("UPDATE profile_progress SET equipped_frame = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?", (stored_frame_id, user_id))
         state = get_profile_frame_state(con, user_id)
     return jsonify(state), 200
 
@@ -1279,7 +1287,7 @@ def message_chats():
                 u.username,
                 u.display_name,
                 u.avatar,
-                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame,
+                COALESCE(pp.equipped_frame, '') AS equipped_frame,
                 m.text,
                 m.{time_column} AS created_at
             FROM messages m
@@ -1317,7 +1325,7 @@ def message_chats():
             "username": row[1],
             "display_name": row[2] or row[1],
             "avatar": row[3] or "",
-            "equipped_frame": row[4] or "rookie",
+            "equipped_frame": row[4] or "",
             "last_message": row[5],
             "created_at": row[6]
         }
@@ -1386,7 +1394,7 @@ def message_history():
                 u.username,
                 u.display_name,
                 u.avatar,
-                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+                COALESCE(pp.equipped_frame, '') AS equipped_frame
             FROM messages m
             JOIN users u ON u.id = m.sender_id
             LEFT JOIN profile_progress pp ON pp.user_id = u.id
@@ -1410,7 +1418,7 @@ def message_history():
             "username": row[5],
             "display_name": row[6] or row[5],
             "avatar": row[7] or "",
-            "equipped_frame": row[8] or "rookie"
+            "equipped_frame": row[8] or ""
         }
         for row in rows
     ])
