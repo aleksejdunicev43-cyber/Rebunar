@@ -110,3 +110,30 @@
   background: transparent !important;
   filter: none !important;
 }
+
+
+/* ROOKIE FRAME — make the collection preview match the equipped profile frame.
+   In the profile it is a single silver ring around the avatar, not an outer disc
+   with an extra decorative SVG ring. */
+.profile-frame-item[data-frame-id="rookie"] .profile-frame-preview {
+  background: transparent !important;
+  filter: none !important;
+}
+.profile-frame-item[data-frame-id="rookie"] .profile-frame-preview .avatar-frame-art {
+  display: none !important;
+}
+.profile-frame-item[data-frame-id="rookie"] .profile-frame-preview .frame-rookie {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 68% !important;
+  height: 68% !important;
+  box-sizing: content-box !important;
+  inset: auto !important;
+  transform: translate(-50%, -50%) !important;
+  border: 4px solid #aebbc7 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 1px #596875, 0 2px 8px rgba(0,0,0,.7) !important;
+}
