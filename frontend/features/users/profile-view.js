@@ -3,8 +3,8 @@
  */
 import { api } from '../../shared/api/client.js';
 import { navigate } from '../../app/router.js';
-import { avatarMarkup } from '../../shared/avatar.js';
-import './public-profile.css';
+import { avatarMarkup } from '../../shared/avatar.js?v=avatar-system-20261104-1';
+import './public-profile.css?v=avatar-system-20261104-1';
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
