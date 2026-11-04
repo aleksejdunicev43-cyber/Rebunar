@@ -4,7 +4,7 @@
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
 import { fetchAvatarFrames, equipAvatarFrame } from './frames.js';
 import { getUser, setUser } from '../auth/session.js';
-import { avatarMarkup, frameImageUrl, normalizeFrameId } from '../../shared/avatar.js';
+import { avatarMarkup } from '../../shared/avatar.js';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
@@ -139,7 +139,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
         <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}"
           data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''}
           aria-pressed="${equipped}" title="${escapeHTML(frame.description)}">
-          <span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span>
+          <span class="profile-frame-preview">${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span>
           <span class="profile-frame-name">${escapeHTML(frame.name)}</span>
           <span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span>
           <span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span>
@@ -180,7 +180,7 @@ function renderFrameState(container, section, state, user) {
   section.querySelector('.profile-frame-grid').innerHTML = (state.frames || []).map(frame => {
     const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
     const equipped = Boolean(frame.equipped);
-    return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview"><span class="frame-preview-ring frame-${safeFrameId(frame.id)}"></span>${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
+    return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview">${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
   }).join('');
   section.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
     const frame = (state.frames || [])[index];
@@ -211,15 +211,6 @@ function framePreviewMarkup(frame, user) {
 function setAvatarFrameArtwork(button, frameId, user = getUser()) {
   if (!button) return;
   button.innerHTML = avatarMarkup({ ...user, equipped_frame: frameId }, { size: 'profile', label: 'Аватар профиля' });
-}
-
-export function frameArtwork(frameId) {
-  const url = frameImageUrl(frameId);
-  return url ? '<img class="avatar-frame-art avatar-frame-image" src="' + url + '" alt="" draggable="false">' : '';
-}
-
-function safeFrameId(value) {
-  return normalizeFrameId(value);
 }
 
 function openFounderAchievement(container) {
