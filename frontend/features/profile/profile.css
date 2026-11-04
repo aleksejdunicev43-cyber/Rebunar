@@ -1176,3 +1176,17 @@
 .profile-side-action-copy strong{font-size:13px;font-weight:800}
 .profile-side-action-copy small{color:var(--text-muted);font-size:11px}
 .profile-side-action-arrow{color:var(--accent);font-size:25px;line-height:1}
+
+
+/* INFERNO: ASCENSION — keep the artwork crisp; remove all added glow */
+.profile-frame-item[data-frame-id="inferno-ascendant"] .profile-frame-preview {
+  filter: none !important;
+}
+.profile-frame-item[data-frame-id="inferno-ascendant"] .avatar-frame-image,
+.profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image,
+.frame-inferno-ascendant .avatar-frame-image {
+  filter: none !important;
+}
+.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant {
+  filter: none !important;
+}
