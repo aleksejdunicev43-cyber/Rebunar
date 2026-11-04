@@ -1141,3 +1141,10 @@
     animation: none;
   }
 }
+
+
+/* REBUNAR — SEPARATE MYTHIC FRAME: INFERNO ASCENDANT */
+.profile-frame-item[data-frame-id="inferno-ascendant"] .profile-frame-preview{background:radial-gradient(circle,#2b1714 0 54%,#100d0d 57%);filter:drop-shadow(0 0 9px rgba(255,74,35,.5))}
+.profile-frame-item[data-frame-id="inferno-ascendant"] .avatar-frame-image{filter:drop-shadow(0 0 5px rgba(255,211,135,.95)) drop-shadow(0 0 13px rgba(255,70,28,.95))}
+.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant{inset:-19%;border:0;filter:drop-shadow(0 0 7px rgba(255,74,35,.85)) drop-shadow(0 0 16px rgba(213,42,22,.6))}
+.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image{filter:drop-shadow(0 0 5px rgba(255,211,135,.95)) drop-shadow(0 0 13px rgba(255,70,28,.95))}
