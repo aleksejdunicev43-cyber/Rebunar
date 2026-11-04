@@ -1,5 +1,5 @@
 import { getUser } from '../auth/session.js';
-import { avatarMarkup } from '../../shared/avatar.js';
+import { avatarMarkup } from '../../shared/avatar.js?v=avatar-system-20261104-1';
 import {
   getChats,
   hideChat,
