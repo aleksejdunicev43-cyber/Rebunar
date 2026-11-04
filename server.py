@@ -371,7 +371,13 @@ def login():
     with connect() as con:
         con.row_factory = sqlite3.Row
         user = con.execute(
-            "SELECT id, username, password, display_name, bio, avatar FROM users WHERE username = ?",
+            """
+            SELECT u.id, u.username, u.password, u.display_name, u.bio, u.avatar,
+                   COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+            FROM users u
+            LEFT JOIN profile_progress pp ON pp.user_id = u.id
+            WHERE u.username = ?
+            """,
             (username,)
         ).fetchone()
 
