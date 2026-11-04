@@ -3,7 +3,7 @@
  */
 
 import { uploadAvatar, updateProfile } from './api.js';
-import { setUser } from '../auth/session.js';
+import { getUser, setUser } from '../auth/session.js';
 
 export function renderProfileScreen(container, user, onLogout) {
   const avatar = user.avatar
@@ -473,12 +473,16 @@ function createCropEditor(container, image, imageUrl, user, onLogout) {
         throw new Error('Сервер не вернул адрес аватара');
       }
 
-      setUser({ ...user, avatar: result.avatar });
+      // Merge with the latest session state: frame selection can update it
+      // while the avatar editor is open, so the older profile snapshot must
+      // not overwrite equipped_frame or other newer account fields.
+      const latestUser = getUser() || user;
+      const updatedUser = { ...latestUser, avatar: result.avatar };
+      setUser(updatedUser);
       overlay.remove();
       URL.revokeObjectURL(imageUrl);
 
-      renderProfileScreen(container, { ...user, avatar: result.avatar },
-        onLogout);
+      renderProfileScreen(container, updatedUser, onLogout);
     } catch (error) {
       console.error('Rebunar: ошибка сохранения аватара:', error);
       errorText.textContent = error.message || 'Не удалось сохранить аватар';
