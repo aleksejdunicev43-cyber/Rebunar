@@ -17,6 +17,7 @@ import { renderMessagesScreen } from '../features/messages/view.js';
 import { renderGamesScreen } from '../features/games/view.js';
 import { renderCommunitiesScreen } from '../features/communities/view.js';
 import '../features/messages/messages.css';
+import '../shared/avatar.css';
 import '../features/favorites/favorites.css';
 import '../features/games/games.css';
 import '../features/communities/communities.css';
