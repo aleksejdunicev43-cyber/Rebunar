@@ -739,15 +739,8 @@ def get_profile_frame_state(con, user_id):
     ).fetchone()
     xp = max(0, int(progress[0] or 0))
     level = 1 + xp // 100
-    # Аккаунт №1 — аккаунт разработчика: вся коллекция открыта сразу.
-    # Остальные аккаунты получают рамки только на установленных уровнях.
-    is_founder = int(user_id) == 1
-    unlocked_ids = (
-        {frame["id"] for frame in AVATAR_FRAMES}
-        if is_founder
-        else {frame["id"] for frame in AVATAR_FRAMES if level >= frame["level"]}
-    )
-    unlocked_ids.add("rookie")
+    # На стартовом этапе вся коллекция рамок бесплатна и открыта каждому аккаунту.
+    unlocked_ids = {frame["id"] for frame in AVATAR_FRAMES}
     unlocked = [frame for frame in AVATAR_FRAMES if frame["id"] in unlocked_ids]
     for frame in unlocked:
         con.execute(
