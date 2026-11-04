@@ -3,6 +3,7 @@
  * Единая история фактического количества аккаунтов.
  */
 import { getStatisticsSummary, getStatisticsHistory } from './api.js';
+import { renderUsersScreen } from '../users/view.js';
 
 function dateKey(date) {
   return [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
@@ -69,12 +70,20 @@ export async function renderStatisticsScreen(outlet) {
         <div id="statistics-chart-container" class="statistics-chart-container"><p>Загружаем график...</p></div>
       </section>
       <p class="statistics-footnote">График учитывает новые регистрации и удаления аккаунтов.</p>
+      <section class="statistics-users-section" aria-label="Все пользователи Rebunar">
+        <div class="statistics-users-heading">
+          <h2>Пользователи сообщества</h2>
+          <p>Просмотр участников и переход к их публичным профилям</p>
+        </div>
+        <div id="statistics-users-directory"></div>
+      </section>
     </section>`;
 
   const totalElement=outlet.querySelector('#statistics-total');
   const onlineElement=outlet.querySelector('#statistics-online');
   const historyLabel=outlet.querySelector('#statistics-period-total');
   const chartContainer=outlet.querySelector('#statistics-chart-container');
+  renderUsersScreen(outlet.querySelector('#statistics-users-directory'));
   try {
     const [summary,history]=await Promise.all([getStatisticsSummary(),getStatisticsHistory()]);
     const total=Number(summary.total_users??history.current_total??0);
