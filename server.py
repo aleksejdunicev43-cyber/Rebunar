@@ -1001,10 +1001,13 @@ def get_posts():
     sql = """
         SELECT posts.id, posts.title, posts.body, posts.created_at,
                users.username AS author,
+               users.avatar AS avatar,
+               COALESCE(profile_progress.equipped_frame, '') AS equipped_frame,
                communities.slug AS community_slug,
                communities.name AS community_name
         FROM posts
         LEFT JOIN users ON users.id = posts.user_id
+        LEFT JOIN profile_progress ON profile_progress.user_id = users.id
         LEFT JOIN communities ON communities.id = posts.community_id
     """
     params = []
