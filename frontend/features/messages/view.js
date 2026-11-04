@@ -36,7 +36,7 @@ function getChatName(chat) {
 }
 
 function safeFrameId(value) {
-  return String(value || 'rookie').replace(/[^a-z0-9-]/gi, '') || 'rookie';
+  return String(value || 'none').replace(/[^a-z0-9-]/gi, '') || 'none';
 }
 
 function frameLayer(frameId, className = 'chat-avatar-frame') {
@@ -126,7 +126,7 @@ function renderMessages(messages) {
     const avatar = avatarUrl
       ? `<img class="message-avatar-image" src="${escapeHTML(avatarUrl)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image'); this.parentElement.classList.add('is-avatar-fallback')">`
       : '';
-    const frameId = profile.equipped_frame || message.equipped_frame || 'rookie';
+    const frameId = profile.equipped_frame || message.equipped_frame || 'none';
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
@@ -332,7 +332,7 @@ export function renderMessagesScreen(outlet, params = {}) {
             data-search-name="${escapeHTML(user.display_name || user.username || 'Пользователь')}"
             data-search-username="${escapeHTML(user.username || '')}"
             data-search-avatar="${escapeHTML(user.avatar || '')}"
-            data-search-frame="${escapeHTML(user.equipped_frame || 'rookie')}">
+            data-search-frame="${escapeHTML(user.equipped_frame || 'none')}">
             <span class="messages-search-result-avatar-wrap">
               <span class="messages-search-result-avatar-core ${user.avatar ? 'has-avatar-image' : ''}">${user.avatar ? `<img src="${escapeHTML(user.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">` : ''}<span class="messages-search-result-initial">${'Р'}</span></span>
               ${frameLayer(user.equipped_frame, 'messages-search-result-frame')}
@@ -527,7 +527,7 @@ export function renderMessagesScreen(outlet, params = {}) {
         display_name: profile.display_name || profile.username || 'Пользователь',
         username: profile.username || '',
         avatar: profile.avatar || '',
-        equipped_frame: profile.equipped_frame || 'rookie'
+        equipped_frame: profile.equipped_frame || 'none'
       };
       await openChat(user);
     }
