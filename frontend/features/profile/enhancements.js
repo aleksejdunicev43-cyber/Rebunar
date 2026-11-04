@@ -213,7 +213,7 @@ function setAvatarFrameArtwork(button, frameId) {
   overlay.innerHTML = frameArtwork(frameId);
 }
 
-function frameArtwork(frameId) {
+export function frameArtwork(frameId) {
   if (safeFrameId(frameId) === 'inferno-ascendant') {
     return '<img class="avatar-frame-art avatar-frame-image" src="/new/frames/rebunar-frame-inferno-ascension-ready.png" alt="" draggable="false">';
   }
