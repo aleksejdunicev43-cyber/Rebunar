@@ -11,8 +11,8 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
 })[char]);
 
 const safeFrameId = value => {
-  const id = String(value || 'rookie').replace(/[^a-z0-9-]/gi, '');
-  return id || 'rookie';
+  const id = String(value || 'none').replace(/[^a-z0-9-]/gi, '');
+  return id || 'none';
 };
 
 export async function renderUserProfileScreen(container, params = {}) {
@@ -70,7 +70,7 @@ export async function renderUserProfileScreen(container, params = {}) {
           display_name: user.display_name || user.username,
           username: user.username,
           avatar: user.avatar || '',
-          equipped_frame: user.equipped_frame || 'rookie'
+          equipped_frame: user.equipped_frame || 'none'
         }
       });
     });
