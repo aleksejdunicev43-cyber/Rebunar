@@ -1,4 +1,4 @@
-import { avatarMarkup } from '../../shared/avatar.js';
+import { avatarMarkup } from '../../shared/avatar.js?v=avatar-system-20261104-1';
 /**
  * REBUNAR — COMMUNITIES & CREATOR FEED
  * Реальная лента использует существующие /api/communities и /api/posts.
