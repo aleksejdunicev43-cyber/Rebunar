@@ -1,0 +1,10 @@
+/* Profile frame collection modal; avatar artwork is owned by shared/avatar.css. */
+.profile-frame-collection{display:none}
+.profile-frame-collection-overlay .profile-frame-collection{display:block!important;margin:0!important}
+.profile-frame-collection-overlay{position:fixed;inset:0;z-index:10040;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:18px;box-sizing:border-box;background:rgba(3,4,5,.84);backdrop-filter:blur(10px)}
+.profile-frame-collection-modal{width:min(100%,680px);max-height:min(88vh,760px);overflow-y:auto;box-sizing:border-box;padding:20px;color:var(--text-main);background:linear-gradient(145deg,var(--bg-panel-2),var(--bg-panel));border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.65),0 0 30px color-mix(in srgb,var(--accent) 12%,transparent)}
+.profile-frame-collection-modal-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.profile-frame-collection-modal-heading h2{margin:4px 0 0;font-size:21px}
+.profile-frame-collection-close{width:36px;height:36px;flex:0 0 36px;padding:0;color:var(--text-muted);background:var(--bg-main);border:1px solid var(--border);border-radius:9px;font-size:24px;line-height:1;cursor:pointer}
+.profile-frame-collection-close:hover{color:#fff;border-color:var(--accent)}
+@media(max-width:480px){.profile-frame-collection-overlay{align-items:flex-start;padding:10px}.profile-frame-collection-modal{max-height:calc(100vh - 20px);padding:15px;border-radius:13px}}
