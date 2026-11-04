@@ -77,7 +77,7 @@ function renderChatList(filter = '') {
     const name = getChatName(chat);
     const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
     const avatar = chat.avatar
-      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt="" onerror="this.remove()">`
+      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">`
       : '';
 
     return `
@@ -87,7 +87,7 @@ function renderChatList(filter = '') {
         <button type="button" class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
           data-open-chat="${Number(chat.user_id)}">
           <span class="chat-avatar">
-            <span class="chat-avatar-core">${avatar}<span class="chat-avatar-initial">${initial}</span></span>
+            <span class="chat-avatar-core ${chat.avatar ? 'has-avatar-image' : ''}">${avatar}<span class="chat-avatar-initial">${initial}</span></span>
             ${frameLayer(chat.equipped_frame)}
           </span>
           <span class="chat-preview-block">
@@ -188,7 +188,7 @@ async function openChat(user) {
     <header class="messages-chat-header">
       <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
       <span class="chat-avatar messages-header-avatar">
-        <span class="chat-avatar-core">${user.avatar ? `<img class="chat-avatar-image" src="${escapeHTML(user.avatar)}" alt="">` : `<span class="chat-avatar-initial">${escapeHTML((getChatName(user).charAt(0) || 'R').toUpperCase())}</span>`}</span>
+        <span class="chat-avatar-core ${user.avatar ? 'has-avatar-image' : ''}">${user.avatar ? `<img class="chat-avatar-image" src="${escapeHTML(user.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">` : ''}<span class="chat-avatar-initial">${escapeHTML((getChatName(user).charAt(0) || 'R').toUpperCase())}</span></span>
         ${frameLayer(user.equipped_frame)}
       </span>
       <div class="messages-chat-identity">
@@ -334,7 +334,7 @@ export function renderMessagesScreen(outlet, params = {}) {
             data-search-avatar="${escapeHTML(user.avatar || '')}"
             data-search-frame="${escapeHTML(user.equipped_frame || 'rookie')}">
             <span class="messages-search-result-avatar-wrap">
-              <span class="messages-search-result-avatar-core">${user.avatar ? `<img src="${escapeHTML(user.avatar)}" alt="">` : escapeHTML((user.display_name || user.username || 'R').charAt(0).toUpperCase())}</span>
+              <span class="messages-search-result-avatar-core ${user.avatar ? 'has-avatar-image' : ''}">${user.avatar ? `<img src="${escapeHTML(user.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">` : ''}<span class="messages-search-result-initial">${escapeHTML((user.display_name || user.username || 'R').charAt(0).toUpperCase())}</span></span>
               ${frameLayer(user.equipped_frame, 'messages-search-result-frame')}
             </span>
             <span>
