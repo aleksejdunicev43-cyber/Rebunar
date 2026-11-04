@@ -48,7 +48,7 @@ function updateHeaderProfile(root, user) {
   if (!button) return;
 
   button.replaceChildren();
-  const frame = String(user?.equipped_frame || 'rookie').replace(/[^a-z0-9-]/gi, '') || 'rookie';
+  const frame = String(user?.equipped_frame || 'none').replace(/[^a-z0-9-]/gi, '') || 'none';
   const avatar = document.createElement('span');
   avatar.className = 'header-profile-avatar-wrap';
 
