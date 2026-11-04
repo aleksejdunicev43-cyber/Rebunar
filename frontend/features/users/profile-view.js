@@ -3,17 +3,12 @@
  */
 import { api } from '../../shared/api/client.js';
 import { navigate } from '../../app/router.js';
-import { frameArtwork } from '../profile/enhancements.js';
+import { avatarMarkup } from '../../shared/avatar.js';
 import './public-profile.css';
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[char]);
-
-const safeFrameId = value => {
-  const id = String(value || 'none').replace(/[^a-z0-9-]/gi, '');
-  return id || 'none';
-};
 
 export async function renderUserProfileScreen(container, params = {}) {
   const userId = Number(params.userId);
@@ -27,11 +22,7 @@ export async function renderUserProfileScreen(container, params = {}) {
   try {
     const user = await api.get('/users/' + userId + '/profile');
     const name = user.display_name || user.username || 'Пользователь';
-    const frame = safeFrameId(user.equipped_frame);
-    const initial = escapeHTML(name.trim().slice(0, 1).toUpperCase() || 'R');
-    const avatar = user.avatar
-      ? '<img class="public-profile-avatar-image" src="' + escapeHTML(user.avatar) + '" alt="Аватар пользователя">'
-      : '<span class="public-profile-avatar-placeholder">' + initial + '</span>';
+    const avatar = avatarMarkup(user, { size: 'public' });
     const status = user.online
       ? '<span class="public-profile-status is-online"><i></i>В сети</span>'
       : '<span class="public-profile-status"><i></i>Не в сети</span>';
@@ -43,10 +34,7 @@ export async function renderUserProfileScreen(container, params = {}) {
           <span class="public-profile-kicker">REBUNAR / УЧАСТНИК</span>
         </header>
         <article class="public-profile-card">
-          <div class="public-profile-avatar-wrap">
-            <div class="public-profile-avatar">${avatar}</div>
-            <div class="public-profile-frame frame-${frame}" aria-hidden="true">${frameArtwork(frame)}</div>
-          </div>
+          ${avatar}
           <h1>${escapeHTML(name)}</h1>
           <p class="public-profile-username">@${escapeHTML(user.username || 'user')}</p>
           ${status}
