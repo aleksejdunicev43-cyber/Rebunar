@@ -1794,3 +1794,10 @@
 .message-avatar-frame.frame-inferno-ascendant {
   transform: translateY(3px) !important;
 }
+
+
+/* AVATAR FIX — initials are placeholders, never overlays on real profile photos. */
+.chat-avatar-core.has-avatar-image .chat-avatar-initial,
+.messages-search-result-avatar-core.has-avatar-image .messages-search-result-initial {
+  display: none !important;
+}
