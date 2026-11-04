@@ -83,3 +83,16 @@
 .users-avatar-frame.frame-steel-blood .avatar-frame-art {
   clip-path: circle(50% at 50% 50%);
 }
+
+/* STEEL & BLOOD — remove the global square border/shadow from its wrapper.
+   The circular SVG artwork itself provides the visible frame. */
+.users-avatar-frame.frame-steel-blood {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+.users-avatar-frame.frame-steel-blood .avatar-frame-art {
+  clip-path: none !important;
+}
