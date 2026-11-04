@@ -1068,6 +1068,7 @@
 .profile-avatar-button .profile-avatar-frame{position:absolute;inset:-19%;z-index:3;display:block;pointer-events:none;overflow:visible}
 .profile-avatar-button .avatar-frame-art{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 5px rgba(0,0,0,.75))}
 .profile-frame-item .avatar-frame-art{filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
+.profile-avatar-frame .avatar-frame-image,.profile-frame-preview .avatar-frame-image{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
 
 
 /* Equipped frame state */
