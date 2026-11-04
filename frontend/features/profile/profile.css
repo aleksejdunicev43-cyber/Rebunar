@@ -1164,3 +1164,4 @@
 .profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image{
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.78))!important
 }
+/* Deployment ordering guard: latest avatar preview update. */
