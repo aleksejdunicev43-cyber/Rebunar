@@ -1674,3 +1674,31 @@
   height: 100%;
   object-fit: cover;
 }
+
+
+/* ROOKIE FRAME IN CHATS — match the silver ring to the photo, not the outer wrapper. */
+.chat-avatar,
+.message-avatar {
+  overflow: visible !important;
+}
+.chat-avatar-frame.frame-rookie .avatar-frame-art,
+.message-avatar-frame.frame-rookie .avatar-frame-art,
+.messages-search-result-frame.frame-rookie .avatar-frame-art {
+  display: none !important;
+}
+.chat-avatar-frame.frame-rookie::before,
+.message-avatar-frame.frame-rookie::before,
+.messages-search-result-frame.frame-rookie::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 57%;
+  height: 57%;
+  box-sizing: content-box;
+  transform: translate(-50%, -50%);
+  border: 2px solid #aebbc7;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #596875, 0 1px 5px rgba(0,0,0,.7);
+  pointer-events: none;
+}
