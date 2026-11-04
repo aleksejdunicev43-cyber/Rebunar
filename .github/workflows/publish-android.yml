@@ -6,6 +6,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/publish-android.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-android.yml"
 
 permissions:
   contents: write
@@ -17,16 +21,49 @@ jobs:
       - name: Checkout current Rebunar repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build trusted frontend bundle
+        run: |
+          npm ci
+          npm run build
+          test -s frontend/build/index.html
+
       - name: Checkout Android application source
         uses: actions/checkout@v4
         with:
-          ref: feature/rebunar-android-shell
+          ref: feature/android-bundled-frontend
           path: android-source
 
-      - name: Prepare Android project
+      - name: Prepare Android project and bundle frontend
         run: |
           cp -R android-source/android-rebunar ./android-rebunar
           cp android-source/rebunar_avatar.png ./rebunar_avatar.png
+          mkdir -p android-rebunar/app/src/main/assets/build
+          cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
+          test -s android-rebunar/app/src/main/assets/build/index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          build = Path("android-rebunar/app/src/main/assets/build")
+          html = (build / "index.html").read_text(encoding="utf-8")
+          refs = re.findall(r'''(?:src|href)="(/new/build/[^"]+)"''', html)
+          if not refs:
+              raise SystemExit("No Vite bundle references found in the built HTML")
+          missing = []
+          for ref in refs:
+              relative = ref.removeprefix("/new/build/")
+              if not (build / relative).is_file():
+                  missing.append(ref)
+          if missing:
+              raise SystemExit("Missing bundled frontend files: " + ", ".join(missing))
+          print(f"Verified {len(refs)} frontend entry references in APK assets.")
+          PY
 
       - name: Prepare application icon
         run: |
@@ -70,10 +107,11 @@ jobs:
         run: gradle -p android-rebunar :app:assembleDebug
 
       - name: Publish APK release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.1
-          name: Rebunar Android 0.1.1
+          tag_name: v0.1.2
+          name: Rebunar Android 0.1.2
           target_commitish: main
           generate_release_notes: true
           make_latest: true
