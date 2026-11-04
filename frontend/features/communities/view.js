@@ -181,7 +181,7 @@ export async function renderCommunitiesScreen(outlet) {
           <span>Участников: ${Number(membership.count) || 0}</span>
           <button id="community-join">${membership.joined ? 'Покинуть сообщество' : 'Вступить'}</button>
         </div>
-        ${posts.length ? posts.map(post => `<article class="creator-post"><strong>${escapeHTML(post.author || 'Автор')}</strong><h2>${escapeHTML(post.title || 'Публикация')}</h2><p class="creator-post-body">${escapeHTML(post.body || '')}</p><small>${escapeHTML(formatDate(post.created_at))}</small></article>`).join('') : '<div class="community-empty">Здесь пока нет публикаций.</div>'}
+        ${posts.length ? posts.map(post => `<article class="creator-post"><div class="creator-post-top">${avatarMarkup(post, { size: 'community' })}<div class="creator-author"><strong>${escapeHTML(post.author || 'Автор')}</strong><span>${escapeHTML(formatDate(post.created_at))}</span></div></div><h2>${escapeHTML(post.title || 'Публикация')}</h2><p class="creator-post-body">${escapeHTML(post.body || '')}</p></article>`).join('') : '<div class="community-empty">Здесь пока нет публикаций.</div>'}
       `;
       content.querySelector('#community-back').addEventListener('click', () => renderFeed(postsCache));
       content.querySelector('#community-join').addEventListener('click', async event => {
