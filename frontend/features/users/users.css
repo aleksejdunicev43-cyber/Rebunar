@@ -43,9 +43,15 @@
 .users-item{cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}.users-item:hover,.users-item:focus-visible{border-color:rgba(226,61,79,.55);background:rgba(155,35,52,.09);outline:none}.users-item:focus-visible{box-shadow:0 0 0 2px rgba(226,61,79,.22)}
 
 
-/* USERS DIRECTORY — keep the Inferno Ascendant artwork circular.
-   Its source PNG has a square outer canvas; show only the circular frame ring
-   so it matches the round avatar frames used by other members. */
+/* USERS DIRECTORY — remove square outer corners from every frame except
+   the standard grey Rookie and red Steel & Blood frames. */
+.users-avatar-frame:not(.frame-rookie):not(.frame-steel-blood) {
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+/* Inferno Ascendant is a raster PNG with a solid square canvas.
+   Keep only its circular outer ring visible. */
 .users-avatar-frame.frame-inferno-ascendant .avatar-frame-image {
   -webkit-mask-image: radial-gradient(circle at center, transparent 0 49%, #000 53% 100%);
   mask-image: radial-gradient(circle at center, transparent 0 49%, #000 53% 100%);
