@@ -116,17 +116,23 @@ function renderMessages(messages) {
 
   list.innerHTML = messages.length ? messages.map(message => {
     const isOwn = Number(message.sender_id) === myId;
-    const name = message.display_name || message.username || 'Пользователь';
+    // Для своих сообщений используем актуальную сессию: серверная история
+    // может содержать старый снимок профиля, если аватар/рамка менялись позже.
+    const currentUser = isOwn ? getUser() : null;
+    const profile = currentUser || message;
+    const name = profile.display_name || profile.username || message.display_name || message.username || 'Пользователь';
     const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
-    const avatar = message.avatar
-      ? `<img class="message-avatar-image" src="${escapeHTML(message.avatar)}" alt="" onerror="this.remove()">`
+    const avatarUrl = profile.avatar || '';
+    const avatar = avatarUrl
+      ? `<img class="message-avatar-image" src="${escapeHTML(avatarUrl)}" alt="" onerror="this.remove()">`
       : '';
+    const frameId = profile.equipped_frame || message.equipped_frame || 'rookie';
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
         <span class="message-avatar" aria-hidden="true">
           <span class="message-avatar-core">${avatar}<span class="message-avatar-initial">${initial}</span></span>
-          ${frameLayer(message.equipped_frame, 'message-avatar-frame')}
+          ${frameLayer(frameId, 'message-avatar-frame')}
         </span>
         <div class="messages-bubble">
           <div class="message-author">${escapeHTML(name)}</div>
