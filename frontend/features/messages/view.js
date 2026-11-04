@@ -271,7 +271,7 @@ function renderShell() {
   `;
 }
 
-export function renderMessagesScreen(outlet) {
+export function renderMessagesScreen(outlet, params = {}) {
   outletRef = outlet;
   activeChat = null;
   chats = [];
@@ -490,7 +490,19 @@ export function renderMessagesScreen(outlet) {
     }
   }, listenerOptions);
 
-  loadChats().catch(error =>
+  loadChats().then(async () => {
+    const targetId = Number(params.userId || 0);
+    if (targetId > 0 && targetId !== Number(getUser()?.id)) {
+      const profile = params.user || {};
+      const user = chats.find(item => Number(item.user_id) === targetId) || {
+        user_id: targetId,
+        display_name: profile.display_name || profile.username || 'Пользователь',
+        username: profile.username || '',
+        avatar: profile.avatar || ''
+      };
+      await openChat(user);
+    }
+  }).catch(error =>
     showStatus(outlet.querySelector('[data-chat-list]'), error.message)
   );
 

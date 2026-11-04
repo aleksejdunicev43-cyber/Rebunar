@@ -719,6 +719,42 @@ def list_users():
     }), 200
 
 
+@app.get("/api/users/<int:profile_user_id>/profile")
+def get_public_user_profile(profile_user_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        row = con.execute("""
+            SELECT
+                u.id, u.username, u.display_name, u.avatar, u.bio,
+                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame,
+                EXISTS(
+                    SELECT 1 FROM user_presence p
+                    WHERE p.user_id = u.id
+                      AND p.last_seen >= datetime('now', '-5 minutes')
+                ) AS online
+            FROM users u
+            LEFT JOIN profile_progress pp ON pp.user_id = u.id
+            WHERE u.id = ?
+        """, (profile_user_id,)).fetchone()
+
+    if not row:
+        return jsonify({"error": "Пользователь не найден"}), 404
+
+    return jsonify({
+        "id": row["id"],
+        "username": row["username"],
+        "display_name": row["display_name"] or row["username"],
+        "avatar": row["avatar"] or "",
+        "bio": row["bio"] or "",
+        "equipped_frame": row["equipped_frame"] or "rookie",
+        "online": bool(row["online"]),
+        "is_me": row["id"] == session["user_id"]
+    }), 200
+
+
 @app.post("/api/profile")
 def update_profile():
     if "user_id" not in session:

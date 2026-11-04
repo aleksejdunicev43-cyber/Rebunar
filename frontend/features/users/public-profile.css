@@ -1,0 +1,29 @@
+/* REBUNAR — PUBLIC PROFILE / STEEL & BLOOD */
+.public-profile-screen{width:100%;max-width:900px;margin:0 auto;padding:clamp(14px,3vw,30px);box-sizing:border-box}
+.public-profile-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.public-profile-back{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border:1px solid rgba(190,65,78,.25);border-radius:10px;background:#17191e;color:#e9e9ed;font:700 13px inherit;cursor:pointer}
+.public-profile-back:hover{border-color:#a93243;background:#21171b}
+.public-profile-kicker{color:#e65b68;font-size:10px;font-weight:850;letter-spacing:.16em}
+.public-profile-card{display:flex;flex-direction:column;align-items:center;max-width:560px;margin:0 auto;padding:clamp(22px,5vw,38px);border:1px solid rgba(205,48,65,.28);border-radius:20px;background:radial-gradient(ellipse at 50% 0,rgba(204,39,57,.13),transparent 48%),linear-gradient(145deg,#171a20,#101216);box-shadow:0 15px 45px rgba(0,0,0,.24);text-align:center}
+.public-profile-avatar-wrap{position:relative;width:142px;height:142px;margin:4px auto 18px}
+.public-profile-avatar{position:absolute;inset:12px;z-index:1;overflow:hidden;border-radius:50%;display:grid;place-items:center;background:#252a32;color:#f4e8ea;font-size:48px;font-weight:800}
+.public-profile-avatar-image{width:100%;height:100%;object-fit:cover}
+.public-profile-avatar-placeholder{display:grid;place-items:center;width:100%;height:100%}
+.public-profile-frame{position:absolute;inset:0;z-index:2;pointer-events:none}
+.public-profile-frame svg,.public-profile-frame img{display:block;width:100%;height:100%;object-fit:contain}
+.public-profile-card h1{margin:0;color:#f4f1f2;font-size:clamp(23px,5vw,30px);font-weight:850}
+.public-profile-username{margin:5px 0 12px;color:#aeb1ba;font-size:14px}
+.public-profile-status{display:inline-flex;align-items:center;gap:7px;color:#aeb1ba;font-size:12px}
+.public-profile-status i{width:7px;height:7px;border-radius:50%;background:#737780}
+.public-profile-status.is-online{color:#76d49a}
+.public-profile-status.is-online i{background:#54d58b;box-shadow:0 0 9px rgba(84,213,139,.6)}
+.public-profile-id{margin-top:14px;padding:6px 10px;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#aeb1ba;font-size:11px}
+.public-profile-bio{width:100%;margin-top:24px;padding:16px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(0,0,0,.15);text-align:left;box-sizing:border-box}
+.public-profile-bio>span{color:#e65b68;font-size:10px;font-weight:850;letter-spacing:.13em}
+.public-profile-bio p{margin:8px 0 0;color:#d3d4d9;font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.public-profile-message{width:100%;max-width:320px;margin-top:22px;padding:13px 18px;border:1px solid #a93243;border-radius:11px;background:linear-gradient(135deg,#a92d40,#641b29);color:#fff;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 7px 20px rgba(135,28,48,.2)}
+.public-profile-message:hover{filter:brightness(1.12)}
+.public-profile-self{margin-top:22px;color:#aeb1ba;font-size:12px}
+.public-profile-state{padding:45px 16px;color:#aeb1ba;text-align:center}
+.public-profile-state.is-error{color:#ff8995}
+@media(max-width:520px){.public-profile-kicker{font-size:9px}.public-profile-card{border-radius:15px}}
