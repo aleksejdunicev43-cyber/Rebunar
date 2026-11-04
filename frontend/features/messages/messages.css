@@ -1702,3 +1702,20 @@
   box-shadow: 0 0 0 1px #596875, 0 1px 5px rgba(0,0,0,.7);
   pointer-events: none;
 }
+
+
+/* CHAT AVATARS — keep portrait centered and prevent the red frame art
+   from cropping against the top edge on compact message avatars. */
+.message-avatar-core {
+  inset: 4px !important;
+}
+.message-avatar-image,
+.chat-avatar-image {
+  object-position: 50% 50% !important;
+  transform: none !important;
+}
+.chat-avatar-frame .avatar-frame-image,
+.message-avatar-frame .avatar-frame-image {
+  object-fit: contain !important;
+  object-position: 50% 50% !important;
+}
