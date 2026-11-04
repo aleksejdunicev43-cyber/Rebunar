@@ -207,7 +207,7 @@ function setAvatarFrameArtwork(button, frameId) {
 }
 
 function frameArtwork(frameId) {
-  if (safeFrameId(frameId) === 'inferno') {
+  if (safeFrameId(frameId) === 'inferno-ascendant') {
     return '<img class="avatar-frame-art avatar-frame-image" src="/frames/frame-inferno.png" alt="" draggable="false">';
   }
   const colors = {
@@ -225,6 +225,7 @@ function frameArtwork(frameId) {
     'steel-blood': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="13"/><circle cx="128" cy="128" r="93" fill="none" stroke="#ffd1d7" stroke-width="2"/><path d="M128 5 144 24 128 42 112 24ZM128 214 144 233 128 251 112 233ZM5 128 24 112 42 128 24 144ZM214 128 233 112 251 128 233 144Z" fill="url(#g)" stroke="#fff" stroke-width="2"/><path d="M52 52 69 61 61 78 44 69ZM204 52 212 69 195 78 187 61ZM52 204 69 195 61 178 44 187ZM204 204 212 187 195 178 187 195Z" fill="#fff"/>',
     'cyber-edge': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="8" stroke-dasharray="38 8 8 8"/><circle cx="128" cy="128" r="95" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="3 7"/><path d="M128 4 146 22 128 40 110 22ZM128 216 146 234 128 252 110 234ZM4 128 22 110 40 128 22 146ZM216 128 234 110 252 128 234 146Z" fill="url(#g)" stroke="#fff" stroke-width="2"/>',
     inferno: '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="15"/><circle cx="128" cy="128" r="92" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="12 5"/><path d="M128 3c-17 24-5 32 0 43 11-13 20-23 0-43Zm0 207c-17 24-5 32 0 43 11-13 20-23 0-43ZM3 128c24-17 32-5 43 0-13 11-23 20-43 0Zm207 0c24-17 32-5 43 0-13 11-23 20-43 0Z" fill="#fff" stroke="url(#g)" stroke-width="2"/>',
+    'inferno-ascendant': '',
     'royal-blood': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="12"/><circle cx="128" cy="128" r="94" fill="none" stroke="#fff" stroke-width="2"/><path d="M82 25 95 9 110 25 128 4 146 25 161 9 174 25 165 52 91 52ZM82 231 95 247 110 231 128 252 146 231 161 247 174 231 165 204 91 204Z" fill="url(#g)" stroke="#fff" stroke-width="3"/><path d="M25 82 9 95 25 110 4 128 25 146 9 161 25 174 52 165 52 91ZM231 82 247 95 231 110 252 128 231 146 247 161 231 174 204 165 204 91Z" fill="url(#g)" stroke="#fff" stroke-width="3"/>',
     'void-dragon': '<circle cx="128" cy="128" r="108" fill="none" stroke="url(#g)" stroke-width="12"/><circle cx="128" cy="128" r="94" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5 5"/><path d="M128 3c-12 20-34 22-37 42 17-8 27-5 37 9 10-14 20-17 37-9-3-20-25-22-37-42ZM128 253c-12-20-34-22-37-42 17 8 27 5 37-9 10 14 20 17 37 9-3 20-25 22-37 42Z" fill="url(#g)" stroke="#fff" stroke-width="2"/><path d="M3 128c20-12 22-34 42-37-8 17-5 27 9 37-14 10-17 20-9 37-20-3-22-25-42-37ZM253 128c-20-12-22-34-42-37 8 17 5 27-9 37 14 10 17 20 9 37 20-3 22-25 42-37Z" fill="url(#g)" stroke="#fff" stroke-width="2"/>'
   };
