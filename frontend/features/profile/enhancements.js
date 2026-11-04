@@ -207,6 +207,9 @@ function setAvatarFrameArtwork(button, frameId) {
 }
 
 function frameArtwork(frameId) {
+  if (safeFrameId(frameId) === 'inferno') {
+    return '<img class="avatar-frame-art avatar-frame-image" src="/frames/frame-inferno.png" alt="" draggable="false">';
+  }
   const colors = {
     rookie: ['#e4edf4','#596875','#aebbc7'],
     'steel-blood': ['#ffd1d7','#781528','#ff5268'],
