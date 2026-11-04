@@ -1719,3 +1719,55 @@
   object-fit: contain !important;
   object-position: 50% 50% !important;
 }
+
+
+/* MESSAGE FRAME RESET — profile utility classes must not paint square
+   borders or backgrounds on the SVG frame layer inside chat messages. */
+.message-avatar-frame.frame-steel-blood,
+.message-avatar-frame.frame-cyber-edge,
+.message-avatar-frame.frame-inferno,
+.message-avatar-frame.frame-inferno-ascendant,
+.message-avatar-frame.frame-royal-blood,
+.message-avatar-frame.frame-void-dragon {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+.message-avatar-frame.frame-steel-blood::before,
+.message-avatar-frame.frame-steel-blood::after,
+.message-avatar-frame.frame-cyber-edge::before,
+.message-avatar-frame.frame-cyber-edge::after,
+.message-avatar-frame.frame-inferno::before,
+.message-avatar-frame.frame-inferno::after,
+.message-avatar-frame.frame-inferno-ascendant::before,
+.message-avatar-frame.frame-inferno-ascendant::after,
+.message-avatar-frame.frame-royal-blood::before,
+.message-avatar-frame.frame-royal-blood::after,
+.message-avatar-frame.frame-void-dragon::before,
+.message-avatar-frame.frame-void-dragon::after {
+  content: none !important;
+  display: none !important;
+}
+.message-avatar-frame .avatar-frame-art {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  object-fit: contain !important;
+}
+.message-avatar-core {
+  inset: 6px !important;
+}
+.message-avatar {
+  flex-basis: 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+}
+.message-avatar-frame {
+  inset: -5px !important;
+}
