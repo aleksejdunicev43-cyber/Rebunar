@@ -1,4 +1,11 @@
 import { getUser } from '../auth/session.js';
+// Temporary geometry diagnostics: enable with ?avatarDebug=1.
+// This only draws measurement guides; it does not change avatar or frame sizing.
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  const avatarDebug = new URLSearchParams(window.location.search).get('avatarDebug') === '1';
+  document.documentElement.classList.toggle('rebunar-avatar-debug', avatarDebug);
+}
+
 import { frameArtwork } from '../profile/enhancements.js';
 import {
   getChats,
