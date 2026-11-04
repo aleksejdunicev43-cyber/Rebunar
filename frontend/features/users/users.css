@@ -17,13 +17,6 @@
 .users-list-heading span{color:var(--text-muted);font-size:11px}
 .users-list{display:flex;flex-direction:column;border-top:1px solid var(--border)}
 .users-item{position:relative;display:flex;align-items:center;gap:14px;min-width:0;min-height:94px;padding:12px 8px;border-bottom:1px solid var(--border)}
-.users-avatar-wrap{position:relative;display:block;flex:0 0 66px;width:66px;height:66px;margin:0 5px}
-.users-avatar{position:absolute;inset:7px;z-index:1;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#222831;color:#f4f4f5;font-size:22px;font-weight:800}
-.users-avatar-image{display:block;width:100%;height:100%;object-fit:cover}
-.users-avatar-placeholder{display:grid;place-items:center;width:100%;height:100%}
-.users-avatar-frame{position:absolute;inset:-8px;z-index:2;display:block;pointer-events:none;overflow:visible}
-.users-avatar-frame .avatar-frame-art{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
-.users-avatar-frame .avatar-frame-image{display:block;width:100%;height:100%;object-fit:contain}
 .users-identity{display:flex;flex:1 1 auto;flex-direction:column;gap:3px;min-width:0}
 .users-identity strong{overflow:hidden;color:var(--text-main);font-size:14px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
 .users-username{overflow:hidden;color:#969eab;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
@@ -38,7 +31,7 @@
 .users-pagination{display:flex;align-items:center;justify-content:center;gap:17px;padding:19px 0 5px;color:var(--text-main);font-size:12px;font-variant-numeric:tabular-nums}
 .users-pagination button{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--border);border-radius:50%;background:var(--bg-panel-2);color:var(--text-main);font-size:25px;line-height:1}
 .users-pagination button:disabled{opacity:.35}
-@media(max-width:480px){.users-screen{padding:12px 10px}.users-total-card{padding:15px}.users-item{gap:10px;min-height:82px;padding:10px 2px}.users-avatar-wrap{flex-basis:58px;width:58px;height:58px;margin:0 3px}.users-avatar{inset:6px}.users-avatar-frame{inset:-7px}.users-id{display:none}.users-identity strong{font-size:13px}.users-username{font-size:11px}}
+@media(max-width:480px){.users-screen{padding:12px 10px}.users-total-card{padding:15px}.users-item{gap:10px;min-height:82px;padding:10px 2px}.users-id{display:none}.users-identity strong{font-size:13px}.users-username{font-size:11px}}
 
 .users-item{cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}.users-item:hover,.users-item:focus-visible{border-color:rgba(226,61,79,.55);background:rgba(155,35,52,.09);outline:none}.users-item:focus-visible{box-shadow:0 0 0 2px rgba(226,61,79,.22)}
 
