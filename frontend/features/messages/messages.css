@@ -1793,3 +1793,12 @@
 .rebunar-avatar-debug .message-avatar-frame .avatar-frame-art {
   opacity: .78;
 }
+
+
+/* MESSAGE AVATAR FALLBACK — never paint initials over a loaded portrait. */
+.message-avatar-core.has-avatar-image .message-avatar-initial {
+  display: none !important;
+}
+.message-avatar-core.is-avatar-fallback .message-avatar-initial {
+  display: flex !important;
+}
