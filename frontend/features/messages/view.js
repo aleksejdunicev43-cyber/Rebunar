@@ -121,7 +121,7 @@ function renderMessages(messages) {
     const currentUser = isOwn ? getUser() : null;
     const profile = currentUser || message;
     const name = profile.display_name || profile.username || message.display_name || message.username || 'Пользователь';
-    const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
+    const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'Р');
     const avatarUrl = profile.avatar || '';
     const avatar = avatarUrl
       ? `<img class="message-avatar-image" src="${escapeHTML(avatarUrl)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image'); this.parentElement.classList.add('is-avatar-fallback')">`
@@ -130,7 +130,7 @@ function renderMessages(messages) {
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
-        <span class="message-avatar${frameId === 'inferno-ascendant' ? ' has-inferno-3d-frame' : ''}" aria-hidden="true">
+        <span class="message-avatar" aria-hidden="true">
           <span class="message-avatar-core ${avatarUrl ? 'has-avatar-image' : 'is-avatar-fallback'}">${avatar}<span class="message-avatar-initial">${initial}</span></span>
           ${frameLayer(frameId, 'message-avatar-frame')}
         </span>
