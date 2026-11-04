@@ -90,6 +90,16 @@ def init_db():
         """)
 
         con.execute("""
+            UPDATE profile_progress
+            SET equipped_frame = ''
+            WHERE equipped_frame NOT IN (
+                '', 'frame-1', 'frame-2', 'frame-3', 'frame-4', 'frame-5',
+                'frame-6', 'frame-7', 'frame-8', 'frame-9', 'frame-10',
+                'frame-11', 'frame-12', 'frame-13'
+            )
+        """)
+
+        con.execute("""
             CREATE TABLE IF NOT EXISTS communities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 slug TEXT NOT NULL UNIQUE,
@@ -871,7 +881,7 @@ AVATAR_FRAMES = [
 
 def get_profile_frame_state(con, user_id):
     con.execute(
-        "INSERT OR IGNORE INTO profile_progress (user_id, xp) VALUES (?, 0)",
+        "INSERT OR IGNORE INTO profile_progress (user_id, xp, equipped_frame) VALUES (?, 0, '')",
         (user_id,)
     )
     progress = con.execute(
@@ -930,7 +940,7 @@ def equip_profile_frame():
     if frame_id not in {frame["id"] for frame in AVATAR_FRAMES}:
         return jsonify({"error": "Неизвестная рамка"}), 400
     with connect() as con:
-        con.execute("INSERT OR IGNORE INTO profile_progress (user_id, xp) VALUES (?, 0)", (user_id,))
+        con.execute("INSERT OR IGNORE INTO profile_progress (user_id, xp, equipped_frame) VALUES (?, 0, '')", (user_id,))
         state = get_profile_frame_state(con, user_id)
         owned = frame_id == "none" or next((frame for frame in state["frames"] if frame["id"] == frame_id and frame["unlocked"]), None)
         if not owned:
