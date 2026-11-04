@@ -28,3 +28,14 @@
 .statistics-error{color:#ed7a83}
 .statistics-footnote{margin:0;color:var(--text-muted);font-size:10px;text-align:center}
 @media(max-width:420px){.statistics-screen{gap:15px}.statistics-heading h1{font-size:25px}.statistics-summary-grid{gap:8px}.statistics-card{padding:15px 12px}.statistics-card strong{font-size:27px}.statistics-chart-card{padding:16px 11px 12px}.statistics-chart-header h2{font-size:18px}.statistics-periods{width:100%}.statistics-periods button{flex:1;min-width:0;padding:8px 5px}.statistics-axis-label{font-size:10px}}
+
+/* Каталог участников внутри общей страницы статистики */
+.statistics-users-section{display:flex;flex-direction:column;gap:10px;padding-top:8px;border-top:1px solid var(--border)}
+.statistics-users-heading h2{margin:0 0 5px;color:var(--text-main);font-size:20px;letter-spacing:-.35px}
+.statistics-users-heading p{margin:0;color:var(--text-muted);font-size:12px;line-height:1.45}
+.statistics-users-section .users-screen{max-width:none;margin:0;padding:8px 0 0}
+.statistics-users-section .users-heading{margin-bottom:12px}
+.statistics-users-section .users-heading h1{font-size:18px}
+.statistics-users-section .users-heading p{font-size:12px}
+.statistics-users-section .users-search{margin:10px 0 16px}
+.statistics-users-section .users-item{min-height:78px}
