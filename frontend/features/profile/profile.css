@@ -1165,3 +1165,14 @@
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.78))!important
 }
 /* Deployment ordering guard: latest avatar preview update. */
+
+
+/* REBUNAR — PROFILE SIDE ACTIONS */
+.profile-side-actions{display:flex;flex-direction:column;gap:9px;margin:0 0 16px}
+.profile-side-action{display:flex;align-items:center;gap:13px;width:100%;min-height:66px;padding:11px 15px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));border-radius:13px;background:linear-gradient(110deg,color-mix(in srgb,var(--accent) 13%,var(--bg-panel)),var(--bg-panel-2));color:var(--text-main);text-align:left;cursor:pointer;transition:border-color .2s,transform .2s,background .2s}
+.profile-side-action:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--bg-panel));transform:translateY(-1px)}
+.profile-side-action-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:11px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);font-size:25px}
+.profile-side-action-copy{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
+.profile-side-action-copy strong{font-size:13px;font-weight:800}
+.profile-side-action-copy small{color:var(--text-muted);font-size:11px}
+.profile-side-action-arrow{color:var(--accent);font-size:25px;line-height:1}
