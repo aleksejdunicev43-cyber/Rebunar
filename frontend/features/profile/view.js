@@ -71,6 +71,12 @@ export function renderProfileScreen(container, user, onLogout) {
           Редактировать профиль
         </button>
 
+        <button class="profile-users-button" type="button" data-route="users">
+          <span aria-hidden="true">♙</span>
+          Все пользователи
+          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
+        </button>
+
         <button class="profile-logout" type="button">
           Выйти из аккаунта
         </button>
