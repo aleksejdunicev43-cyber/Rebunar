@@ -137,3 +137,22 @@
   border-radius: 50% !important;
   box-shadow: 0 0 0 1px #596875, 0 2px 8px rgba(0,0,0,.7) !important;
 }
+
+
+/* ROOKIE COLLECTION PREVIEW — draw the silver ring around the actual photo.
+   The avatar is 68% of the preview; the ring sits just outside its edge. */
+.profile-frame-item[data-frame-id="rookie"] .profile-frame-preview::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(68% + 6px);
+  height: calc(68% + 6px);
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  border: 3px solid #aebbc7;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #596875, 0 2px 8px rgba(0,0,0,.7);
+  pointer-events: none;
+  z-index: 3;
+}
