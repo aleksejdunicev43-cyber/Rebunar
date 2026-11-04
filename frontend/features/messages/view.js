@@ -1,5 +1,5 @@
 import { getUser } from '../auth/session.js';
-import { frameArtwork } from '../profile/enhancements.js';
+import { avatarMarkup } from '../../shared/avatar.js';
 import {
   getChats,
   hideChat,
@@ -35,15 +35,6 @@ function getChatName(chat) {
   return chat.display_name || chat.username || 'Пользователь';
 }
 
-function safeFrameId(value) {
-  return String(value || 'none').replace(/[^a-z0-9-]/gi, '') || 'none';
-}
-
-function frameLayer(frameId, className = 'chat-avatar-frame') {
-  const frame = safeFrameId(frameId);
-  return `<span class="${className} frame-${frame}" aria-hidden="true">${frameArtwork(frame)}</span>`;
-}
-
 function renderChatList(filter = '') {
   const list = outletRef?.querySelector('[data-chat-list]');
   if (!list) return;
@@ -75,10 +66,7 @@ function renderChatList(filter = '') {
 
   const rows = filtered.map(chat => {
     const name = getChatName(chat);
-    const initial = 'Р';
-    const avatar = chat.avatar
-      ? `<img class="chat-avatar-image" src="${escapeHTML(chat.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">`
-      : '';
+    const avatar = avatarMarkup(chat, { size: 'chat' });
 
     return `
       <div class="messages-chat-row">
@@ -86,10 +74,7 @@ function renderChatList(filter = '') {
           aria-label="Удалить переписку" title="Удалить переписку">🗑</button>
         <button type="button" class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
           data-open-chat="${Number(chat.user_id)}">
-          <span class="chat-avatar">
-            <span class="chat-avatar-core ${chat.avatar ? 'has-avatar-image' : ''}">${avatar}<span class="chat-avatar-initial">${initial}</span></span>
-            ${frameLayer(chat.equipped_frame)}
-          </span>
+          ${avatar}
           <span class="chat-preview-block">
             <span class="chat-row-top">
               <span class="messages-room-name">${escapeHTML(name)}</span>
@@ -121,19 +106,11 @@ function renderMessages(messages) {
     const currentUser = isOwn ? getUser() : null;
     const profile = currentUser || message;
     const name = profile.display_name || profile.username || message.display_name || message.username || 'Пользователь';
-    const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'Р');
-    const avatarUrl = profile.avatar || '';
-    const avatar = avatarUrl
-      ? `<img class="message-avatar-image" src="${escapeHTML(avatarUrl)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image'); this.parentElement.classList.add('is-avatar-fallback')">`
-      : '';
-    const frameId = profile.equipped_frame || message.equipped_frame || 'none';
+    const avatar = avatarMarkup(profile, { size: 'message' });
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
-        <span class="message-avatar" aria-hidden="true">
-          <span class="message-avatar-core ${avatarUrl ? 'has-avatar-image' : 'is-avatar-fallback'}">${avatar}<span class="message-avatar-initial">${initial}</span></span>
-          ${frameLayer(frameId, 'message-avatar-frame')}
-        </span>
+        ${avatar}
         <div class="messages-bubble">
           <div class="message-author">${escapeHTML(name)}</div>
           <div>${escapeHTML(message.text)}</div>
@@ -187,10 +164,7 @@ async function openChat(user) {
   conversation.innerHTML = `
     <header class="messages-chat-header">
       <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
-      <span class="chat-avatar messages-header-avatar">
-        <span class="chat-avatar-core ${user.avatar ? 'has-avatar-image' : ''}">${user.avatar ? `<img class="chat-avatar-image" src="${escapeHTML(user.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">` : ''}<span class="chat-avatar-initial">${'Р'}</span></span>
-        ${frameLayer(user.equipped_frame)}
-      </span>
+      ${avatarMarkup(user, { size: 'chat', className: 'messages-header-avatar' })}
       <div class="messages-chat-identity">
         <strong>${escapeHTML(getChatName(user))}</strong>
         <span>@${escapeHTML(user.username || 'пользователь')}</span>
@@ -333,10 +307,7 @@ export function renderMessagesScreen(outlet, params = {}) {
             data-search-username="${escapeHTML(user.username || '')}"
             data-search-avatar="${escapeHTML(user.avatar || '')}"
             data-search-frame="${escapeHTML(user.equipped_frame || 'none')}">
-            <span class="messages-search-result-avatar-wrap">
-              <span class="messages-search-result-avatar-core ${user.avatar ? 'has-avatar-image' : ''}">${user.avatar ? `<img src="${escapeHTML(user.avatar)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image')">` : ''}<span class="messages-search-result-initial">${'Р'}</span></span>
-              ${frameLayer(user.equipped_frame, 'messages-search-result-frame')}
-            </span>
+            ${avatarMarkup(user, { size: 'search' })}
             <span>
               <strong>${escapeHTML(user.display_name || user.username || 'Пользователь')}</strong>
               <small>@${escapeHTML(user.username || '')}</small>
