@@ -115,3 +115,34 @@
   height: auto;
   padding: 0;
 }
+
+
+/* HEADER AVATAR — use the same frame boundary as the profile avatar.
+   Keep decorative artwork outside the photo so no inner rings cover the face. */
+.header-profile-avatar-wrap {
+  border: 0 !important;
+}
+.header-profile-frame {
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
+  mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+.header-profile-frame.frame-rookie .avatar-frame-art {
+  display: none !important;
+}
+.header-profile-frame.frame-rookie::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64%;
+  height: 64%;
+  box-sizing: content-box;
+  transform: translate(-50%, -50%);
+  border: 2px solid #aebbc7;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #596875, 0 1px 5px rgba(0,0,0,.7);
+}
