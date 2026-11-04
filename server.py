@@ -648,6 +648,77 @@ def search_users():
     ]), 200
 
 
+
+@app.get("/api/users")
+def list_users():
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+
+    query = str(request.args.get("q", "")).strip().lstrip("@")[:50]
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+        limit = min(50, max(1, int(request.args.get("limit", 20))))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректные параметры списка"}), 400
+
+    pattern = "%" + query + "%"
+    where = ""
+    params = []
+    if query:
+        where = "WHERE u.username LIKE ? OR COALESCE(u.display_name, '') LIKE ?"
+        params.extend((pattern, pattern))
+
+    offset = (page - 1) * limit
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        total_registered = con.execute(
+            "SELECT COUNT(*) FROM users"
+        ).fetchone()[0]
+        total_results = con.execute(
+            "SELECT COUNT(*) FROM users u " + where,
+            params
+        ).fetchone()[0]
+        pages = max(1, (total_results + limit - 1) // limit)
+
+        rows = con.execute("""
+            SELECT
+                u.id,
+                u.username,
+                u.display_name,
+                u.avatar,
+                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame,
+                EXISTS(
+                    SELECT 1 FROM user_presence p
+                    WHERE p.user_id = u.id
+                      AND p.last_seen >= datetime('now', '-5 minutes')
+                ) AS online
+            FROM users u
+            LEFT JOIN profile_progress pp ON pp.user_id = u.id
+            """ + where + """
+            ORDER BY u.id DESC
+            LIMIT ? OFFSET ?
+        """, params + [limit, offset]).fetchall()
+
+    return jsonify({
+        "total_registered": total_registered,
+        "total_results": total_results,
+        "page": page,
+        "pages": pages,
+        "users": [
+            {
+                "id": row["id"],
+                "username": row["username"],
+                "display_name": row["display_name"] or row["username"],
+                "avatar": row["avatar"] or "",
+                "equipped_frame": row["equipped_frame"] or "rookie",
+                "online": bool(row["online"]),
+                "is_me": row["id"] == session["user_id"]
+            }
+            for row in rows
+        ]
+    }), 200
+
+
 @app.post("/api/profile")
 def update_profile():
     if "user_id" not in session:
