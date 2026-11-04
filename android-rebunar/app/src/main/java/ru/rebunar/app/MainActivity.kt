@@ -14,6 +14,7 @@ import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -22,6 +23,9 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import java.io.ByteArrayInputStream
+import java.io.FileNotFoundException
+import java.util.Locale
 
 class MainActivity : Activity() {
     companion object {
@@ -142,6 +146,22 @@ class MainActivity : Activity() {
         }
 
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): WebResourceResponse? {
+                val uri = request?.url ?: return null
+                if (uri.scheme != "https" || uri.host != APP_HOST) return null
+
+                val path = uri.path ?: return null
+                if (path == "/new" || path == "/new/" || path.startsWith("/new/")) {
+                    return serveBundledFrontend(path)
+                }
+
+                // All non-frontend paths, including /api/**, remain real HTTPS requests.
+                return null
+            }
+
             override fun shouldOverrideUrlLoading(
                 view: WebView?,
                 request: WebResourceRequest?
@@ -215,6 +235,79 @@ class MainActivity : Activity() {
             }
         }
     }
+
+    /**
+     * Serves the frontend shipped inside this signed APK while keeping the
+     * original HTTPS origin. API requests are deliberately not intercepted.
+     */
+    private fun serveBundledFrontend(path: String): WebResourceResponse {
+        val assetPath = when (path) {
+            "/new", "/new/" -> "build/index.html"
+            else -> {
+                if (!path.startsWith("/new/build/")) {
+                    return notFoundResponse()
+                }
+                path.removePrefix("/new/")
+            }
+        }
+
+        val segments = assetPath.split("/")
+        if (segments.isEmpty() || segments.any {
+                it.isEmpty() || it == "." || it == ".." || it.contains(92.toChar())
+            }) {
+            return notFoundResponse()
+        }
+
+        val mimeType = when (assetPath.substringAfterLast('.', "").lowercase(Locale.ROOT)) {
+            "html" -> "text/html"
+            "js", "mjs" -> "application/javascript"
+            "css" -> "text/css"
+            "json", "map" -> "application/json"
+            "svg" -> "image/svg+xml"
+            "png" -> "image/png"
+            "jpg", "jpeg" -> "image/jpeg"
+            "webp" -> "image/webp"
+            "ico" -> "image/x-icon"
+            "woff" -> "font/woff"
+            "woff2" -> "font/woff2"
+            "ttf" -> "font/ttf"
+            "wasm" -> "application/wasm"
+            else -> "application/octet-stream"
+        }
+
+        return try {
+            val stream = assets.open(assetPath)
+            WebResourceResponse(
+                mimeType,
+                if (mimeType.startsWith("text/") ||
+                    mimeType == "application/javascript" ||
+                    mimeType == "application/json"
+                ) "UTF-8" else null,
+                200,
+                "OK",
+                mapOf(
+                    "Cache-Control" to "no-store",
+                    "X-Content-Type-Options" to "nosniff"
+                ),
+                stream
+            )
+        } catch (_: FileNotFoundException) {
+            // Fail closed: never fetch a missing executable asset from the server.
+            notFoundResponse()
+        } catch (_: Exception) {
+            notFoundResponse()
+        }
+    }
+
+    private fun notFoundResponse(): WebResourceResponse =
+        WebResourceResponse(
+            "text/plain",
+            "UTF-8",
+            404,
+            "Not Found",
+            mapOf("Cache-Control" to "no-store"),
+            ByteArrayInputStream("Bundled Rebunar asset not found".toByteArray(Charsets.UTF_8))
+        )
 
     private fun refreshPage() {
         errorPanel.visibility = View.GONE
