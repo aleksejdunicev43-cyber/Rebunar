@@ -131,14 +131,14 @@ function renderMessages(messages) {
     const initial = escapeHTML(name.trim().charAt(0).toUpperCase() || 'R');
     const avatarUrl = profile.avatar || '';
     const avatar = avatarUrl
-      ? `<img class="message-avatar-image" src="${escapeHTML(avatarUrl)}" alt="" onerror="this.remove()">`
+      ? `<img class="message-avatar-image" src="${escapeHTML(avatarUrl)}" alt="" onerror="this.remove(); this.parentElement.classList.remove('has-avatar-image'); this.parentElement.classList.add('is-avatar-fallback')">`
       : '';
     const frameId = profile.equipped_frame || message.equipped_frame || 'rookie';
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
         <span class="message-avatar${frameId === 'inferno-ascendant' ? ' has-inferno-3d-frame' : ''}" aria-hidden="true">
-          <span class="message-avatar-core">${avatar}<span class="message-avatar-initial">${initial}</span></span>
+          <span class="message-avatar-core ${avatarUrl ? 'has-avatar-image' : 'is-avatar-fallback'}">${avatar}<span class="message-avatar-initial">${initial}</span></span>
           ${frameLayer(frameId, 'message-avatar-frame')}
         </span>
         <div class="messages-bubble">
