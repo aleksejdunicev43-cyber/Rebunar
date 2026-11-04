@@ -117,19 +117,7 @@
 }
 
 
-/* HEADER AVATAR — use the same frame boundary as the profile avatar.
-   Keep decorative artwork outside the photo so no inner rings cover the face. */
-.header-profile-avatar-wrap {
-  border: 0 !important;
-}
-.header-profile-frame {
-  -webkit-mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
-  mask-image: radial-gradient(circle at center, transparent 0 72.5%, #000 72.8% 100%);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-}
+/* ROOKIE HEADER FRAME — align the silver ring with the actual photo edge. */
 .header-profile-frame.frame-rookie .avatar-frame-art {
   display: none !important;
 }
@@ -138,8 +126,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 64%;
-  height: 64%;
+  width: 57%;
+  height: 57%;
   box-sizing: content-box;
   transform: translate(-50%, -50%);
   border: 2px solid #aebbc7;
