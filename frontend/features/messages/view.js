@@ -196,7 +196,7 @@ async function openFavorite() {
   conversation.innerHTML = `
     <header class="messages-chat-header">
       <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
-      <span class="chat-avatar messages-favorite-avatar messages-favorite-avatar-small">
+      <span class="messages-favorite-avatar messages-favorite-avatar-small">
         <span class="messages-favorite-symbol">★</span>
       </span>
       <div class="messages-chat-identity">
