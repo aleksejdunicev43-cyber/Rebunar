@@ -27,14 +27,10 @@ export function renderUsersScreen(container) {
       <header class="users-heading">
         <div>
           <span class="users-kicker">СООБЩЕСТВО REBUNAR</span>
-          <h1>Пользователи</h1>
-          <p>Найди участников Rebunar по имени или никнейму.</p>
+          <h1>Все пользователи</h1>
+          <p>Каталог участников сообщества Rebunar.</p>
         </div>
       </header>
-      <section class="users-total-card" aria-live="polite">
-        <span class="users-total-icon" aria-hidden="true">♟</span>
-        <div><strong data-users-total>—</strong><span>зарегистрированных пользователей</span></div>
-      </section>
       <label class="users-search">
         <span aria-hidden="true">⌕</span>
         <input type="search" data-users-search maxlength="50"
@@ -113,8 +109,6 @@ export function renderUsersScreen(container) {
     try {
       const data = await getUsers({ query, page, limit: 20 });
       if (token !== requestToken) return;
-      container.querySelector('[data-users-total]').textContent =
-        Number(data.total_registered || 0).toLocaleString('ru-RU');
       container.querySelector('[data-users-caption]').textContent =
         query ? 'Результаты поиска' : 'Все участники';
       container.querySelector('[data-users-count]').textContent =
