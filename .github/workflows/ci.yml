@@ -173,3 +173,26 @@ jobs:
           if not reload_completed:
               raise SystemExit("Webapp reload did not complete after 6 attempts.")
           PY
+
+      - name: Install Playwright browser
+        if: success() && github.event_name != 'pull_request'
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Capture production screenshots and check avatar frames
+        if: success() && github.event_name != 'pull_request'
+        env:
+          REBUNAR_BASE_URL: https://rebunar.pythonanywhere.com/new
+          REBUNAR_TEST_USERNAME: ${{ secrets.REBUNAR_TEST_USERNAME }}
+          REBUNAR_TEST_PASSWORD: ${{ secrets.REBUNAR_TEST_PASSWORD }}
+        run: node tests/visual/screenshot.mjs
+
+      - name: Save visual test screenshots and report
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-visual-check
+          path: artifacts/visual/
+          if-no-files-found: warn
+          retention-days: 14
