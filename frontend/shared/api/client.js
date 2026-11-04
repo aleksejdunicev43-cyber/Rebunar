@@ -9,6 +9,7 @@ async function request(path, options = {}) {
   const config = {
     method: options.method || 'GET',
     credentials: 'same-origin',
+    cache: 'no-store',
     headers: {
       ...options.headers
     }
