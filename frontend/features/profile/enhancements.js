@@ -101,7 +101,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
     <p class="profile-customization-description">Открывай рамки за уровни. Награды выдаются только на особых рубежах — не на каждом уровне.</p>
     <div class="profile-frame-progress" aria-live="polite">Загружаем коллекцию…</div>
     <div class="profile-frame-grid"></div>
-    <p class="profile-frame-footnote">Повышай уровень в играх и сообществах Rebunar, чтобы разблокировать всю коллекцию.</p>
+    <p class="profile-frame-footnote">Вся коллекция рамок бесплатна и доступна каждому участнику Rebunar.</p>
   `;
   customization.appendChild(section);
 
@@ -153,7 +153,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
         button.disabled = true;
         try {
           const updated = await equipAvatarFrame(button.dataset.frameId);
-          renderFrameState(container, section, updated);
+          renderFrameState(container, section, updated, user);
         } catch (error) {
           showProfileToast(container, error.message || 'Не удалось надеть рамку');
           button.disabled = false;
@@ -166,7 +166,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
   }
 }
 
-function renderFrameState(container, section, state) {
+function renderFrameState(container, section, state, user) {
   const avatarButton = container.querySelector('.profile-avatar-button');
   if (avatarButton) {
     setAvatarFrameArtwork(avatarButton, state.equipped || 'rookie');
@@ -186,7 +186,7 @@ function renderFrameState(container, section, state) {
     button.addEventListener('click', async () => {
       if (button.classList.contains('is-equipped')) return;
       button.disabled = true;
-      try { renderFrameState(container, section, await equipAvatarFrame(button.dataset.frameId)); }
+      try { renderFrameState(container, section, await equipAvatarFrame(button.dataset.frameId), user); }
       catch (error) { showProfileToast(container, error.message || 'Не удалось надеть рамку'); button.disabled = false; }
     });
   });
