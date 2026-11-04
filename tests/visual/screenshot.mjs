@@ -56,7 +56,7 @@ async function captureFrameGalleries() {
 
   const frameCards = Array.from({ length: 13 }, (_, index) => {
     const number = index + 1;
-    const src = baseURL.replace(/\\/new$/, '') + '/new/assets/frames/rebunar_avatar_' + number + '.png';
+    const src = baseURL.replace(/\/new$/, '') + '/new/assets/frames/rebunar_avatar_' + number + '.png';
     return `<article class="card">
       <div class="preview">
         <div class="avatar"></div>
