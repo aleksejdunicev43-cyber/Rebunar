@@ -50,6 +50,14 @@ export function renderProfileScreen(container, user, onLogout) {
           <span class="profile-users-button-arrow" aria-hidden="true">›</span>
         </button>
 
+        <button class="profile-invite-button" type="button">
+          <span class="profile-invite-icon" aria-hidden="true">↗</span>
+          <span>
+            <strong>Пригласить друга</strong>
+            <small>Отправить ссылку на скачивание Rebunar</small>
+          </span>
+        </button>
+
         <div class="profile-account-id">
           <span>ID: ${escapeHTML(userId)}</span>
           <button class="profile-copy-id" type="button"
@@ -92,6 +100,34 @@ export function renderProfileScreen(container, user, onLogout) {
 
   container.querySelector('.profile-logout')
     .addEventListener('click', onLogout);
+
+  container.querySelector('.profile-invite-button')
+    .addEventListener('click', async () => {
+      const inviteUrl = 'https://github.com/aleksejdunicev43-cyber/Rebunar/releases/latest/download/app-debug.apk';
+      const shareData = {
+        title: 'Rebunar',
+        text: 'Скачай Rebunar, зарегистрируйся — и мы сможем общаться!',
+        url: inviteUrl
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          return;
+        }
+        await copyProfileText(inviteUrl);
+        showProfileToast(container, 'Ссылка на Rebunar скопирована');
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+        try {
+          await copyProfileText(inviteUrl);
+          showProfileToast(container, 'Ссылка скопирована — отправь её другу');
+        } catch (copyError) {
+          console.warn('Rebunar: не удалось поделиться ссылкой:', copyError);
+          showProfileToast(container, 'Не удалось поделиться ссылкой');
+        }
+      }
+    });
 
   container.querySelector('.profile-copy-id')
     .addEventListener('click', async () => {
