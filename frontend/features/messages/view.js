@@ -51,7 +51,7 @@ function renderChatList(filter = '') {
   const favorite = `
     <button class="messages-room-item messages-favorite-item ${activeChat?.kind === 'favorite' ? 'is-active' : ''}"
       data-open-favorite>
-      <span class="chat-avatar messages-favorite-avatar">
+      <span class="messages-favorite-avatar">
         <span class="messages-favorite-symbol">★</span>
       </span>
       <span class="chat-preview-block">
