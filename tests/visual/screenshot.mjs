@@ -49,6 +49,53 @@ async function openRoute(route, name, selector) {
   return false;
 }
 
+async function captureFrameGalleries() {
+  const galleryPage = await context.newPage();
+  await galleryPage.setViewportSize({ width: 1440, height: 1100 });
+  await galleryPage.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+  const frameCards = Array.from({ length: 13 }, (_, index) => {
+    const number = index + 1;
+    const src = baseURL.replace(/\\/new$/, '') + '/new/assets/frames/rebunar_avatar_' + number + '.png';
+    return `<article class="card">
+      <div class="preview">
+        <div class="avatar"></div>
+        <img src="${src}" alt="Рамка ${number}" data-frame="${number}">
+      </div>
+      <div class="label">Рамка ${number}</div>
+    </article>`;
+  }).join('');
+
+  const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8">
+    <title>Rebunar — проверка 13 рамок</title>
+    <style>
+      *{box-sizing:border-box}body{margin:0;padding:28px;background:#101317;color:#f1f3f5;font:16px Arial,sans-serif}
+      h1{margin:0 0 8px;font-size:28px}p{margin:0 0 24px;color:#aab2bc}
+      .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+      .card{min-height:220px;padding:16px;border:1px solid #39424c;border-radius:14px;background:#1b2026;text-align:center}
+      .preview{position:relative;width:150px;height:150px;margin:0 auto 12px}
+      .avatar{position:absolute;left:25%;top:25%;width:50%;height:50%;border-radius:50%;background:linear-gradient(135deg,#526273,#202833);border:2px solid #7c8997}
+      img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+      .label{font-weight:700;letter-spacing:.04em}
+      @media(max-width:600px){body{padding:14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:10px;min-height:185px}.preview{width:132px;height:132px}}
+    </style></head><body><h1>13 рамок Rebunar</h1>
+    <p>Все изображения показаны поверх одинакового круглого аватара для проверки прозрачности, центровки и формы.</p>
+    <main class="grid">${frameCards}</main></body></html>`;
+
+  await galleryPage.setContent(html, { waitUntil: 'load' });
+  await galleryPage.waitForFunction(() => [...document.querySelectorAll('img[data-frame]')].every(img => img.complete));
+  report.frameVisuals = await galleryPage.locator('img[data-frame]').evaluateAll(images =>
+    images.map(img => ({ frame: Number(img.dataset.frame), loaded: img.naturalWidth > 0, width: img.naturalWidth, height: img.naturalHeight }))
+  );
+  await galleryPage.screenshot({ path: path.join(outputDir, '09-frames-gallery-desktop.png'), fullPage: true });
+  report.screenshots.push(path.join(outputDir, '09-frames-gallery-desktop.png'));
+
+  await galleryPage.setViewportSize({ width: 390, height: 844 });
+  await galleryPage.screenshot({ path: path.join(outputDir, '10-frames-gallery-mobile.png'), fullPage: true });
+  report.screenshots.push(path.join(outputDir, '10-frames-gallery-mobile.png'));
+  await galleryPage.close();
+}
+
 try {
   const response = await page.goto(baseURL, { waitUntil: 'networkidle', timeout: 60000 });
   if (!response || !response.ok()) throw new Error('Сайт вернул HTTP ' + (response?.status() ?? 'нет ответа'));
@@ -61,6 +108,9 @@ try {
     const assetResponse = await context.request.get(url, { timeout: 30000 });
     report.frameAssets.push({ frame: i, status: assetResponse.status(), ok: assetResponse.ok() });
   }
+
+  // Визуально показываем все 13 рамок поверх круглого аватара, а не только проверяем HTTP.
+  await captureFrameGalleries();
 
   const username = process.env.REBUNAR_TEST_USERNAME;
   const password = process.env.REBUNAR_TEST_PASSWORD;
