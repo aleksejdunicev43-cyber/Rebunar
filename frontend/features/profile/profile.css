@@ -1032,15 +1032,9 @@
 .profile-frame-item:disabled{cursor:not-allowed}
 .profile-frame-item.is-equipped{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 11%,var(--bg-main));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
 .profile-frame-item.is-locked{opacity:.55}
-.profile-frame-preview{position:relative;display:grid;width:66px;height:66px;place-items:center;margin:2px 0 5px;border-radius:50%;background:radial-gradient(circle,#252a30 0 54%,#111419 56%)}
-.frame-preview-ring{position:absolute;inset:1px;border:3px solid #89939c;border-radius:50%;box-shadow:0 0 8px currentColor}
-.frame-rookie{color:#9da8b1;border-color:#9da8b1}
-.frame-steel-blood{color:#ed394f;border:4px solid #b51e35;box-shadow:0 0 0 3px #343b42,0 0 14px #e52d48,inset 0 0 8px #e52d48}
-.frame-cyber-edge{color:#00e5d4;border:3px dashed #00e5d4;box-shadow:0 0 12px #00e5d4,inset 0 0 9px #00e5d4}
-.frame-inferno{color:#ff6a32;border:5px double #ff542d;box-shadow:0 0 7px #ff3c24,0 0 17px #b51d1d,inset 0 0 10px #ff6a32}
-.frame-royal-blood{color:#f1bd58;border:4px ridge #d6a044;box-shadow:0 0 0 3px #59202a,0 0 17px #d69a3c}
-.frame-void-dragon{color:#bb73ff;border:4px double #a34bff;box-shadow:0 0 0 3px #29203d,0 0 9px #a34bff,0 0 20px #6a2dc0,inset 0 0 12px #a34bff}
-.profile-frame-lock{position:absolute;right:-2px;bottom:-2px;display:grid;width:22px;height:22px;place-items:center;background:#24282e;border:1px solid #737b84;border-radius:50%;font-size:11px}
+.profile-frame-preview{position:relative;display:grid;width:66px;height:66px;place-items:center;margin:2px 0 5px;overflow:visible}
+.profile-frame-preview .rb-avatar{width:66px;height:66px}
+.profile-frame-lock{position:absolute;right:-2px;bottom:-2px;z-index:3;display:grid;width:22px;height:22px;place-items:center;background:#24282e;border:1px solid #737b84;border-radius:50%;font-size:11px}
 .profile-frame-name{max-width:100%;overflow-wrap:anywhere;font-size:11px;font-weight:800;text-align:center}
 .profile-frame-rarity{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
 .profile-frame-level{font-size:10px;color:var(--accent);font-weight:700}
@@ -1049,122 +1043,8 @@
 .profile-frame-item.rarity-легендарная .profile-frame-rarity{color:#ffb84e}
 .profile-frame-item.rarity-мифическая .profile-frame-rarity{color:#f06bff}
 .profile-frame-footnote{margin:12px 0 0;color:var(--text-muted);font-size:10px;line-height:1.5}
-.profile-avatar-button{position:relative;isolation:isolate;overflow:visible}
-.profile-avatar-button .profile-avatar-frame{position:absolute;inset:-7px;z-index:3;border:3px solid #9da8b1;border-radius:50%;pointer-events:none}
-.profile-avatar-button .profile-avatar-frame.frame-steel-blood{inset:-9px;border:4px solid #b51e35;box-shadow:0 0 0 3px #343b42,0 0 14px #e52d48}
-.profile-avatar-button .profile-avatar-frame.frame-cyber-edge{inset:-9px;border:3px dashed #00e5d4;box-shadow:0 0 13px #00e5d4}
-.profile-avatar-button .profile-avatar-frame.frame-inferno{inset:-10px;border:5px double #ff542d;box-shadow:0 0 17px #ff3c24}
-.profile-avatar-button .profile-avatar-frame.frame-royal-blood{inset:-10px;border:4px ridge #d6a044;box-shadow:0 0 0 3px #59202a,0 0 17px #d69a3c}
-.profile-avatar-button .profile-avatar-frame.frame-void-dragon{inset:-11px;border:4px double #a34bff;box-shadow:0 0 0 3px #29203d,0 0 20px #a34bff}
+.profile-avatar-button{position:relative!important;isolation:isolate;overflow:visible!important;clip-path:none!important;border:0!important;background:transparent!important;border-radius:50%;z-index:0}
 @media(max-width:360px){.profile-frame-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.profile-frame-item{padding:9px 5px}}
-
-
-/* REBUNAR — ORNATE VECTOR AVATAR FRAMES */
-.profile-frame-preview{width:94px;height:94px;overflow:visible;background:radial-gradient(circle,#252a30 0 56%,#111419 58%)}
-.profile-frame-preview .avatar-frame-art{display:block;width:100%;height:100%;overflow:visible}
-.profile-avatar-button{position:relative!important;isolation:isolate;overflow:visible!important;clip-path:none!important;border-radius:50%;z-index:0}
-.profile-avatar-button .profile-avatar-image,
-.profile-avatar-button .profile-avatar-placeholder{position:relative;z-index:1;display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;object-fit:cover}
-.profile-avatar-button .profile-avatar-frame{position:absolute;inset:-19%;z-index:3;display:block;pointer-events:none;overflow:visible}
-.profile-avatar-button .avatar-frame-art{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 5px rgba(0,0,0,.75))}
-.profile-frame-item .avatar-frame-art{filter:drop-shadow(0 2px 4px rgba(0,0,0,.8))}
-.profile-avatar-frame .avatar-frame-image,.profile-frame-preview .avatar-frame-image{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
-
-
-/* Equipped frame state */
-.profile-frame-item.is-equipped .profile-frame-level{color:var(--success,#39c879);font-weight:800}.profile-frame-item.is-equipped:disabled{opacity:1;cursor:default}.profile-frame-item.is-equipped:disabled .profile-frame-level{color:var(--success,#39c879)}
-
-
-/* REBUNAR — INFERNO / PREMIUM LEGENDARY AVATAR FRAME */
-.profile-avatar-button .profile-avatar-frame.frame-inferno {
-  filter: drop-shadow(0 0 5px rgba(255, 74, 35, .78))
-          drop-shadow(0 0 13px rgba(213, 42, 22, .52));
-}
-.profile-avatar-button .profile-avatar-frame.frame-inferno::before,
-.profile-avatar-button .profile-avatar-frame.frame-inferno::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
-.profile-avatar-button .profile-avatar-frame.frame-inferno::before {
-  inset: 7%;
-  border: 1px solid rgba(255, 220, 154, .92);
-  box-shadow:
-    0 0 5px rgba(255, 221, 159, .95),
-    0 0 13px rgba(255, 83, 35, .88),
-    0 0 25px rgba(180, 26, 17, .58),
-    inset 0 0 8px rgba(255, 103, 40, .4);
-  animation: inferno-core-pulse 3.8s ease-in-out infinite;
-}
-.profile-avatar-button .profile-avatar-frame.frame-inferno::after {
-  inset: 2.5%;
-  border: 1px dashed rgba(255, 177, 91, .8);
-  box-shadow: 0 0 8px rgba(255, 91, 36, .72);
-  animation: inferno-ember-orbit 34s linear infinite;
-}
-.profile-avatar-button .profile-avatar-frame.frame-inferno .avatar-frame-art {
-  filter:
-    drop-shadow(0 0 3px rgba(255, 211, 135, .9))
-    drop-shadow(0 0 9px rgba(255, 70, 28, .92))
-    drop-shadow(0 3px 5px rgba(0, 0, 0, .85));
-}
-.profile-frame-item[data-frame-id="inferno"] .profile-frame-preview {
-  background: radial-gradient(circle, #2b1714 0 54%, #100d0d 57%);
-  filter: drop-shadow(0 0 7px rgba(255, 74, 35, .34));
-}
-.profile-frame-item[data-frame-id="inferno"] .frame-inferno {
-  border-color: #ff8b45;
-  box-shadow:
-    0 0 0 2px #4a1715,
-    0 0 9px #ff542d,
-    0 0 20px rgba(255, 70, 30, .72),
-    inset 0 0 12px rgba(255, 110, 45, .55);
-}
-.profile-frame-item[data-frame-id="inferno"].is-equipped {
-  border-color: #ff7441;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 143, 82, .35),
-    0 0 17px rgba(255, 65, 31, .22);
-}
-@keyframes inferno-core-pulse {
-  0%, 100% { opacity: .72; transform: scale(.985); }
-  50% { opacity: 1; transform: scale(1.012); }
-}
-@keyframes inferno-ember-orbit {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .profile-avatar-button .profile-avatar-frame.frame-inferno::before,
-  .profile-avatar-button .profile-avatar-frame.frame-inferno::after {
-    animation: none;
-  }
-}
-
-
-/* REBUNAR — SEPARATE MYTHIC FRAME: INFERNO ASCENDANT */
-.profile-frame-item[data-frame-id="inferno-ascendant"] .profile-frame-preview{background:radial-gradient(circle,#2b1714 0 54%,#100d0d 57%);filter:drop-shadow(0 0 9px rgba(255,74,35,.5))}
-.profile-frame-item[data-frame-id="inferno-ascendant"] .avatar-frame-image{filter:drop-shadow(0 0 5px rgba(255,211,135,.95)) drop-shadow(0 0 13px rgba(255,70,28,.95))}
-.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant{inset:-19%;border:0;filter:drop-shadow(0 0 7px rgba(255,74,35,.85)) drop-shadow(0 0 16px rgba(213,42,22,.6))}
-.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image{filter:drop-shadow(0 0 5px rgba(255,211,135,.95)) drop-shadow(0 0 13px rgba(255,70,28,.95))}
-
-
-/* Avatar is visible inside every collectible frame preview. */
-.profile-frame-preview{isolation:isolate;overflow:visible}
-.profile-frame-preview .profile-frame-avatar,
-.profile-frame-preview .profile-frame-avatar-placeholder{
-  position:absolute;z-index:1;left:50%;top:50%;width:68%;height:68%;
-  transform:translate(-50%,-50%);display:grid;place-items:center;
-  border-radius:50%;object-fit:cover;overflow:hidden;
-  background:#171b20;color:#eef3f7;font-size:22px;font-weight:800;
-}
-.profile-frame-preview .avatar-frame-art{position:relative;z-index:2;pointer-events:none}
-.profile-frame-preview .avatar-frame-image{filter:drop-shadow(0 2px 3px rgba(0,0,0,.72))!important}
-.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image{
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,.78))!important
-}
-/* Deployment ordering guard: latest avatar preview update. */
 
 
 /* REBUNAR — PROFILE SIDE ACTIONS */
