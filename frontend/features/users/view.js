@@ -12,8 +12,8 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
 })[char]);
 
 const safeFrameId = value => {
-  const id = String(value || 'rookie').replace(/[^a-z0-9-]/gi, '');
-  return id || 'rookie';
+  const id = String(value || 'none').replace(/[^a-z0-9-]/gi, '');
+  return id || 'none';
 };
 
 export function renderUsersScreen(container) {
