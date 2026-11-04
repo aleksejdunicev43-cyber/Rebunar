@@ -44,12 +44,6 @@ export function renderProfileScreen(container, user, onLogout) {
         <input class="profile-avatar-input" type="file"
           accept="image/jpeg,image/png,image/webp" hidden>
 
-        <button class="profile-users-button" type="button" data-route="users">
-          <span aria-hidden="true">♟</span>
-          <span>Пользователи</span>
-          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
-        </button>
-
         <div class="profile-account-id">
           <span>ID: ${escapeHTML(userId)}</span>
           <button class="profile-copy-id" type="button"
