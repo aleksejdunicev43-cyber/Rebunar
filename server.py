@@ -1335,12 +1335,27 @@ def hide_message_chat(other_user_id):
         return jsonify({"error": "Нельзя удалить этот диалог"}), 400
 
     with connect() as con:
-        con.execute("""
-            INSERT OR IGNORE INTO hidden_chats (user_id, other_user_id)
-            VALUES (?, ?)
-        """, (me, other_user_id))
+        user = con.execute(
+            "SELECT id FROM users WHERE id = ?", (other_user_id,)
+        ).fetchone()
+        if not user:
+            return jsonify({"error": "Пользователь не найден"}), 404
 
-    return jsonify({"ok": True}), 200
+        # Удаляем только личную переписку этой пары, а не сообщения других пользователей.
+        con.execute("""
+            DELETE FROM messages
+            WHERE (sender_id = ? AND receiver_id = ?)
+               OR (sender_id = ? AND receiver_id = ?)
+        """, (me, other_user_id, other_user_id, me))
+
+        # Убираем старые скрытия в обе стороны, чтобы новый диалог мог появиться снова.
+        con.execute("""
+            DELETE FROM hidden_chats
+            WHERE (user_id = ? AND other_user_id = ?)
+               OR (user_id = ? AND other_user_id = ?)
+        """, (me, other_user_id, other_user_id, me))
+
+    return jsonify({"ok": True, "deleted_for_both": True}), 200
 
 
 @app.get("/api/messages/history")

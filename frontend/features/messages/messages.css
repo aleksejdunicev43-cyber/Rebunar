@@ -1788,3 +1788,9 @@
 .message-avatar-core.is-avatar-fallback .message-avatar-initial {
   display: flex !important;
 }
+
+
+/* INFERNO ASCENDANT — move only the decorative frame down; keep portrait geometry unchanged. */
+.message-avatar-frame.frame-inferno-ascendant {
+  transform: translateY(3px) !important;
+}
