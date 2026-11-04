@@ -107,3 +107,11 @@
   height: 100%;
   overflow: visible;
 }
+
+.header-profile-button > .header-profile-avatar-wrap,
+.header-profile-button > .header-profile-frame {
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  padding: 0;
+}
