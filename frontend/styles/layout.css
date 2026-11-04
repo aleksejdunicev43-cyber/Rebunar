@@ -134,3 +134,44 @@
   border-radius: 50%;
   box-shadow: 0 0 0 1px #596875, 0 1px 5px rgba(0,0,0,.7);
 }
+
+
+/* HEADER ORNATE FRAMES — prevent profile frame utility classes from
+   painting a square border/background behind the transparent SVG artwork. */
+.header-profile-frame.frame-steel-blood,
+.header-profile-frame.frame-cyber-edge,
+.header-profile-frame.frame-inferno,
+.header-profile-frame.frame-inferno-ascendant,
+.header-profile-frame.frame-royal-blood,
+.header-profile-frame.frame-void-dragon {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+.header-profile-frame.frame-steel-blood::before,
+.header-profile-frame.frame-steel-blood::after,
+.header-profile-frame.frame-cyber-edge::before,
+.header-profile-frame.frame-cyber-edge::after,
+.header-profile-frame.frame-inferno::before,
+.header-profile-frame.frame-inferno::after,
+.header-profile-frame.frame-inferno-ascendant::before,
+.header-profile-frame.frame-inferno-ascendant::after,
+.header-profile-frame.frame-royal-blood::before,
+.header-profile-frame.frame-royal-blood::after,
+.header-profile-frame.frame-void-dragon::before,
+.header-profile-frame.frame-void-dragon::after {
+  content: none !important;
+  display: none !important;
+}
+.header-profile-frame .avatar-frame-art {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.header-profile-frame .avatar-frame-image {
+  object-fit: contain !important;
+  background: transparent !important;
+}
