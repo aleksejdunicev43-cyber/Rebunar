@@ -78,3 +78,8 @@
   mask-size: 100% 100%;
   clip-path: circle(50% at 50% 50%);
 }
+
+/* STEEL & BLOOD — hide the square SVG canvas in the users directory. */
+.users-avatar-frame.frame-steel-blood .avatar-frame-art {
+  clip-path: circle(50% at 50% 50%);
+}
