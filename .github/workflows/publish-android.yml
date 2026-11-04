@@ -1,0 +1,77 @@
+name: Publish Rebunar Android APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current Rebunar repository
+        uses: actions/checkout@v4
+
+      - name: Checkout Android application source
+        uses: actions/checkout@v4
+        with:
+          ref: feature/rebunar-android-shell
+          path: android-source
+
+      - name: Prepare Android project
+        run: |
+          cp -R android-source/android-rebunar ./android-rebunar
+          cp android-source/rebunar_avatar.png ./rebunar_avatar.png
+
+      - name: Prepare application icon
+        run: |
+          python -m pip install Pillow numpy
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFilter, ImageChops
+          import numpy as np
+          source = Image.open("rebunar_avatar.png").convert("RGBA")
+          pixels = np.asarray(source.convert("RGB"))
+          red, green, blue = pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]
+          green_ring = (green > 65) & (green > red * 1.22) & (green > blue * 1.12)
+          if int(green_ring.sum()) < 100:
+              raise RuntimeError("Could not detect the original circular logo rim.")
+          artwork = source.copy()
+          artwork.thumbnail((448, 448), Image.Resampling.LANCZOS)
+          logo = Image.new("RGBA", (512, 512), (7, 9, 8, 255))
+          logo.alpha_composite(artwork, ((512-artwork.width)//2, (512-artwork.height)//2))
+          mask = Image.new("L", (512, 512), 0)
+          ImageDraw.Draw(mask).ellipse((1, 1, 510, 510), fill=255)
+          logo.putalpha(mask)
+          glow = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+          ImageDraw.Draw(glow).ellipse((4.5, 4.5, 507.5, 507.5), outline=(35,255,75,150), width=5)
+          logo = Image.alpha_composite(logo, glow.filter(ImageFilter.GaussianBlur(3)))
+          ImageDraw.Draw(logo).ellipse((5.5, 5.5, 506.5, 506.5), outline=(95,255,115,245), width=2)
+          logo.putalpha(ImageChops.multiply(logo.getchannel("A"), mask))
+          logo.save("android-rebunar/app/src/main/res/drawable/rebunar_logo.png", optimize=True)
+          PY
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build release APK
+        run: gradle -p android-rebunar :app:assembleDebug
+
+      - name: Publish APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.1
+          name: Rebunar Android 0.1.1
+          target_commitish: main
+          generate_release_notes: true
+          make_latest: true
+          files: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          fail_on_unmatched_files: true
