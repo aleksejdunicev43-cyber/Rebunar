@@ -22,6 +22,8 @@ import '../features/games/games.css';
 import '../features/communities/communities.css';
 import { renderStatisticsScreen } from '../features/statistics/view.js';
 import '../features/statistics/statistics.css';
+import { renderUsersScreen } from '../features/users/view.js';
+import '../features/users/users.css';
 import { renderSettingsScreen } from '../features/settings/view.js';
 import { startPresence, stopPresence } from '../features/statistics/presence.js';
 import { initializeTheme } from '../shared/theme.js';
@@ -32,7 +34,7 @@ import { disconnectMatrix } from '../infrastructure/matrix/client.js';
 const root = document.getElementById('app');
 if (!root) throw new Error('Rebunar: элемент #app не найден');
 
-const screens = { home:'Главная', favorites:'Избранное', games:'Игры', communities:'Сообщества', messages:'Сообщения', profile:'Профиль', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика' };
+const screens = { home:'Главная', favorites:'Избранное', games:'Игры', communities:'Сообщества', messages:'Сообщения', profile:'Профиль', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи' };
 
 for (const [path, title] of Object.entries(screens)) {
   registerRoute(path, () => {
@@ -52,6 +54,7 @@ for (const [path, title] of Object.entries(screens)) {
     }
     if (path === 'settings') return renderSettingsScreen(outlet);
     if (path === 'statistics') return renderStatisticsScreen(outlet);
+    if (path === 'users') return renderUsersScreen(outlet);
     outlet.innerHTML = `<section class="screen"><h1>${title}</h1><p>Раздел Rebunar подготовлен к разработке.</p></section>`;
   });
 }
