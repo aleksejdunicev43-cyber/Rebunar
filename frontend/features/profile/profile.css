@@ -1148,3 +1148,19 @@
 .profile-frame-item[data-frame-id="inferno-ascendant"] .avatar-frame-image{filter:drop-shadow(0 0 5px rgba(255,211,135,.95)) drop-shadow(0 0 13px rgba(255,70,28,.95))}
 .profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant{inset:-19%;border:0;filter:drop-shadow(0 0 7px rgba(255,74,35,.85)) drop-shadow(0 0 16px rgba(213,42,22,.6))}
 .profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image{filter:drop-shadow(0 0 5px rgba(255,211,135,.95)) drop-shadow(0 0 13px rgba(255,70,28,.95))}
+
+
+/* Avatar is visible inside every collectible frame preview. */
+.profile-frame-preview{isolation:isolate;overflow:visible}
+.profile-frame-preview .profile-frame-avatar,
+.profile-frame-preview .profile-frame-avatar-placeholder{
+  position:absolute;z-index:1;left:50%;top:50%;width:68%;height:68%;
+  transform:translate(-50%,-50%);display:grid;place-items:center;
+  border-radius:50%;object-fit:cover;overflow:hidden;
+  background:#171b20;color:#eef3f7;font-size:22px;font-weight:800;
+}
+.profile-frame-preview .avatar-frame-art{position:relative;z-index:2;pointer-events:none}
+.profile-frame-preview .avatar-frame-image{filter:drop-shadow(0 2px 3px rgba(0,0,0,.72))!important}
+.profile-avatar-button .profile-avatar-frame.frame-inferno-ascendant .avatar-frame-image{
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.78))!important
+}
