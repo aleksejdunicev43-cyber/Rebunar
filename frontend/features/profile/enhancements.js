@@ -208,7 +208,7 @@ function setAvatarFrameArtwork(button, frameId) {
 
 function frameArtwork(frameId) {
   if (safeFrameId(frameId) === 'inferno-ascendant') {
-    return '<img class="avatar-frame-art avatar-frame-image" src="/new/frames/frame-inferno.png" alt="" draggable="false">';
+    return '<img class="avatar-frame-art avatar-frame-image" src="/new/frames/rebunar-frame-inferno-ascension-ready.png" alt="" draggable="false">';
   }
   const colors = {
     rookie: ['#e4edf4','#596875','#aebbc7'],
