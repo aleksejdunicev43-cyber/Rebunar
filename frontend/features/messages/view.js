@@ -1,4 +1,5 @@
 import { getUser } from '../auth/session.js';
+import { frameArtwork } from '../profile/enhancements.js';
 import {
   getChats,
   hideChat,
@@ -32,6 +33,15 @@ function showStatus(container, message) {
 
 function getChatName(chat) {
   return chat.display_name || chat.username || 'Пользователь';
+}
+
+function safeFrameId(value) {
+  return String(value || 'rookie').replace(/[^a-z0-9-]/gi, '') || 'rookie';
+}
+
+function frameLayer(frameId, className = 'chat-avatar-frame') {
+  const frame = safeFrameId(frameId);
+  return `<span class="${className} frame-${frame}" aria-hidden="true">${frameArtwork(frame)}</span>`;
 }
 
 function renderChatList(filter = '') {
@@ -77,8 +87,8 @@ function renderChatList(filter = '') {
         <button type="button" class="messages-room-item ${activeChat?.user_id === chat.user_id ? 'is-active' : ''}"
           data-open-chat="${Number(chat.user_id)}">
           <span class="chat-avatar">
-            ${avatar}
-            <span class="chat-avatar-initial">${initial}</span>
+            <span class="chat-avatar-core">${avatar}<span class="chat-avatar-initial">${initial}</span></span>
+            ${frameLayer(chat.equipped_frame)}
           </span>
           <span class="chat-preview-block">
             <span class="chat-row-top">
@@ -115,7 +125,8 @@ function renderMessages(messages) {
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
         <span class="message-avatar" aria-hidden="true">
-          ${avatar}<span class="message-avatar-initial">${initial}</span>
+          <span class="message-avatar-core">${avatar}<span class="message-avatar-initial">${initial}</span></span>
+          ${frameLayer(message.equipped_frame, 'message-avatar-frame')}
         </span>
         <div class="messages-bubble">
           <div class="message-author">${escapeHTML(name)}</div>
@@ -170,6 +181,10 @@ async function openChat(user) {
   conversation.innerHTML = `
     <header class="messages-chat-header">
       <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
+      <span class="chat-avatar messages-header-avatar">
+        <span class="chat-avatar-core">${user.avatar ? `<img class="chat-avatar-image" src="${escapeHTML(user.avatar)}" alt="">` : `<span class="chat-avatar-initial">${escapeHTML((getChatName(user).charAt(0) || 'R').toUpperCase())}</span>`}</span>
+        ${frameLayer(user.equipped_frame)}
+      </span>
       <div class="messages-chat-identity">
         <strong>${escapeHTML(getChatName(user))}</strong>
         <span>@${escapeHTML(user.username || 'пользователь')}</span>
@@ -309,8 +324,13 @@ export function renderMessagesScreen(outlet, params = {}) {
         results.innerHTML = users.map(user => `
           <button class="messages-search-result" data-search-user="${Number(user.id)}"
             data-search-name="${escapeHTML(user.display_name || user.username || 'Пользователь')}"
-            data-search-username="${escapeHTML(user.username || '')}">
-            <span class="messages-search-result-avatar">${escapeHTML((user.display_name || user.username || 'R').charAt(0).toUpperCase())}</span>
+            data-search-username="${escapeHTML(user.username || '')}"
+            data-search-avatar="${escapeHTML(user.avatar || '')}"
+            data-search-frame="${escapeHTML(user.equipped_frame || 'rookie')}">
+            <span class="messages-search-result-avatar-wrap">
+              <span class="messages-search-result-avatar-core">${user.avatar ? `<img src="${escapeHTML(user.avatar)}" alt="">` : escapeHTML((user.display_name || user.username || 'R').charAt(0).toUpperCase())}</span>
+              ${frameLayer(user.equipped_frame, 'messages-search-result-frame')}
+            </span>
             <span>
               <strong>${escapeHTML(user.display_name || user.username || 'Пользователь')}</strong>
               <small>@${escapeHTML(user.username || '')}</small>
@@ -398,7 +418,9 @@ export function renderMessagesScreen(outlet, params = {}) {
       const user = chats.find(item => Number(item.user_id) === id) || {
         user_id: id,
         display_name: userButton.dataset.searchName,
-        username: userButton.dataset.searchUsername
+        username: userButton.dataset.searchUsername,
+        avatar: userButton.dataset.searchAvatar,
+        equipped_frame: userButton.dataset.searchFrame
       };
       await openChat(user);
       return;
@@ -498,7 +520,8 @@ export function renderMessagesScreen(outlet, params = {}) {
         user_id: targetId,
         display_name: profile.display_name || profile.username || 'Пользователь',
         username: profile.username || '',
-        avatar: profile.avatar || ''
+        avatar: profile.avatar || '',
+        equipped_frame: profile.equipped_frame || 'rookie'
       };
       await openChat(user);
     }

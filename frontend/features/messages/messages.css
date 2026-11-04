@@ -1588,3 +1588,89 @@
     scroll-behavior: smooth;
   }
 }
+
+
+/* Единый слой рамок для всех аватаров мессенджера */
+.chat-avatar,
+.message-avatar {
+  overflow: visible !important;
+  border: 0 !important;
+  background: transparent !important;
+  isolation: isolate;
+}
+.chat-avatar-core,
+.message-avatar-core {
+  position: absolute;
+  z-index: 1;
+  inset: 5px;
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  background: linear-gradient(145deg,#702b39,#171719);
+}
+.chat-avatar-frame,
+.message-avatar-frame,
+.messages-search-result-frame {
+  position: absolute;
+  z-index: 2;
+  inset: -4px;
+  display: block;
+  pointer-events: none;
+}
+.chat-avatar-frame svg,
+.chat-avatar-frame img,
+.message-avatar-frame svg,
+.message-avatar-frame img,
+.messages-search-result-frame svg,
+.messages-search-result-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.chat-avatar-image,
+.message-avatar-image,
+.chat-avatar-core img,
+.message-avatar-core img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.chat-avatar-initial,
+.message-avatar-initial {
+  z-index: 1;
+}
+.messages-header-avatar {
+  flex: 0 0 46px !important;
+  width: 46px !important;
+  height: 46px !important;
+}
+.messages-search-result-avatar-wrap {
+  position: relative;
+  display: block;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+}
+.messages-search-result-avatar-core {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  color: #fff;
+  background: #713744;
+  border-radius: 50%;
+  font-weight: 700;
+}
+.messages-search-result-avatar-core img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

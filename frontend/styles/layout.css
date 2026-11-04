@@ -63,3 +63,55 @@
 .header-actions .header-icon-button:hover { background: rgba(0, 0, 0, .5); color: var(--text-main); }
 .notification-indicator:not([hidden]) { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border: 2px solid var(--bg-panel); border-radius: 50%; background: #ef3434; }
 @media (max-width: 760px) { .header-profile-button { flex-basis: 46px; width: 46px; height: 46px; } .header-actions { right: 0; min-width: 0; gap: 1px; margin-right: 0; } .header-actions .header-icon-button { flex-basis: 36px; width: 36px; height: 38px; padding: 7px; } }
+
+
+/* Аватар в шапке: фото обрезается отдельно, рамка остаётся поверх */
+.header-profile-button {
+  position: relative;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.header-profile-avatar-wrap {
+  position: absolute;
+  inset: 5px;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 50%;
+  background: #211619;
+}
+.header-profile-avatar,
+.header-profile-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.header-profile-fallback { color: #fff; font-weight: 800; }
+.header-profile-frame {
+  position: absolute;
+  z-index: 2;
+  inset: -5px;
+  display: block;
+  pointer-events: none;
+}
+.header-profile-frame svg,
+.header-profile-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.header-profile-button > .header-profile-avatar-wrap,
+.header-profile-button > .header-profile-frame {
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  padding: 0;
+}

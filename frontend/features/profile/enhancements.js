@@ -3,6 +3,7 @@
  */
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
 import { fetchAvatarFrames, equipAvatarFrame } from './frames.js';
+import { getUser, setUser } from '../auth/session.js';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
@@ -107,6 +108,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
 
   try {
     const state = await fetchAvatarFrames();
+    syncEquippedFrame(user, state.equipped || 'rookie');
     const progress = section.querySelector('.profile-frame-progress');
     const grid = section.querySelector('.profile-frame-grid');
     const avatarButton = container.querySelector('.profile-avatar-button');
@@ -167,6 +169,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
 }
 
 function renderFrameState(container, section, state, user) {
+  syncEquippedFrame(user, state.equipped || 'rookie');
   const avatarButton = container.querySelector('.profile-avatar-button');
   if (avatarButton) {
     setAvatarFrameArtwork(avatarButton, state.equipped || 'rookie');
@@ -192,6 +195,13 @@ function renderFrameState(container, section, state, user) {
   });
 }
 
+
+function syncEquippedFrame(user, frameId) {
+  const current = getUser();
+  if (current && Number(current.id) === Number(user?.id)) {
+    setUser({ ...current, equipped_frame: frameId });
+  }
+}
 
 function framePreviewMarkup(frame, user) {
   const avatar = user?.avatar

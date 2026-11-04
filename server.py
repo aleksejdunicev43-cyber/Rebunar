@@ -386,7 +386,8 @@ def login():
         "username": user["username"],
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
-        "avatar": user["avatar"] or ""
+        "avatar": user["avatar"] or "",
+        "equipped_frame": user["equipped_frame"] or "rookie"
     }), 200
 
 
@@ -446,7 +447,11 @@ def me():
     with connect() as con:
         con.row_factory = sqlite3.Row
         user = con.execute(
-            "SELECT id, username, display_name, bio, avatar FROM users WHERE id = ?",
+            """SELECT u.id, u.username, u.display_name, u.bio, u.avatar,
+                      COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+               FROM users u
+               LEFT JOIN profile_progress pp ON pp.user_id = u.id
+               WHERE u.id = ?""",
             (session["user_id"],)
         ).fetchone()
 
@@ -625,11 +630,13 @@ def search_users():
     with connect() as con:
         con.row_factory = sqlite3.Row
         rows = con.execute("""
-            SELECT id, username, display_name, avatar
-            FROM users
-            WHERE id != ?
-              AND (username LIKE ? OR display_name LIKE ?)
-            ORDER BY username
+            SELECT u.id, u.username, u.display_name, u.avatar,
+                   COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
+            FROM users u
+            LEFT JOIN profile_progress pp ON pp.user_id = u.id
+            WHERE u.id != ?
+              AND (u.username LIKE ? OR u.display_name LIKE ?)
+            ORDER BY u.username
             LIMIT 30
         """, (
             session["user_id"],
@@ -642,7 +649,8 @@ def search_users():
             "id": row["id"],
             "username": row["username"],
             "display_name": row["display_name"] or row["username"],
-            "avatar": row["avatar"] or ""
+            "avatar": row["avatar"] or "",
+            "equipped_frame": row["equipped_frame"] or "rookie"
         }
         for row in rows
     ]), 200
@@ -1243,6 +1251,7 @@ def message_chats():
                 u.username,
                 u.display_name,
                 u.avatar,
+                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame,
                 m.text,
                 m.{time_column} AS created_at
             FROM messages m
@@ -1251,6 +1260,7 @@ def message_chats():
                   WHEN m.sender_id = ? THEN m.receiver_id
                   ELSE m.sender_id
               END
+            LEFT JOIN profile_progress pp ON pp.user_id = u.id
             WHERE m.sender_id != m.receiver_id
               AND m.id IN (
                 SELECT MAX(m2.id)
@@ -1279,8 +1289,9 @@ def message_chats():
             "username": row[1],
             "display_name": row[2] or row[1],
             "avatar": row[3] or "",
-            "last_message": row[4],
-            "created_at": row[5]
+            "equipped_frame": row[4] or "rookie",
+            "last_message": row[5],
+            "created_at": row[6]
         }
         for row in rows
     ])
@@ -1331,9 +1342,11 @@ def message_history():
                 m.{time_column} AS created_at,
                 u.username,
                 u.display_name,
-                u.avatar
+                u.avatar,
+                COALESCE(pp.equipped_frame, 'rookie') AS equipped_frame
             FROM messages m
             JOIN users u ON u.id = m.sender_id
+            LEFT JOIN profile_progress pp ON pp.user_id = u.id
             WHERE
                 (m.sender_id = ? AND m.receiver_id = ?)
                 OR
@@ -1353,7 +1366,8 @@ def message_history():
             "created_at": row[4],
             "username": row[5],
             "display_name": row[6] or row[5],
-            "avatar": row[7] or ""
+            "avatar": row[7] or "",
+            "equipped_frame": row[8] or "rookie"
         }
         for row in rows
     ])
