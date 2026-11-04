@@ -378,7 +378,7 @@ export function renderMessagesScreen(outlet, params = {}) {
     const deleteChatButton = event.target.closest('[data-delete-chat]');
     if (deleteChatButton) {
       const userId = Number(deleteChatButton.dataset.deleteChat);
-      if (!userId || !window.confirm('Удалить эту переписку из списка?')) return;
+      if (!userId || !window.confirm('Удалить переписку у обоих? Все сообщения в этом чате будут удалены без возможности восстановления.')) return;
       deleteChatButton.disabled = true;
       try {
         await hideChat(userId);
