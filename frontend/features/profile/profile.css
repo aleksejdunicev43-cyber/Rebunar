@@ -1072,3 +1072,71 @@
 
 /* Equipped frame state */
 .profile-frame-item.is-equipped .profile-frame-level{color:var(--success,#39c879);font-weight:800}.profile-frame-item.is-equipped:disabled{opacity:1;cursor:default}.profile-frame-item.is-equipped:disabled .profile-frame-level{color:var(--success,#39c879)}
+
+
+/* REBUNAR — INFERNO / PREMIUM LEGENDARY AVATAR FRAME */
+.profile-avatar-button .profile-avatar-frame.frame-inferno {
+  filter: drop-shadow(0 0 5px rgba(255, 74, 35, .78))
+          drop-shadow(0 0 13px rgba(213, 42, 22, .52));
+}
+.profile-avatar-button .profile-avatar-frame.frame-inferno::before,
+.profile-avatar-button .profile-avatar-frame.frame-inferno::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.profile-avatar-button .profile-avatar-frame.frame-inferno::before {
+  inset: 7%;
+  border: 1px solid rgba(255, 220, 154, .92);
+  box-shadow:
+    0 0 5px rgba(255, 221, 159, .95),
+    0 0 13px rgba(255, 83, 35, .88),
+    0 0 25px rgba(180, 26, 17, .58),
+    inset 0 0 8px rgba(255, 103, 40, .4);
+  animation: inferno-core-pulse 3.8s ease-in-out infinite;
+}
+.profile-avatar-button .profile-avatar-frame.frame-inferno::after {
+  inset: 2.5%;
+  border: 1px dashed rgba(255, 177, 91, .8);
+  box-shadow: 0 0 8px rgba(255, 91, 36, .72);
+  animation: inferno-ember-orbit 34s linear infinite;
+}
+.profile-avatar-button .profile-avatar-frame.frame-inferno .avatar-frame-art {
+  filter:
+    drop-shadow(0 0 3px rgba(255, 211, 135, .9))
+    drop-shadow(0 0 9px rgba(255, 70, 28, .92))
+    drop-shadow(0 3px 5px rgba(0, 0, 0, .85));
+}
+.profile-frame-item[data-frame-id="inferno"] .profile-frame-preview {
+  background: radial-gradient(circle, #2b1714 0 54%, #100d0d 57%);
+  filter: drop-shadow(0 0 7px rgba(255, 74, 35, .34));
+}
+.profile-frame-item[data-frame-id="inferno"] .frame-inferno {
+  border-color: #ff8b45;
+  box-shadow:
+    0 0 0 2px #4a1715,
+    0 0 9px #ff542d,
+    0 0 20px rgba(255, 70, 30, .72),
+    inset 0 0 12px rgba(255, 110, 45, .55);
+}
+.profile-frame-item[data-frame-id="inferno"].is-equipped {
+  border-color: #ff7441;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 143, 82, .35),
+    0 0 17px rgba(255, 65, 31, .22);
+}
+@keyframes inferno-core-pulse {
+  0%, 100% { opacity: .72; transform: scale(.985); }
+  50% { opacity: 1; transform: scale(1.012); }
+}
+@keyframes inferno-ember-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile-avatar-button .profile-avatar-frame.frame-inferno::before,
+  .profile-avatar-button .profile-avatar-frame.frame-inferno::after {
+    animation: none;
+  }
+}
