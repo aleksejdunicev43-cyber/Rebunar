@@ -7,7 +7,7 @@ import {
   getUser,
   subscribeToAuth
 } from '../features/auth/session.js';
-import { avatarMarkup } from '../shared/avatar.js';
+import { avatarMarkup } from '../shared/avatar.js?v=avatar-system-20261104-1';
 
 const chatIcon = `
   <svg class="nav-icon" viewBox="0 0 24 24"
