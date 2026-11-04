@@ -130,7 +130,7 @@ function renderMessages(messages) {
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
-        <span class="message-avatar" aria-hidden="true">
+        <span class="message-avatar${frameId === 'inferno-ascendant' ? ' has-inferno-3d-frame' : ''}" aria-hidden="true">
           <span class="message-avatar-core">${avatar}<span class="message-avatar-initial">${initial}</span></span>
           ${frameLayer(frameId, 'message-avatar-frame')}
         </span>
