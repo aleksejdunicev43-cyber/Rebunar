@@ -15,7 +15,7 @@
 #community-post-status{font-size:12px;color:#d8a4a7}
 .creator-post,.community-group-card,.community-detail-head{padding:18px;margin:0 0 14px;border:1px solid rgba(150,150,160,.15);border-radius:15px;background:linear-gradient(145deg,#171619,#101013);box-shadow:0 8px 24px rgba(0,0,0,.18)}
 .creator-post-top{display:flex;align-items:center;gap:11px}
-.creator-avatar{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:50%;background:#581a22;border:1px solid #a63a43;font-weight:900}
+
 .creator-author{display:flex;flex-direction:column;gap:3px;min-width:0}
 .creator-author span,.creator-post small{font-size:12px;color:#99949b}
 .creator-post-type{margin-left:auto;font-size:9px}
