@@ -1,3 +1,4 @@
+import { avatarMarkup } from '../../shared/avatar.js';
 /**
  * REBUNAR — COMMUNITIES & CREATOR FEED
  * Реальная лента использует существующие /api/communities и /api/posts.
@@ -105,7 +106,7 @@ export async function renderCommunitiesScreen(outlet) {
     content.innerHTML = posts.map(post => `
       <article class="creator-post">
         <div class="creator-post-top">
-          <div class="creator-avatar">${escapeHTML((post.author || '?').slice(0,1).toUpperCase())}</div>
+          ${avatarMarkup(post, { size: 'community' })}
           <div class="creator-author"><strong>${escapeHTML(post.author || 'Автор Rebunar')}</strong><span>${escapeHTML(post.community_name || 'Общая лента')} · ${escapeHTML(formatDate(post.created_at))}</span></div>
           <span class="creator-post-type">ПУБЛИКАЦИЯ</span>
         </div>
