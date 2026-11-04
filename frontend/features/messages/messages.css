@@ -1067,7 +1067,10 @@
 
 .messages-favorite-avatar {
   display: grid;
+  width: 52px;
+  height: 52px;
   flex: 0 0 52px;
+  border-radius: 50%;
   place-items: center;
   color: white;
   background: linear-gradient(145deg, #4c9bd4, #2672b4);
