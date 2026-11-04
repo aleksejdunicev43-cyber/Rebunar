@@ -7,6 +7,7 @@ import {
   getUser,
   subscribeToAuth
 } from '../features/auth/session.js';
+import { frameArtwork } from '../features/profile/enhancements.js';
 
 const chatIcon = `
   <svg class="nav-icon" viewBox="0 0 24 24"
@@ -47,27 +48,29 @@ function updateHeaderProfile(root, user) {
   if (!button) return;
 
   button.replaceChildren();
+  const frame = String(user?.equipped_frame || 'rookie').replace(/[^a-z0-9-]/gi, '') || 'rookie';
+  const avatar = document.createElement('span');
+  avatar.className = 'header-profile-avatar-wrap';
 
   if (user?.avatar) {
     const image = document.createElement('img');
     image.className = 'header-profile-avatar';
     image.alt = 'Аватар пользователя';
     image.src = new URL(user.avatar, window.location.origin).href;
-
-    image.onerror = () => {
-      button.replaceChildren();
-      const fallback = document.createElement('span');
-      fallback.textContent = 'R';
-      button.append(fallback);
-    };
-
-    button.append(image);
+    image.onerror = () => { image.remove(); };
+    avatar.append(image);
   } else {
     const fallback = document.createElement('span');
+    fallback.className = 'header-profile-fallback';
     fallback.textContent = 'R';
-    button.append(fallback);
+    avatar.append(fallback);
   }
 
+  const frameLayer = document.createElement('span');
+  frameLayer.className = 'header-profile-frame frame-' + frame;
+  frameLayer.setAttribute('aria-hidden', 'true');
+  frameLayer.innerHTML = frameArtwork(frame);
+  button.append(avatar, frameLayer);
   button.title = user?.display_name || user?.username || 'Мой профиль';
 }
 
