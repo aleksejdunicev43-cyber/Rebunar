@@ -35,17 +35,6 @@ export function renderProfileScreen(container, user, onLogout) {
         </button>
       </div>
 
-      <nav class="profile-side-actions" aria-label="Разделы профиля">
-        <button class="profile-side-action" type="button" data-route="users">
-          <span class="profile-side-action-icon" aria-hidden="true">♟</span>
-          <span class="profile-side-action-copy">
-            <strong>Пользователи</strong>
-            <small>Все зарегистрированные аккаунты</small>
-          </span>
-          <span class="profile-side-action-arrow" aria-hidden="true">›</span>
-        </button>
-      </nav>
-
       <div class="profile-card">
         <button class="profile-avatar profile-avatar-button"
           type="button" aria-label="Аватар профиля">
@@ -54,6 +43,12 @@ export function renderProfileScreen(container, user, onLogout) {
 
         <input class="profile-avatar-input" type="file"
           accept="image/jpeg,image/png,image/webp" hidden>
+
+        <button class="profile-users-button" type="button" data-route="users">
+          <span aria-hidden="true">♟</span>
+          <span>Пользователи</span>
+          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
+        </button>
 
         <div class="profile-account-id">
           <span>ID: ${escapeHTML(userId)}</span>
