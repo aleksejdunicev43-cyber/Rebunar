@@ -102,3 +102,11 @@
   .profile-frame-collection-overlay { align-items:flex-start; padding:10px; }
   .profile-frame-collection-modal { max-height:calc(100vh - 20px); padding:15px; border-radius:13px; }
 }
+
+
+/* INFERNO ASCENSION — remove the dark backing circle in the collection preview.
+   The artwork is a transparent PNG; its preview must not add a second black disc. */
+.profile-frame-item[data-frame-id="inferno-ascendant"] .profile-frame-preview {
+  background: transparent !important;
+  filter: none !important;
+}
