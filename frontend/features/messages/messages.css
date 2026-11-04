@@ -1774,26 +1774,12 @@
 
 
 
-/* AVATAR GEOMETRY DEBUG — measurement guides only; enabled by ?avatarDebug=1. */
-.rebunar-avatar-debug .message-avatar {
-  outline: 1px solid #00d9ff !important;
-  outline-offset: 0;
-  background: rgba(0, 217, 255, .08) !important;
+/* INFERNO ASCENDANT — slightly enlarge only the portrait inside this frame.
+   The wrapper, frame PNG, and every other avatar keep their existing geometry. */
+.message-avatar.has-inferno-3d-frame .message-avatar-core .message-avatar-image {
+  transform: scale(1.1) !important;
+  transform-origin: center center;
 }
-.rebunar-avatar-debug .message-avatar-core {
-  outline: 1px dashed #42ff91 !important;
-  outline-offset: -1px;
-  background-color: rgba(66, 255, 145, .10) !important;
-}
-.rebunar-avatar-debug .message-avatar-frame {
-  outline: 1px solid #ffd34e !important;
-  outline-offset: -1px;
-  background: linear-gradient(90deg, transparent calc(50% - .5px), rgba(255, 211, 78, .7) 50%, transparent calc(50% + .5px)), linear-gradient(0deg, transparent calc(50% - .5px), rgba(255, 211, 78, .7) 50%, transparent calc(50% + .5px));
-}
-.rebunar-avatar-debug .message-avatar-frame .avatar-frame-art {
-  opacity: .78;
-}
-
 
 /* MESSAGE AVATAR FALLBACK — never paint initials over a loaded portrait. */
 .message-avatar-core.has-avatar-image .message-avatar-initial {
