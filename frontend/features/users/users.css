@@ -39,3 +39,5 @@
 .users-pagination button{display:grid;place-items:center;width:36px;height:36px;border:1px solid var(--border);border-radius:50%;background:var(--bg-panel-2);color:var(--text-main);font-size:25px;line-height:1}
 .users-pagination button:disabled{opacity:.35}
 @media(max-width:480px){.users-screen{padding:12px 10px}.users-total-card{padding:15px}.users-item{gap:10px;min-height:82px;padding:10px 2px}.users-avatar-wrap{flex-basis:58px;width:58px;height:58px;margin:0 3px}.users-avatar{inset:6px}.users-avatar-frame{inset:-7px}.users-id{display:none}.users-identity strong{font-size:13px}.users-username{font-size:11px}}
+
+.users-item{cursor:pointer;transition:border-color .16s ease,background .16s ease,transform .16s ease}.users-item:hover,.users-item:focus-visible{border-color:rgba(226,61,79,.55);background:rgba(155,35,52,.09);outline:none}.users-item:focus-visible{box-shadow:0 0 0 2px rgba(226,61,79,.22)}
