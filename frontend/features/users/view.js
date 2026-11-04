@@ -3,9 +3,9 @@
  * Каталог зарегистрированных аккаунтов с настоящими аватарами и рамками.
  */
 import { getUsers } from './api.js';
-import { avatarMarkup } from '../../shared/avatar.js';
+import { avatarMarkup } from '../../shared/avatar.js?v=avatar-system-20261104-1';
 import { navigate } from '../../app/router.js';
-import './users.css';
+import './users.css?v=avatar-system-20261104-1';
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
