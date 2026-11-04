@@ -144,7 +144,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
     }).join('');
     grid.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
       const frame = (state.frames || [])[index];
-      if (frame) preview.innerHTML = frameArtwork(frame.id) + (frame.unlocked ? '' : '<span class="profile-frame-lock">🔒</span>');
+      if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (frame.unlocked ? '' : '<span class="profile-frame-lock">🔒</span>');
     });
 
     grid.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
@@ -180,7 +180,7 @@ function renderFrameState(container, section, state) {
   }).join('');
   section.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
     const frame = (state.frames || [])[index];
-    if (frame) preview.innerHTML = frameArtwork(frame.id) + (frame.unlocked ? '' : '<span class="profile-frame-lock">🔒</span>');
+    if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (frame.unlocked ? '' : '<span class="profile-frame-lock">🔒</span>');
   });
   section.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
     button.addEventListener('click', async () => {
@@ -192,6 +192,13 @@ function renderFrameState(container, section, state) {
   });
 }
 
+
+function framePreviewMarkup(frame, user) {
+  const avatar = user?.avatar
+    ? '<img class="profile-frame-avatar" src="' + escapeHTML(user.avatar) + '" alt="" draggable="false">'
+    : '<span class="profile-frame-avatar-placeholder" aria-hidden="true">' + escapeHTML((user?.display_name || user?.username || 'R').slice(0, 1).toUpperCase()) + '</span>';
+  return avatar + frameArtwork(frame.id);
+}
 
 function setAvatarFrameArtwork(button, frameId) {
   if (!button) return;
