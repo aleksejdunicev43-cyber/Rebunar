@@ -56,7 +56,8 @@ export function avatarMarkup(user = {}, options = {}) {
   const frameMarkup = frameUrl
     ? '<img class="rb-avatar__frame" src="' + frameUrl + '" style="' + escapeAttribute(frameStyle) + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
     : '';
-  return '<span class="' + classes + '" data-frame-id="' + escapeAttribute(frameId) + '" style="' + escapeAttribute(outlineStyle) + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
+  const measuredFrameAttribute = frameUrl ? ' data-frame="' + escapeAttribute(frameId) + '"' : '';
+  return '<span class="' + classes + '" data-frame-id="' + escapeAttribute(frameId) + '"' + measuredFrameAttribute + ' style="' + escapeAttribute(outlineStyle) + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
     '<span class="rb-avatar__photo-layer">' + photoMarkup + '<span class="rb-avatar__fallback" aria-hidden="true">Р</span></span>' +
     frameMarkup + '</span>';
 }

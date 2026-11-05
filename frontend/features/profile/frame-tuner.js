@@ -121,7 +121,7 @@ function openTuner(container, user) {
         <div class="rb-frame-tuner-controls">
           <div class="rb-frame-tuner-field"><span>X, px</span><div class="rb-frame-tuner-axis"><button type="button" data-axis-step="x:-1" aria-label="Сдвинуть по горизонтали влево">−</button><input data-axis="x" type="number" step="1" value="0" aria-label="Горизонтальное положение X"><button type="button" data-axis-step="x:1" aria-label="Сдвинуть по горизонтали вправо">+</button></div></div>
           <div class="rb-frame-tuner-field"><span>Y, px</span><div class="rb-frame-tuner-axis"><button type="button" data-axis-step="y:-1" aria-label="Сдвинуть по вертикали вверх">−</button><input data-axis="y" type="number" step="1" value="0" aria-label="Вертикальное положение Y"><button type="button" data-axis-step="y:1" aria-label="Сдвинуть по вертикали вниз">+</button></div></div>
-          
+
         </div>
         <div class="rb-frame-tuner-scale"><button class="rb-frame-tuner-minus" type="button" aria-label="Уменьшить масштаб">−</button><input class="rb-frame-tuner-range" type="range" min="10" max="400" step="1" value="100" aria-label="Масштаб рамки"><button class="rb-frame-tuner-plus" type="button" aria-label="Увеличить масштаб">+</button></div><div class="rb-frame-tuner-scale-value" aria-live="polite">100%</div>
       </div>

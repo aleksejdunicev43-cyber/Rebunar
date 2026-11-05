@@ -9,7 +9,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "avatar:analyze": "python3 tools/analyze_frames.py",
+    "test:avatar": "python3 tests/avatar/verify_frames.py"
   },
   "keywords": [],
   "author": "",

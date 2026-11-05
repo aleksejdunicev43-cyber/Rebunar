@@ -65,5 +65,5 @@
 
 
 .header-profile-button{position:relative;overflow:visible;border:0;background:transparent;box-shadow:none;padding:0}
-.header-profile-button .rb-avatar{width:100%;height:100%;--rb-avatar-size:52px;--rb-avatar-inset:14%}
+.header-profile-button .rb-avatar{width:100%;height:100%;--rb-avatar-size:52px}
 @media(max-width:760px){.header-profile-button .rb-avatar{--rb-avatar-size:46px}}
