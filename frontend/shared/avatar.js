@@ -1,3 +1,5 @@
+import { AVATAR_FRAME_TUNING } from './avatar-frame-tuning.js';
+
 /**
  * Rebunar shared avatar renderer.
  * All screens use the same photo crop, fallback and PNG frame geometry.
@@ -17,6 +19,22 @@ export function frameImageUrl(frameId) {
   return match ? '/new/assets/frames/rebunar_avatar_' + Number(match[1]) + '.png' : '';
 }
 
+function frameTuning(frameId) {
+  const defaults = AVATAR_FRAME_TUNING[frameId] || {};
+  try {
+    const saved = JSON.parse(localStorage.getItem('rebunar.avatar-frame-tuning.v1') || '{}');
+    const values = { ...defaults, ...(saved[frameId] || {}) };
+    const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+    return {
+      x: number(values.x, 0),
+      y: number(values.y, 0),
+      scale: Math.max(0.5, Math.min(2.5, number(values.scale, 1)))
+    };
+  } catch {
+    return { x: Number(defaults.x) || 0, y: Number(defaults.y) || 0, scale: Number(defaults.scale) || 1 };
+  }
+}
+
 export function avatarMarkup(user = {}, options = {}) {
   const size = ['header', 'profile', 'chat', 'message', 'search', 'directory', 'public', 'community', 'preview'].includes(options.size)
     ? options.size : 'chat';
@@ -27,10 +45,12 @@ export function avatarMarkup(user = {}, options = {}) {
     ? '<img class="rb-avatar__photo" src="' + escapeAttribute(photo) + '" alt="" draggable="false" loading="lazy" onerror="this.hidden=true;this.parentElement.classList.remove(\'has-photo\')">'
     : '';
   const frameUrl = frameImageUrl(frameId);
+  const tuning = frameTuning(frameId);
+  const frameStyle = '--rb-frame-x:' + tuning.x + '%;--rb-frame-y:' + tuning.y + '%;--rb-frame-scale:' + tuning.scale;
   const frameMarkup = frameUrl
-    ? '<img class="rb-avatar__frame" src="' + frameUrl + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
+    ? '<img class="rb-avatar__frame" src="' + frameUrl + '" style="' + escapeAttribute(frameStyle) + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
     : '';
-  return '<span class="' + classes + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
+  return '<span class="' + classes + '" data-frame-id="' + escapeAttribute(frameId) + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
     '<span class="rb-avatar__photo-layer">' + photoMarkup + '<span class="rb-avatar__fallback" aria-hidden="true">Р</span></span>' +
     frameMarkup + '</span>';
 }
