@@ -54,6 +54,8 @@ function injectStyles() {
     .rb-frame-tuner-scale input{width:100%;accent-color:var(--accent)}
     .rb-frame-tuner-scale-value{text-align:center;margin-top:6px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
     .rb-frame-tuner-field{display:grid;gap:5px;color:var(--text-muted);font-size:12px}
+    .rb-frame-tuner-axis{display:grid;grid-template-columns:36px minmax(0,1fr) 36px;gap:5px;align-items:center}
+    .rb-frame-tuner-axis button{height:40px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-size:21px;font-weight:700;touch-action:manipulation}
     .rb-frame-tuner-field input,.rb-frame-tuner-select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit}
     .rb-frame-tuner-select{margin-bottom:12px}
     .rb-frame-tuner-hint{margin:10px 0;color:var(--text-muted);font-size:12px;line-height:1.45;text-align:center}
@@ -104,8 +106,8 @@ function openTuner(container, user) {
         </div>
         <p class="rb-frame-tuner-hint">Перетаскивай рамку одним пальцем, чтобы менять X и Y. Масштаб меняй ползунком, кнопками или двумя пальцами.</p>
         <div class="rb-frame-tuner-controls">
-          <label class="rb-frame-tuner-field">X, px<input data-axis="x" type="number" step="1" value="0"></label>
-          <label class="rb-frame-tuner-field">Y, px<input data-axis="y" type="number" step="1" value="0"></label>
+          <div class="rb-frame-tuner-field"><span>X, px</span><div class="rb-frame-tuner-axis"><button type="button" data-axis-step="x:-1" aria-label="Сдвинуть по горизонтали влево">−</button><input data-axis="x" type="number" step="1" value="0" aria-label="Горизонтальное положение X"><button type="button" data-axis-step="x:1" aria-label="Сдвинуть по горизонтали вправо">+</button></div></div>
+          <div class="rb-frame-tuner-field"><span>Y, px</span><div class="rb-frame-tuner-axis"><button type="button" data-axis-step="y:-1" aria-label="Сдвинуть по вертикали вверх">−</button><input data-axis="y" type="number" step="1" value="0" aria-label="Вертикальное положение Y"><button type="button" data-axis-step="y:1" aria-label="Сдвинуть по вертикали вниз">+</button></div></div>
           
         </div>
         <div class="rb-frame-tuner-scale"><button class="rb-frame-tuner-minus" type="button" aria-label="Уменьшить масштаб">−</button><input class="rb-frame-tuner-range" type="range" min="10" max="400" step="1" value="100" aria-label="Масштаб рамки"><button class="rb-frame-tuner-plus" type="button" aria-label="Увеличить масштаб">+</button></div><div class="rb-frame-tuner-scale-value" aria-live="polite">100%</div>
@@ -172,6 +174,11 @@ function openTuner(container, user) {
   overlay.addEventListener('click',event=>{if(event.target===overlay)close();});
   select.addEventListener('change',()=>{selected=Number(select.value);values=cssForFrame('frame-'+selected,tuning);render();status.textContent='Настройка рамки №'+selected;});
   Object.values(fields).forEach(input=>input.addEventListener('input',updateFromFields));
+  overlay.querySelectorAll('[data-axis-step]').forEach(button=>button.addEventListener('click',()=>{
+    const [axis,step] = button.dataset.axisStep.split(':');
+    values[axis] = Math.max(-140,Math.min(140,values[axis] + Number(step)));
+    render();
+  }));
   scaleRange.addEventListener('input',()=>setScale(Number(scaleRange.value)/100));
   overlay.querySelector('.rb-frame-tuner-minus').addEventListener('click',()=>setScale(values.scale-0.01));
   overlay.querySelector('.rb-frame-tuner-plus').addEventListener('click',()=>setScale(values.scale+0.01));
