@@ -1,7 +1,7 @@
 /* One geometry for every Rebunar avatar. */
 .rb-avatar{--rb-avatar-inset:13%;position:relative;display:inline-grid;flex:0 0 auto;width:var(--rb-avatar-size,48px);height:var(--rb-avatar-size,48px);place-items:center;isolation:isolate;overflow:visible;vertical-align:middle}
-.rb-avatar__photo-layer{position:absolute;inset:var(--rb-avatar-inset);z-index:1;display:grid;overflow:hidden;place-items:center;border-radius:50%;background:#222831;color:#f4f4f5}
-.rb-avatar__photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.rb-avatar__photo-layer{position:absolute;top:var(--rb-photo-top,var(--rb-avatar-inset));left:var(--rb-photo-left,var(--rb-avatar-inset));width:var(--rb-photo-width,72%);height:var(--rb-photo-height,72%);z-index:1;display:grid;overflow:hidden;place-items:center;clip-path:var(--rb-photo-clip,circle(50%));background:#222831;color:#f4f4f5}
+.rb-avatar__photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:0}
 .rb-avatar__fallback{display:grid;width:100%;height:100%;place-items:center;color:#f4f4f5;font-size:clamp(14px,42%,28px);font-weight:900;line-height:1}
 .rb-avatar.has-photo .rb-avatar__fallback{display:none}
 .rb-avatar__frame{position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;object-fit:contain;transform:translate(var(--rb-frame-x,0%),var(--rb-frame-y,0%)) scale(var(--rb-frame-scale,1));transform-origin:center;pointer-events:none}
@@ -18,5 +18,4 @@
 .rb-avatar--chat.messages-header-avatar{--rb-avatar-size:46px;flex-basis:46px;margin-right:2px}
 
 
-/* Adjustable outline around the profile photo; independent of decorative PNG frames. */
-.rb-avatar--profile .rb-avatar__photo-layer::after{content:"";position:absolute;inset:0;box-sizing:border-box;border:var(--rb-outline-width,2px) solid var(--accent,#55ed83);border-radius:50%;transform:translate(var(--rb-outline-x,0px),var(--rb-outline-y,0px)) scale(var(--rb-outline-scale,1));transform-origin:center;pointer-events:none}
+/* The main profile photo intentionally has no extra outline. */
