@@ -17,7 +17,8 @@ import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-syst
 import { renderGamesScreen } from '../features/games/view.js';
 import { renderCommunitiesScreen } from '../features/communities/view.js?v=avatar-system-20261104-6';
 import '../features/messages/messages.css?v=avatar-system-20261104-6';
-import '../shared/avatar.css?v=avatar-system-20261104-6';
+import '../shared/avatar.css?v=avatar-system-20261104-7';
+import '../shared/avatar-frames.css?v=avatar-system-20261104-7';
 import '../features/favorites/favorites.css';
 import '../features/games/games.css';
 import '../features/communities/communities.css?v=avatar-system-20261104-6';

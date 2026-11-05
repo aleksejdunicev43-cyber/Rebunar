@@ -75,3 +75,4 @@ cookies*.txt
 # Separate Matrix experiment
 matrix-test/
 matrix-test-*.tar.gz
+artifacts/

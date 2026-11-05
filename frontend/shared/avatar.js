@@ -1,6 +1,8 @@
 /**
  * Rebunar shared avatar renderer.
- * All screens use the same photo crop, fallback and PNG frame geometry.
+ * All screens use the same markup. The photo box and clip outline of each
+ * frame come from avatar-frames.css (generated from the real PNG holes by
+ * tools/analyze_frames.py), selected through the data-frame attribute.
  */
 const escapeAttribute = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -30,7 +32,9 @@ export function avatarMarkup(user = {}, options = {}) {
   const frameMarkup = frameUrl
     ? '<img class="rb-avatar__frame" src="' + frameUrl + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
     : '';
-  return '<span class="' + classes + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
+  // data-frame selects the measured geometry for this exact PNG (avatar-frames.css)
+  const frameAttribute = frameUrl ? ' data-frame="' + frameId + '"' : '';
+  return '<span class="' + classes + '"' + frameAttribute + ' role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
     '<span class="rb-avatar__photo-layer">' + photoMarkup + '<span class="rb-avatar__fallback" aria-hidden="true">Р</span></span>' +
     frameMarkup + '</span>';
 }
