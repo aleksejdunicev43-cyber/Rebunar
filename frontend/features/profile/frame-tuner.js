@@ -1,6 +1,6 @@
 import { AVATAR_FRAME_TUNING } from '../../shared/avatar-frame-tuning.js';
 
-const STORAGE_KEY = 'rebunar.avatar-frame-tuning.v2';
+const STORAGE_KEY = 'rebunar.avatar-frame-tuning.v3';
 const FRAME_COUNT = 13;
 const STAGE_SIZE = 280;
 const MIN_SCALE = 0.1;
@@ -59,8 +59,8 @@ function injectStyles() {
     .rb-frame-tuner-field input,.rb-frame-tuner-select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit}
     .rb-frame-tuner-select{margin-bottom:12px}
     .rb-frame-tuner-hint{margin:10px 0;color:var(--text-muted);font-size:12px;line-height:1.45;text-align:center}
-    .rb-frame-tuner-outline{position:absolute;inset:14%;z-index:3;border:var(--outline-width,2px) solid var(--accent-bright);border-radius:50%;box-sizing:border-box;pointer-events:none;transform:translate(var(--outline-x,0px),var(--outline-y,0px)) scale(var(--outline-scale,1));transform-origin:center}
-    .rb-outline-panel{display:grid;gap:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-main)}
+    .rb-frame-tuner-outline{display:none!important;position:absolute;inset:14%;z-index:3;border:var(--outline-width,2px) solid var(--accent-bright);border-radius:50%;box-sizing:border-box;pointer-events:none;transform:translate(var(--outline-x,0px),var(--outline-y,0px)) scale(var(--outline-scale,1));transform-origin:center}
+    .rb-outline-panel{display:none!important;display:grid;gap:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-main)}
     .rb-outline-panel>strong{font-size:13px}.rb-outline-row{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(54px,.8fr) 36px;gap:6px;align-items:center;color:var(--text-muted);font-size:12px}
     .rb-outline-row button{height:36px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-size:20px}
     .rb-outline-reset{min-height:36px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-weight:600}.rb-outline-row input{width:100%;min-width:0;box-sizing:border-box;padding:8px 4px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);text-align:center;font:inherit}
@@ -110,7 +110,7 @@ function openTuner(container, user) {
           <img class="rb-frame-tuner-frame" alt="" draggable="false">
           <div class="rb-frame-tuner-outline" aria-hidden="true"></div>
         </div>
-        <p class="rb-frame-tuner-hint">Настройка PNG-рамки выше. Обводка аватара настраивается отдельно ниже.</p>
+        <p class="rb-frame-tuner-hint">Настройка положения и масштаба выбранной PNG-рамки.</p>
         <div class="rb-outline-panel"><strong>Обводка основной аватарки</strong>
           <div class="rb-outline-row"><span>Размер</span><button type="button" data-outline-step="scale:-0.01">−</button><input data-outline="scale" type="number" min="50" max="150" step="1" value="100" aria-label="Размер обводки в процентах"><button type="button" data-outline-step="scale:0.01">+</button></div>
           <div class="rb-outline-row"><span>Толщина, px</span><button type="button" data-outline-step="width:-1">−</button><input data-outline="width" type="number" min="0" max="8" step="1" value="2" aria-label="Толщина обводки"><button type="button" data-outline-step="width:1">+</button></div>
