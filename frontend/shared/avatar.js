@@ -46,11 +46,17 @@ export function avatarMarkup(user = {}, options = {}) {
     : '';
   const frameUrl = frameImageUrl(frameId);
   const tuning = frameTuning(frameId);
+  let outline = { scale: 1, width: 2, x: 0, y: 0 };
+  try {
+    const savedOutline = JSON.parse(localStorage.getItem('rebunar.avatar-outline-tuning.v1') || '{}');
+    outline = { ...outline, ...savedOutline };
+  } catch {}
+  const outlineStyle = '--rb-outline-scale:' + Math.max(0.5, Math.min(1.5, Number(outline.scale) || 1)) + ';--rb-outline-width:' + Math.max(0, Math.min(8, Number(outline.width) || 0)) + 'px;--rb-outline-x:' + Math.max(-20, Math.min(20, Number(outline.x) || 0)) + 'px;--rb-outline-y:' + Math.max(-20, Math.min(20, Number(outline.y) || 0)) + 'px';
   const frameStyle = '--rb-frame-x:' + tuning.x + '%;--rb-frame-y:' + tuning.y + '%;--rb-frame-scale:' + tuning.scale;
   const frameMarkup = frameUrl
     ? '<img class="rb-avatar__frame" src="' + frameUrl + '" style="' + escapeAttribute(frameStyle) + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
     : '';
-  return '<span class="' + classes + '" data-frame-id="' + escapeAttribute(frameId) + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
+  return '<span class="' + classes + '" data-frame-id="' + escapeAttribute(frameId) + '" style="' + escapeAttribute(outlineStyle) + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
     '<span class="rb-avatar__photo-layer">' + photoMarkup + '<span class="rb-avatar__fallback" aria-hidden="true">Р</span></span>' +
     frameMarkup + '</span>';
 }
