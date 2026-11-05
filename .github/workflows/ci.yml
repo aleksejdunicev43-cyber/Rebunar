@@ -30,6 +30,20 @@ jobs:
       - name: Build Rebunar
         run: npm run build
 
+      - name: Set up Python for avatar geometry tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install avatar geometry test dependencies
+        run: |
+          python -m pip install numpy Pillow scipy scikit-image playwright==1.64.1
+          python -m playwright install --with-deps chromium
+
+      - name: Verify geometry of all 13 avatar frames
+        run: python tests/avatar/verify_frames.py
+
+
       - name: Save production build
         uses: actions/upload-artifact@v4
         with:
@@ -177,7 +191,7 @@ jobs:
       - name: Install Playwright browser
         if: success() && github.event_name != 'pull_request'
         run: |
-          npm install --no-save playwright
+          npm install --no-save playwright@1.64.1
           npx playwright install --with-deps chromium
 
       - name: Capture production screenshots and check avatar frames
