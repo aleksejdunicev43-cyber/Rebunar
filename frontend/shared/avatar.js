@@ -1,8 +1,8 @@
+import { AVATAR_FRAME_TUNING } from './avatar-frame-tuning.js';
+
 /**
  * Rebunar shared avatar renderer.
- * All screens use the same markup. The photo box and clip outline of each
- * frame come from avatar-frames.css (generated from the real PNG holes by
- * tools/analyze_frames.py), selected through the data-frame attribute.
+ * All screens use the same photo crop, fallback and PNG frame geometry.
  */
 const escapeAttribute = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -19,6 +19,22 @@ export function frameImageUrl(frameId) {
   return match ? '/new/assets/frames/rebunar_avatar_' + Number(match[1]) + '.png' : '';
 }
 
+function frameTuning(frameId) {
+  const defaults = AVATAR_FRAME_TUNING[frameId] || {};
+  try {
+    const saved = JSON.parse(localStorage.getItem('rebunar.avatar-frame-tuning.v2') || '{}');
+    const values = { ...defaults, ...(saved[frameId] || {}) };
+    const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+    return {
+      x: number(values.x, 0),
+      y: number(values.y, 0),
+      scale: Math.max(0.1, Math.min(4, number(values.scale, 1)))
+    };
+  } catch {
+    return { x: Number(defaults.x) || 0, y: Number(defaults.y) || 0, scale: Number(defaults.scale) || 1 };
+  }
+}
+
 export function avatarMarkup(user = {}, options = {}) {
   const size = ['header', 'profile', 'chat', 'message', 'search', 'directory', 'public', 'community', 'preview'].includes(options.size)
     ? options.size : 'chat';
@@ -29,12 +45,19 @@ export function avatarMarkup(user = {}, options = {}) {
     ? '<img class="rb-avatar__photo" src="' + escapeAttribute(photo) + '" alt="" draggable="false" loading="lazy" onerror="this.hidden=true;this.parentElement.classList.remove(\'has-photo\')">'
     : '';
   const frameUrl = frameImageUrl(frameId);
+  const tuning = frameTuning(frameId);
+  let outline = { scale: 1, width: 2, x: 0, y: 0 };
+  try {
+    const savedOutline = JSON.parse(localStorage.getItem('rebunar.avatar-outline-tuning.v1') || '{}');
+    outline = { ...outline, ...savedOutline };
+  } catch {}
+  const outlineStyle = '--rb-outline-scale:' + Math.max(0.5, Math.min(1.5, Number(outline.scale) || 1)) + ';--rb-outline-width:' + Math.max(0, Math.min(8, Number(outline.width) || 0)) + 'px;--rb-outline-x:' + Math.max(-20, Math.min(20, Number(outline.x) || 0)) + 'px;--rb-outline-y:' + Math.max(-20, Math.min(20, Number(outline.y) || 0)) + 'px';
+  const frameStyle = '--rb-frame-x:' + tuning.x + '%;--rb-frame-y:' + tuning.y + '%;--rb-frame-scale:' + tuning.scale;
   const frameMarkup = frameUrl
-    ? '<img class="rb-avatar__frame" src="' + frameUrl + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
+    ? '<img class="rb-avatar__frame" src="' + frameUrl + '" style="' + escapeAttribute(frameStyle) + '" alt="" aria-hidden="true" draggable="false" loading="lazy" decoding="async">'
     : '';
-  // data-frame selects the measured geometry for this exact PNG (avatar-frames.css)
-  const frameAttribute = frameUrl ? ' data-frame="' + frameId + '"' : '';
-  return '<span class="' + classes + '"' + frameAttribute + ' role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
+  const measuredFrameAttribute = frameUrl ? ' data-frame="' + escapeAttribute(frameId) + '"' : '';
+  return '<span class="' + classes + '" data-frame-id="' + escapeAttribute(frameId) + '"' + measuredFrameAttribute + ' style="' + escapeAttribute(outlineStyle) + '" role="img" aria-label="' + escapeAttribute(options.label || 'Аватар') + '">' +
     '<span class="rb-avatar__photo-layer">' + photoMarkup + '<span class="rb-avatar__fallback" aria-hidden="true">Р</span></span>' +
     frameMarkup + '</span>';
 }
