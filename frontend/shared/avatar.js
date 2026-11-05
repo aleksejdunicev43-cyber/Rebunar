@@ -40,7 +40,7 @@ if (typeof window !== 'undefined') {
   fetch('/api/avatar-frame-tuning', { credentials: 'same-origin', cache: 'no-store' })
     .then(response => response.ok ? response.json() : null)
     .then(result => {
-      if (!result || !result.tuning) return;
+      if (!result || !result.tuning || result.source !== 'global') return;
       serverFrameTuning = result.tuning;
       applyFrameTuningToRenderedAvatars(serverFrameTuning);
     })
