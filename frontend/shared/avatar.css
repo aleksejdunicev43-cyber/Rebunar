@@ -16,3 +16,7 @@
 .rb-avatar--preview{--rb-avatar-size:66px;--rb-avatar-inset:14%}
 @media(max-width:480px){.rb-avatar--header{--rb-avatar-size:46px}.rb-avatar--directory{--rb-avatar-size:58px}}
 .rb-avatar--chat.messages-header-avatar{--rb-avatar-size:46px;flex-basis:46px;margin-right:2px}
+
+/* The main profile avatar needs a slightly larger frame overlay:
+   keep the photo crop unchanged and enlarge only the decorative PNG. */
+.rb-avatar--profile .rb-avatar__frame{transform:scale(1.18);transform-origin:center}
