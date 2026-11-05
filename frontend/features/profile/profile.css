@@ -29,10 +29,11 @@
 .profile-avatar {
   width: 104px;
   height: 104px;
-  overflow: hidden;
-  border: 2px solid var(--accent);
+  box-sizing: border-box;
+  overflow: visible;
+  border: 0;
   border-radius: 50%;
-  background: var(--bg-panel-2);
+  background: transparent;
 }
 
 .profile-identity {
