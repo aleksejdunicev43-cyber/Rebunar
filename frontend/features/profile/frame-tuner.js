@@ -67,6 +67,7 @@ function injectStyles() {
     .rb-frame-tuner-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
     .rb-frame-tuner-actions button{min-height:42px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg-panel-2);color:var(--text-main);font-weight:700}
     .rb-frame-tuner-actions .primary{border-color:var(--accent);background:var(--accent);color:white}
+    .rb-frame-tuner-publish{grid-column:1/-1;border-color:var(--accent)!important;background:var(--accent)!important;color:white!important}
     .rb-frame-tuner-status{min-height:18px;margin:10px 0 0;color:var(--text-muted);font-size:12px;text-align:center}
     @media(max-width:380px){.rb-frame-tuner{padding:13px}}
   `;
@@ -134,6 +135,38 @@ function openTuner(container, user) {
       <p class="rb-frame-tuner-status" aria-live="polite">Изменения пока только в редакторе.</p>
     </section>`;
   container.appendChild(overlay);
+  if (String(user?.username || '').trim().toLowerCase() === 'gpt') {
+    const publishButton = document.createElement('button');
+    publishButton.type = 'button';
+    publishButton.className = 'rb-frame-tuner-publish';
+    publishButton.textContent = 'Применить ко всем аккаунтам Rebunar';
+    overlay.querySelector('.rb-frame-tuner-actions').appendChild(publishButton);
+    publishButton.addEventListener('click', async () => {
+      saveCurrent();
+      publishButton.disabled = true;
+      publishButton.textContent = 'Публикация...';
+      try {
+        const response = await fetch('/api/avatar-frame-tuning', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tuning })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Не удалось опубликовать настройки');
+        const published = result.tuning || tuning;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(published));
+        applyTuningToVisibleAvatars(published);
+        window.dispatchEvent(new CustomEvent('rebunar:avatar-frame-tuning-updated', { detail: published }));
+        status.textContent = 'Готово! Геометрия всех 13 рамок опубликована для всех аккаунтов Rebunar.';
+      } catch (error) {
+        status.textContent = error.message || 'Ошибка публикации. Попробуй ещё раз.';
+      } finally {
+        publishButton.disabled = false;
+        publishButton.textContent = 'Применить ко всем аккаунтам Rebunar';
+      }
+    });
+  }
 
   const stage = overlay.querySelector('.rb-frame-tuner-stage');
   const frame = overlay.querySelector('.rb-frame-tuner-frame');
