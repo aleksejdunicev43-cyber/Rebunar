@@ -794,8 +794,11 @@
 .profile-screen[data-profile-theme] .profile-settings-button:hover{
   color:var(--text-main);background:color-mix(in srgb,var(--accent) 17%,var(--bg-panel));border-color:var(--accent);
 }
+/* Убираем внешний декоративный ореол вокруг главного аватара.
+   Внутренняя тонкая линия фото остаётся в avatar.css. */
 .profile-screen[data-profile-theme] .profile-avatar-button{
-  border-color:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 13%,transparent),0 0 26px color-mix(in srgb,var(--accent) 28%,transparent);
+  border-color:transparent;
+  box-shadow:none !important;
 }
 .profile-screen[data-profile-theme] .profile-logout,
 .profile-screen[data-profile-theme] .profile-achievement-share{
