@@ -19,11 +19,39 @@ export function frameImageUrl(frameId) {
   return match ? '/new/assets/frames/rebunar_avatar_' + Number(match[1]) + '.png' : '';
 }
 
+let serverFrameTuning = null;
+
+function applyFrameTuningToRenderedAvatars(tuning) {
+  document.querySelectorAll('.rb-avatar[data-frame-id]').forEach(avatar => {
+    const frame = avatar.querySelector('.rb-avatar__frame');
+    const values = tuning?.[avatar.dataset.frameId];
+    if (!frame || !values) return;
+    frame.style.setProperty('--rb-frame-x', (Number(values.x) || 0) + '%');
+    frame.style.setProperty('--rb-frame-y', (Number(values.y) || 0) + '%');
+    frame.style.setProperty('--rb-frame-scale', String(Math.max(0.1, Math.min(4, Number(values.scale) || 1))));
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('rebunar:avatar-frame-tuning-updated', event => {
+    serverFrameTuning = event.detail || null;
+    applyFrameTuningToRenderedAvatars(serverFrameTuning);
+  });
+  fetch('/api/avatar-frame-tuning', { credentials: 'same-origin', cache: 'no-store' })
+    .then(response => response.ok ? response.json() : null)
+    .then(result => {
+      if (!result || !result.tuning) return;
+      serverFrameTuning = result.tuning;
+      applyFrameTuningToRenderedAvatars(serverFrameTuning);
+    })
+    .catch(() => {});
+}
+
 function frameTuning(frameId) {
   const defaults = AVATAR_FRAME_TUNING[frameId] || {};
   try {
     const saved = JSON.parse(localStorage.getItem('rebunar.avatar-frame-tuning.v2') || '{}');
-    const values = { ...defaults, ...(saved[frameId] || {}) };
+    const values = { ...defaults, ...(saved[frameId] || {}), ...(serverFrameTuning?.[frameId] || {}) };
     const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
     return {
       x: number(values.x, 0),
