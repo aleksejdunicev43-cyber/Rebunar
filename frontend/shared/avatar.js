@@ -22,7 +22,7 @@ export function frameImageUrl(frameId) {
 function frameTuning(frameId) {
   const defaults = AVATAR_FRAME_TUNING[frameId] || {};
   try {
-    const saved = JSON.parse(localStorage.getItem('rebunar.avatar-frame-tuning.v1') || '{}');
+    const saved = JSON.parse(localStorage.getItem('rebunar.avatar-frame-tuning.v2') || '{}');
     const values = { ...defaults, ...(saved[frameId] || {}) };
     const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
     return {
