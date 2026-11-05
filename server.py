@@ -3,6 +3,7 @@ import sqlite3
 import hashlib
 import uuid
 import json
+import math
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -950,6 +951,98 @@ def equip_profile_frame():
         state = get_profile_frame_state(con, user_id)
     return jsonify(state), 200
 
+
+
+# Глобальная геометрия PNG-рамок. Публиковать её может только аккаунт GPT.
+DEFAULT_AVATAR_FRAME_TUNING = {
+    "frame-1": {"x": -0.3571, "y": 0, "scale": 1.24},
+    "frame-2": {"x": -0.7143, "y": -2.5, "scale": 1.71},
+    "frame-3": {"x": 0, "y": 0, "scale": 1.52},
+    "frame-4": {"x": -0.3571, "y": 0.3571, "scale": 1.36},
+    "frame-5": {"x": 0, "y": -0.7143, "scale": 1.36},
+    "frame-6": {"x": -0.3571, "y": 0, "scale": 1.13},
+    "frame-7": {"x": 0, "y": -0.3571, "scale": 1.19},
+    "frame-8": {"x": -0.3571, "y": 0, "scale": 1.30},
+    "frame-9": {"x": 0, "y": -0.3571, "scale": 1.29},
+    "frame-10": {"x": 0, "y": -1.4286, "scale": 1.40},
+    "frame-11": {"x": -0.3571, "y": 0, "scale": 1.13},
+    "frame-12": {"x": -0.3571, "y": -0.3571, "scale": 1.41},
+    "frame-13": {"x": 0, "y": 1.0714, "scale": 1.06},
+}
+
+def ensure_app_settings_table(con):
+    con.execute('''
+        CREATE TABLE IF NOT EXISTS app_settings (
+            setting_key TEXT PRIMARY KEY,
+            setting_value TEXT NOT NULL,
+            updated_by INTEGER,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+
+@app.get("/api/avatar-frame-tuning")
+def get_avatar_frame_tuning():
+    with connect() as con:
+        ensure_app_settings_table(con)
+        row = con.execute(
+            "SELECT setting_value FROM app_settings WHERE setting_key = ?",
+            ("avatar_frame_tuning",)
+        ).fetchone()
+    if not row:
+        return jsonify({"tuning": DEFAULT_AVATAR_FRAME_TUNING, "source": "default"}), 200
+    try:
+        tuning = json.loads(row[0])
+    except (TypeError, ValueError):
+        tuning = DEFAULT_AVATAR_FRAME_TUNING
+    return jsonify({"tuning": tuning, "source": "global"}), 200
+
+
+@app.post("/api/avatar-frame-tuning")
+def publish_avatar_frame_tuning():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Необходимо войти в аккаунт GPT"}), 401
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        user = con.execute(
+            "SELECT username FROM users WHERE id = ?",
+            (user_id,)
+        ).fetchone()
+        if not user or str(user["username"]).strip().casefold() != "gpt":
+            return jsonify({"error": "Публиковать общие настройки может только аккаунт GPT"}), 403
+        data = request.get_json(silent=True) or {}
+        submitted = data.get("tuning")
+        if not isinstance(submitted, dict):
+            return jsonify({"error": "Не переданы настройки рамок"}), 400
+        validated = {}
+        for index in range(1, 14):
+            frame_id = f"frame-{index}"
+            values = submitted.get(frame_id)
+            if not isinstance(values, dict):
+                return jsonify({"error": f"Отсутствуют настройки {frame_id}"}), 400
+            clean = {}
+            for axis, minimum, maximum in (("x", -50, 50), ("y", -50, 50), ("scale", 0.1, 4)):
+                value = values.get(axis)
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                    return jsonify({"error": f"Некорректное значение {axis} для {frame_id}"}), 400
+                if value < minimum or value > maximum:
+                    return jsonify({"error": f"Значение {axis} вне допустимого диапазона для {frame_id}"}), 400
+                clean[axis] = round(float(value), 4)
+            validated[frame_id] = clean
+        ensure_app_settings_table(con)
+        con.execute(
+            """
+            INSERT INTO app_settings (setting_key, setting_value, updated_by, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(setting_key) DO UPDATE SET
+                setting_value = excluded.setting_value,
+                updated_by = excluded.updated_by,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            ("avatar_frame_tuning", json.dumps(validated, separators=(",", ":")), user_id)
+        )
+    return jsonify({"ok": True, "tuning": validated}), 200
 
 @app.get("/uploads/avatars/<filename>")
 def get_profile_avatar(filename):
