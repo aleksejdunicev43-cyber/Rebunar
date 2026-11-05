@@ -1,6 +1,6 @@
 import { AVATAR_FRAME_TUNING } from '../../shared/avatar-frame-tuning.js';
 
-const STORAGE_KEY = 'rebunar.avatar-frame-tuning.v1';
+const STORAGE_KEY = 'rebunar.avatar-frame-tuning.v2';
 const FRAME_COUNT = 13;
 const STAGE_SIZE = 280;
 const MIN_SCALE = 0.1;
