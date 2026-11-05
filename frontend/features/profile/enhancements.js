@@ -4,7 +4,7 @@
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
 import { fetchAvatarFrames, equipAvatarFrame } from './frames.js';
 import { getUser, setUser } from '../auth/session.js';
-import { avatarMarkup } from '../../shared/avatar.js?v=avatar-system-20261104-1';
+import { avatarMarkup } from '../../shared/avatar.js?v=avatar-outline-20261105-1';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
