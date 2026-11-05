@@ -59,6 +59,11 @@ function injectStyles() {
     .rb-frame-tuner-field input,.rb-frame-tuner-select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit}
     .rb-frame-tuner-select{margin-bottom:12px}
     .rb-frame-tuner-hint{margin:10px 0;color:var(--text-muted);font-size:12px;line-height:1.45;text-align:center}
+    .rb-frame-tuner-outline{position:absolute;inset:14%;z-index:3;border:2px solid var(--accent-bright);border-radius:50%;box-sizing:border-box;pointer-events:none;transform:translate(var(--outline-x,0px),var(--outline-y,0px)) scale(var(--outline-scale,1));transform-origin:center}
+    .rb-outline-panel{display:grid;gap:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-main)}
+    .rb-outline-panel>strong{font-size:13px}.rb-outline-row{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(54px,.8fr) 36px;gap:6px;align-items:center;color:var(--text-muted);font-size:12px}
+    .rb-outline-row button{height:36px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-size:20px}
+    .rb-outline-row input{width:100%;min-width:0;box-sizing:border-box;padding:8px 4px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);text-align:center;font:inherit}
     .rb-frame-tuner-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
     .rb-frame-tuner-actions button{min-height:42px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg-panel-2);color:var(--text-main);font-weight:700}
     .rb-frame-tuner-actions .primary{border-color:var(--accent);background:var(--accent);color:white}
@@ -103,8 +108,16 @@ function openTuner(container, user) {
         <div class="rb-frame-tuner-stage">
           <div class="rb-frame-tuner-photo">${user?.avatar ? '<img src="'+String(user.avatar).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" alt="">' : 'Р'}</div>
           <img class="rb-frame-tuner-frame" alt="" draggable="false">
+          <div class="rb-frame-tuner-outline" aria-hidden="true"></div>
         </div>
-        <p class="rb-frame-tuner-hint">Перетаскивай рамку одним пальцем, чтобы менять X и Y. Масштаб меняй ползунком, кнопками или двумя пальцами.</p>
+        <p class="rb-frame-tuner-hint">Настройка PNG-рамки выше. Обводка аватара настраивается отдельно ниже.</p>
+        <div class="rb-outline-panel"><strong>Обводка основной аватарки</strong>
+          <div class="rb-outline-row"><span>Размер</span><button type="button" data-outline-step="scale:-0.01">−</button><input data-outline="scale" type="number" min="50" max="150" step="1" value="100" aria-label="Размер обводки в процентах"><button type="button" data-outline-step="scale:0.01">+</button></div>
+          <div class="rb-outline-row"><span>Толщина, px</span><button type="button" data-outline-step="width:-1">−</button><input data-outline="width" type="number" min="0" max="8" step="1" value="2" aria-label="Толщина обводки"><button type="button" data-outline-step="width:1">+</button></div>
+          <div class="rb-outline-row"><span>Смещение X</span><button type="button" data-outline-step="x:-1">−</button><input data-outline="x" type="number" min="-20" max="20" step="1" value="0" aria-label="Смещение обводки по горизонтали"><button type="button" data-outline-step="x:1">+</button></div>
+          <div class="rb-outline-row"><span>Смещение Y</span><button type="button" data-outline-step="y:-1">−</button><input data-outline="y" type="number" min="-20" max="20" step="1" value="0" aria-label="Смещение обводки по вертикали"><button type="button" data-outline-step="y:1">+</button></div>
+          <button class="rb-outline-reset" type="button">Сбросить обводку</button>
+        </div>
         <div class="rb-frame-tuner-controls">
           <div class="rb-frame-tuner-field"><span>X, px</span><div class="rb-frame-tuner-axis"><button type="button" data-axis-step="x:-1" aria-label="Сдвинуть по горизонтали влево">−</button><input data-axis="x" type="number" step="1" value="0" aria-label="Горизонтальное положение X"><button type="button" data-axis-step="x:1" aria-label="Сдвинуть по горизонтали вправо">+</button></div></div>
           <div class="rb-frame-tuner-field"><span>Y, px</span><div class="rb-frame-tuner-axis"><button type="button" data-axis-step="y:-1" aria-label="Сдвинуть по вертикали вверх">−</button><input data-axis="y" type="number" step="1" value="0" aria-label="Вертикальное положение Y"><button type="button" data-axis-step="y:1" aria-label="Сдвинуть по вертикали вниз">+</button></div></div>
@@ -130,6 +143,10 @@ function openTuner(container, user) {
   const scaleRange = overlay.querySelector('.rb-frame-tuner-range');
   const scaleValue = overlay.querySelector('.rb-frame-tuner-scale-value');
   const pointers = new Map();
+  let outlineValues = { scale: 1, width: 2, x: 0, y: 0 };
+  try { outlineValues = { ...outlineValues, ...JSON.parse(localStorage.getItem('rebunar.avatar-outline-tuning.v1') || '{}') }; } catch {}
+  const outlineInputs = Object.fromEntries([...overlay.querySelectorAll('[data-outline]')].map(input => [input.dataset.outline,input]));
+  const outlinePreview = overlay.querySelector('.rb-frame-tuner-outline');
   let pinchStart = null;
 
   function render() {
@@ -146,6 +163,11 @@ function openTuner(container, user) {
     fields.y.value = String(Math.round(values.y));
     scaleRange.value = String(Math.round(values.scale*100));
     scaleValue.textContent = Math.round(values.scale*100) + '%';
+    outlinePreview.style.setProperty('--outline-scale', String(outlineValues.scale));
+    outlinePreview.style.setProperty('--outline-width', outlineValues.width + 'px');
+    outlinePreview.style.setProperty('--outline-x', outlineValues.x + 'px');
+    outlinePreview.style.setProperty('--outline-y', outlineValues.y + 'px');
+    Object.entries(outlineInputs).forEach(([key,input]) => input.value = String(key === 'scale' ? Math.round(outlineValues[key]*100) : outlineValues[key]));
   }
 
   function updateFromFields() {
@@ -156,6 +178,16 @@ function openTuner(container, user) {
   }
 
   function setScale(next) { values.scale = Math.max(MIN_SCALE,Math.min(MAX_SCALE,next)); render(); }
+  function updateOutline(key, next) {
+    const limits = { scale:[0.5,1.5], width:[0,8], x:[-20,20], y:[-20,20] }[key];
+    if (!limits) return;
+    outlineValues[key] = Math.max(limits[0], Math.min(limits[1], safeValue(next, outlineValues[key])));
+    render();
+  }
+  function saveOutline() {
+    localStorage.setItem('rebunar.avatar-outline-tuning.v1', JSON.stringify(outlineValues));
+    applyOutlineToVisibleAvatars(outlineValues);
+  }
 
   function saveCurrent() {
     // Store offsets as percentages so the same tuning scales with 42–142px avatars.
@@ -166,7 +198,8 @@ function openTuner(container, user) {
     };
     localStorage.setItem(STORAGE_KEY,JSON.stringify(tuning));
     applyTuningToVisibleAvatars(tuning);
-    status.textContent = 'Сохранено на этом устройстве. Экспортируй файл, чтобы внести настройки в исходный код.';
+    saveOutline();
+    status.textContent = 'Настройки сохранены на этом устройстве. PNG-рамка и обводка настраиваются независимо.';
   }
 
   function close() { overlay.remove(); }
@@ -184,6 +217,15 @@ function openTuner(container, user) {
   overlay.querySelector('.rb-frame-tuner-plus').addEventListener('click',()=>setScale(values.scale+0.01));
   overlay.querySelector('.rb-frame-tuner-reset').addEventListener('click',()=>{values={x:0,y:0,scale:1};delete tuning['frame-'+selected];render();status.textContent='Настройки этой рамки сброшены. Нажми «Сохранить настройки», чтобы применить.';});
   overlay.querySelector('.rb-frame-tuner-save').addEventListener('click',saveCurrent);
+  Object.entries(outlineInputs).forEach(([key,input]) => input.addEventListener('change', () => updateOutline(key, key === 'scale' ? safeValue(input.value,100)/100 : safeValue(input.value))));
+  overlay.querySelectorAll('[data-outline-step]').forEach(button => button.addEventListener('click', () => {
+    const [key,step] = button.dataset.outlineStep.split(':');
+    updateOutline(key, outlineValues[key] + Number(step));
+  }));
+  overlay.querySelector('.rb-outline-reset').addEventListener('click', () => {
+    outlineValues = { scale:1, width:2, x:0, y:0 }; render(); saveOutline();
+    status.textContent = 'Обводка возвращена к исходным настройкам.';
+  });
   overlay.querySelector('.rb-frame-tuner-export').addEventListener('click',()=>{
     saveCurrent();
     const source='// Generated by Rebunar Avatar Frame Tuner. Offsets are percentages of frame size.\nexport const AVATAR_FRAME_TUNING = Object.freeze('+JSON.stringify(tuning,null,2)+');\n';
@@ -236,5 +278,15 @@ function applyTuningToVisibleAvatars(tuning) {
     frame.style.setProperty('--rb-frame-x',values.x+'%');
     frame.style.setProperty('--rb-frame-y',values.y+'%');
     frame.style.setProperty('--rb-frame-scale',String(values.scale));
+  });
+}
+
+
+function applyOutlineToVisibleAvatars(values) {
+  document.querySelectorAll('.rb-avatar--profile').forEach(avatar => {
+    avatar.style.setProperty('--rb-outline-scale', String(values.scale));
+    avatar.style.setProperty('--rb-outline-width', values.width + 'px');
+    avatar.style.setProperty('--rb-outline-x', values.x + 'px');
+    avatar.style.setProperty('--rb-outline-y', values.y + 'px');
   });
 }
