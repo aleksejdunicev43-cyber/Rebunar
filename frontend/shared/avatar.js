@@ -28,7 +28,7 @@ function frameTuning(frameId) {
     return {
       x: number(values.x, 0),
       y: number(values.y, 0),
-      scale: Math.max(0.5, Math.min(2.5, number(values.scale, 1)))
+      scale: Math.max(0.1, Math.min(4, number(values.scale, 1)))
     };
   } catch {
     return { x: Number(defaults.x) || 0, y: Number(defaults.y) || 0, scale: Number(defaults.scale) || 1 };

@@ -3,6 +3,8 @@ import { AVATAR_FRAME_TUNING } from '../../shared/avatar-frame-tuning.js';
 const STORAGE_KEY = 'rebunar.avatar-frame-tuning.v1';
 const FRAME_COUNT = 13;
 const STAGE_SIZE = 280;
+const MIN_SCALE = 0.1;
+const MAX_SCALE = 4;
 
 function readTuning() {
   try {
@@ -24,7 +26,7 @@ function cssForFrame(frameId, tuning) {
   return {
     x: safeValue(values.x) * STAGE_SIZE / 100,
     y: safeValue(values.y) * STAGE_SIZE / 100,
-    scale: Math.max(0.5, Math.min(2.5, safeValue(values.scale, 1)))
+    scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, safeValue(values.scale, 1)))
   };
 }
 
@@ -46,7 +48,11 @@ function injectStyles() {
     .rb-frame-tuner-photo{position:absolute;inset:14%;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#343941;color:#fff;font-size:64px;font-weight:900}
     .rb-frame-tuner-photo img{width:100%;height:100%;object-fit:cover}
     .rb-frame-tuner-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
-    .rb-frame-tuner-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+    .rb-frame-tuner-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .rb-frame-tuner-scale{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:9px;margin-top:12px}
+    .rb-frame-tuner-scale button{height:40px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-size:22px;font-weight:700}
+    .rb-frame-tuner-scale input{width:100%;accent-color:var(--accent)}
+    .rb-frame-tuner-scale-value{text-align:center;margin-top:6px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
     .rb-frame-tuner-field{display:grid;gap:5px;color:var(--text-muted);font-size:12px}
     .rb-frame-tuner-field input,.rb-frame-tuner-select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit}
     .rb-frame-tuner-select{margin-bottom:12px}
@@ -55,7 +61,7 @@ function injectStyles() {
     .rb-frame-tuner-actions button{min-height:42px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg-panel-2);color:var(--text-main);font-weight:700}
     .rb-frame-tuner-actions .primary{border-color:var(--accent);background:var(--accent);color:white}
     .rb-frame-tuner-status{min-height:18px;margin:10px 0 0;color:var(--text-muted);font-size:12px;text-align:center}
-    @media(max-width:380px){.rb-frame-tuner{padding:13px}.rb-frame-tuner-controls{grid-template-columns:1fr 1fr}}
+    @media(max-width:380px){.rb-frame-tuner{padding:13px}}
   `;
   document.head.appendChild(style);
 }
@@ -96,12 +102,13 @@ function openTuner(container, user) {
           <div class="rb-frame-tuner-photo">${user?.avatar ? '<img src="'+String(user.avatar).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" alt="">' : 'Р'}</div>
           <img class="rb-frame-tuner-frame" alt="" draggable="false">
         </div>
-        <p class="rb-frame-tuner-hint">Перетаскивай рамку пальцем. Затем точно выставь X, Y и масштаб.</p>
+        <p class="rb-frame-tuner-hint">Перетаскивай рамку одним пальцем, чтобы менять X и Y. Масштаб меняй ползунком, кнопками или двумя пальцами.</p>
         <div class="rb-frame-tuner-controls">
           <label class="rb-frame-tuner-field">X, px<input data-axis="x" type="number" step="1" value="0"></label>
           <label class="rb-frame-tuner-field">Y, px<input data-axis="y" type="number" step="1" value="0"></label>
-          <label class="rb-frame-tuner-field">Масштаб, %<input data-axis="scale" type="number" min="50" max="250" step="1" value="100"></label>
+          
         </div>
+        <div class="rb-frame-tuner-scale"><button class="rb-frame-tuner-minus" type="button" aria-label="Уменьшить масштаб">−</button><input class="rb-frame-tuner-range" type="range" min="10" max="400" step="1" value="100" aria-label="Масштаб рамки"><button class="rb-frame-tuner-plus" type="button" aria-label="Увеличить масштаб">+</button></div><div class="rb-frame-tuner-scale-value" aria-live="polite">100%</div>
       </div>
       <div class="rb-frame-tuner-actions">
         <button class="rb-frame-tuner-reset" type="button">Сбросить рамку</button>
@@ -118,6 +125,10 @@ function openTuner(container, user) {
   const select = overlay.querySelector('.rb-frame-tuner-select');
   const status = overlay.querySelector('.rb-frame-tuner-status');
   const fields = Object.fromEntries([...overlay.querySelectorAll('[data-axis]')].map(input => [input.dataset.axis,input]));
+  const scaleRange = overlay.querySelector('.rb-frame-tuner-range');
+  const scaleValue = overlay.querySelector('.rb-frame-tuner-scale-value');
+  const pointers = new Map();
+  let pinchStart = null;
 
   function render() {
     const px = stage.clientWidth || STAGE_SIZE;
@@ -131,15 +142,18 @@ function openTuner(container, user) {
     frame.style.height = '100%';
     fields.x.value = String(Math.round(values.x));
     fields.y.value = String(Math.round(values.y));
-    fields.scale.value = String(Math.round(values.scale*100));
+    scaleRange.value = String(Math.round(values.scale*100));
+    scaleValue.textContent = Math.round(values.scale*100) + '%';
   }
 
   function updateFromFields() {
     values.x = Math.max(-140,Math.min(140,safeValue(fields.x.value)));
     values.y = Math.max(-140,Math.min(140,safeValue(fields.y.value)));
-    values.scale = Math.max(.5,Math.min(2.5,safeValue(fields.scale.value,100)/100));
+    values.scale = Math.max(MIN_SCALE,Math.min(MAX_SCALE,values.scale));
     render();
   }
+
+  function setScale(next) { values.scale = Math.max(MIN_SCALE,Math.min(MAX_SCALE,next)); render(); }
 
   function saveCurrent() {
     // Store offsets as percentages so the same tuning scales with 42–142px avatars.
@@ -158,6 +172,9 @@ function openTuner(container, user) {
   overlay.addEventListener('click',event=>{if(event.target===overlay)close();});
   select.addEventListener('change',()=>{selected=Number(select.value);values=cssForFrame('frame-'+selected,tuning);render();status.textContent='Настройка рамки №'+selected;});
   Object.values(fields).forEach(input=>input.addEventListener('input',updateFromFields));
+  scaleRange.addEventListener('input',()=>setScale(Number(scaleRange.value)/100));
+  overlay.querySelector('.rb-frame-tuner-minus').addEventListener('click',()=>setScale(values.scale-0.01));
+  overlay.querySelector('.rb-frame-tuner-plus').addEventListener('click',()=>setScale(values.scale+0.01));
   overlay.querySelector('.rb-frame-tuner-reset').addEventListener('click',()=>{values={x:0,y:0,scale:1};delete tuning['frame-'+selected];render();status.textContent='Настройки этой рамки сброшены. Нажми «Сохранить настройки», чтобы применить.';});
   overlay.querySelector('.rb-frame-tuner-save').addEventListener('click',saveCurrent);
   overlay.querySelector('.rb-frame-tuner-export').addEventListener('click',()=>{
@@ -170,10 +187,36 @@ function openTuner(container, user) {
     status.textContent='Файл avatar-frame-tuning.js подготовлен. Замени им одноимённый файл в проекте и пересобери приложение.';
   });
 
-  stage.addEventListener('pointerdown',event=>{drag={x:event.clientX,y:event.clientY,offsetX:values.x,offsetY:values.y};stage.setPointerCapture(event.pointerId);});
-  stage.addEventListener('pointermove',event=>{if(!drag)return;const scale=stage.clientWidth/STAGE_SIZE;values.x=drag.offsetX+(event.clientX-drag.x)/scale;values.y=drag.offsetY+(event.clientY-drag.y)/scale;render();});
-  stage.addEventListener('pointerup',()=>{drag=null;});
-  stage.addEventListener('pointercancel',()=>{drag=null;});
+  stage.addEventListener('pointerdown',event=>{
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    try { stage.setPointerCapture(event.pointerId); } catch {}
+    if(pointers.size===1) drag={x:event.clientX,y:event.clientY,offsetX:values.x,offsetY:values.y};
+    else if(pointers.size===2) {
+      drag=null;
+      const points=[...pointers.values()];
+      pinchStart={distance:Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y),scale:values.scale};
+    }
+  });
+  stage.addEventListener('pointermove',event=>{
+    if(!pointers.has(event.pointerId))return;
+    pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(pointers.size===2&&pinchStart) {
+      const points=[...pointers.values()];
+      const distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+      if(pinchStart.distance>0)setScale(pinchStart.scale*distance/pinchStart.distance);
+      return;
+    }
+    if(pointers.size===1&&drag) {
+      const factor=stage.clientWidth/STAGE_SIZE;
+      values.x=drag.offsetX+(event.clientX-drag.x)/factor;
+      values.y=drag.offsetY+(event.clientY-drag.y)/factor;
+      render();
+    }
+  });
+  const endPointer=event=>{pointers.delete(event.pointerId);if(pointers.size<2)pinchStart=null;drag=null;};
+  stage.addEventListener('pointerup',endPointer);
+  stage.addEventListener('pointercancel',endPointer);
+  stage.addEventListener('lostpointercapture',endPointer);
   values=cssForFrame('frame-1',tuning);
   render();
 }
