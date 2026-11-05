@@ -59,11 +59,11 @@ function injectStyles() {
     .rb-frame-tuner-field input,.rb-frame-tuner-select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit}
     .rb-frame-tuner-select{margin-bottom:12px}
     .rb-frame-tuner-hint{margin:10px 0;color:var(--text-muted);font-size:12px;line-height:1.45;text-align:center}
-    .rb-frame-tuner-outline{position:absolute;inset:14%;z-index:3;border:2px solid var(--accent-bright);border-radius:50%;box-sizing:border-box;pointer-events:none;transform:translate(var(--outline-x,0px),var(--outline-y,0px)) scale(var(--outline-scale,1));transform-origin:center}
+    .rb-frame-tuner-outline{position:absolute;inset:14%;z-index:3;border:var(--outline-width,2px) solid var(--accent-bright);border-radius:50%;box-sizing:border-box;pointer-events:none;transform:translate(var(--outline-x,0px),var(--outline-y,0px)) scale(var(--outline-scale,1));transform-origin:center}
     .rb-outline-panel{display:grid;gap:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-main)}
     .rb-outline-panel>strong{font-size:13px}.rb-outline-row{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(54px,.8fr) 36px;gap:6px;align-items:center;color:var(--text-muted);font-size:12px}
     .rb-outline-row button{height:36px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-size:20px}
-    .rb-outline-row input{width:100%;min-width:0;box-sizing:border-box;padding:8px 4px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);text-align:center;font:inherit}
+    .rb-outline-reset{min-height:36px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2);color:var(--text-main);font-weight:600}.rb-outline-row input{width:100%;min-width:0;box-sizing:border-box;padding:8px 4px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);text-align:center;font:inherit}
     .rb-frame-tuner-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
     .rb-frame-tuner-actions button{min-height:42px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg-panel-2);color:var(--text-main);font-weight:700}
     .rb-frame-tuner-actions .primary{border-color:var(--accent);background:var(--accent);color:white}
@@ -164,6 +164,7 @@ function openTuner(container, user) {
     scaleRange.value = String(Math.round(values.scale*100));
     scaleValue.textContent = Math.round(values.scale*100) + '%';
     outlinePreview.style.setProperty('--outline-scale', String(outlineValues.scale));
+    outlinePreview.style.setProperty('--outline-width', outlineValues.width + 'px');
     outlinePreview.style.setProperty('--outline-width', outlineValues.width + 'px');
     outlinePreview.style.setProperty('--outline-x', outlineValues.x + 'px');
     outlinePreview.style.setProperty('--outline-y', outlineValues.y + 'px');
