@@ -13,6 +13,7 @@ const report = {
   avatarGeometry: [],
   pageErrors: [],
   consoleErrors: [],
+  httpErrors: [],
   authenticated: false,
   notes: [],
 };
@@ -27,6 +28,9 @@ const context = await browser.newContext({
 const page = await context.newPage();
 
 page.on('pageerror', error => report.pageErrors.push(error.message));
+page.on('response', response => {
+  if (response.status() >= 400) report.httpErrors.push({ status: response.status(), url: response.url() });
+});
 page.on('console', message => {
   if (message.type() === 'error') report.consoleErrors.push(message.text());
 });
@@ -42,6 +46,13 @@ async function openRoute(route, name, selector) {
   if (await button.count()) {
     await button.click();
     await page.waitForTimeout(900);
+    if (route === 'profile') {
+      report.avatarGeometry = await page.locator('.rb-avatar').evaluateAll(nodes => nodes.map(node => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return { width: Math.round(rect.width), height: Math.round(rect.height), borderRadius: style.borderRadius };
+      }));
+    }
     await screenshot(name);
     return true;
   }
@@ -93,4 +104,4 @@ try {
 console.log(JSON.stringify(report, null, 2));
 if (report.fatalError) process.exitCode = 1;
 if (report.avatarGeometry.some(item => Math.abs(item.width - item.height) > 1 || item.borderRadius === '0px')) process.exitCode = 1;
-if (report.pageErrors.length) process.exitCode = 1;
+if (report.pageErrors.length || report.httpErrors.some(item => item.status >= 500)) process.exitCode = 1;
