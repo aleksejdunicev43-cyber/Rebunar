@@ -45,7 +45,7 @@ function injectStyles() {
     .rb-frame-tuner-layout{display:grid;grid-template-columns:1fr;gap:14px}
     .rb-frame-tuner-stage{position:relative;width:min(280px,78vw);height:min(280px,78vw);margin:0 auto;border:1px dashed var(--accent);border-radius:50%;overflow:hidden;background:radial-gradient(circle,#30343a,#14171b);touch-action:none;cursor:grab}
     .rb-frame-tuner-stage:active{cursor:grabbing}
-    .rb-frame-tuner-photo{position:absolute;inset:14%;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#343941;color:#fff;font-size:64px;font-weight:900}
+    .rb-frame-tuner-photo{position:absolute;inset:var(--rb-header-photo-inset,14%);display:grid;place-items:center;overflow:hidden;border-radius:50%;background:#343941;color:#fff;font-size:64px;font-weight:900}
     .rb-frame-tuner-photo img{width:100%;height:100%;object-fit:cover}
     .rb-frame-tuner-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
     .rb-frame-tuner-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -201,8 +201,12 @@ function openTuner(container, user) {
     headerPhotoSizeRange.value = String(headerPhotoDiameter);
     headerPhotoSizeValue.textContent = headerPhotoDiameter + '%';
     try { localStorage.setItem(HEADER_PHOTO_SIZE_KEY, String(headerPhotoDiameter)); } catch {}
+    const photoInset = ((100 - headerPhotoDiameter) / 2) + '%';
+    const previewPhoto = overlay.querySelector('.rb-frame-tuner-photo');
+    if (previewPhoto) previewPhoto.style.inset = photoInset;
     document.querySelectorAll('.rb-avatar--header').forEach(avatar => {
       avatar.style.setProperty('--rb-header-photo-diameter', headerPhotoDiameter + '%');
+      avatar.style.setProperty('--rb-avatar-inset', photoInset);
     });
     window.dispatchEvent(new CustomEvent('rebunar:header-avatar-size-updated', { detail: headerPhotoDiameter }));
   }
