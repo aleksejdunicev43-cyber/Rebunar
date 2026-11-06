@@ -56,6 +56,8 @@ function updateHeaderProfile(root, user) {
 const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-circle-position.v2';
 const HEADER_AVATAR_MAX_OFFSET = 18;
 const HEADER_PHOTO_SIZE_KEY = 'rebunar.header-avatar-photo-diameter.v1';
+const HEADER_PHOTO_SIZE_MIN = 20;
+const HEADER_PHOTO_SIZE_MAX = 75;
 
 function applySavedHeaderPhotoSize(root) {
   const avatar = root.querySelector('.rb-avatar--header');
@@ -63,21 +65,50 @@ function applySavedHeaderPhotoSize(root) {
   let diameter = 52;
   try {
     const saved = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
-    if (Number.isFinite(saved) && saved >= 35 && saved <= 75) diameter = saved;
+    if (Number.isFinite(saved) && saved >= HEADER_PHOTO_SIZE_MIN && saved <= HEADER_PHOTO_SIZE_MAX) diameter = saved;
   } catch {}
   avatar.style.setProperty('--rb-header-photo-diameter', diameter + '%');
   const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
   if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
 }
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('rebunar:header-avatar-size-updated', event => {
-    document.querySelectorAll('.rb-avatar--header').forEach(avatar => {
-      const diameter = Math.max(35, Math.min(75, Number(event.detail) || 52));
-      avatar.style.setProperty('--rb-header-photo-diameter', diameter + '%');
-      const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
-      if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
-    });
+function setHeaderPhotoDiameter(value, root = document) {
+  const diameter = Math.max(HEADER_PHOTO_SIZE_MIN, Math.min(HEADER_PHOTO_SIZE_MAX, Number(value) || 52));
+  try { localStorage.setItem(HEADER_PHOTO_SIZE_KEY, String(diameter)); } catch {}
+  root.querySelectorAll('.rb-avatar--header').forEach(avatar => {
+    const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
+    if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
+  });
+  const range = root.querySelector('.header-avatar-size-range');
+  const label = root.querySelector('.header-avatar-size-value');
+  if (range) range.value = String(diameter);
+  if (label) label.textContent = diameter + '%';
+}
+
+function setupHeaderPhotoSizeControl(root) {
+  const toggle = root.querySelector('.header-avatar-size-toggle');
+  const panel = root.querySelector('.header-avatar-size-panel');
+  const range = root.querySelector('.header-avatar-size-range');
+  if (!toggle || !panel || !range || toggle.dataset.ready === 'true') return;
+  toggle.dataset.ready = 'true';
+  let initial = 52;
+  try {
+    const saved = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
+    if (Number.isFinite(saved) && saved >= HEADER_PHOTO_SIZE_MIN && saved <= HEADER_PHOTO_SIZE_MAX) initial = saved;
+  } catch {}
+  setHeaderPhotoDiameter(initial, root);
+  toggle.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    const opening = panel.hidden;
+    panel.hidden = !opening;
+    toggle.setAttribute('aria-expanded', String(opening));
+  });
+  range.addEventListener('input', () => setHeaderPhotoDiameter(range.value, root));
+  document.addEventListener('pointerdown', event => {
+    if (panel.hidden || panel.contains(event.target) || toggle.contains(event.target)) return;
+    panel.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
   });
 }
 
@@ -162,8 +193,14 @@ export function createShell(root) {
             data-route="profile"
             aria-label="Мой профиль"
             title="Мой профиль">
-            <span>R</span>
+            <span>Р</span>
           </button>
+          <button type="button" class="header-avatar-size-toggle" aria-label="Размер фотографии аватарки" aria-expanded="false" title="Размер фотографии">↗</button>
+          <div class="header-avatar-size-panel" hidden>
+            <label for="header-avatar-size-range">Размер фотографии</label>
+            <input id="header-avatar-size-range" class="header-avatar-size-range" type="range" min="20" max="75" step="1" value="52">
+            <output class="header-avatar-size-value">52%</output>
+          </div>
         </div>
 
         <div class="app-logo-image-wrap" aria-label="REBUNAR">
@@ -225,6 +262,7 @@ export function createShell(root) {
     </div>
   `;
 
+  setupHeaderPhotoSizeControl(root);
   updateHeaderProfile(root, getUser());
 
   root.__rebunarHeaderAuthUnsubscribe?.();
