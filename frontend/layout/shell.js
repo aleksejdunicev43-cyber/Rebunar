@@ -49,6 +49,80 @@ function updateHeaderProfile(root, user) {
 
   button.innerHTML = avatarMarkup(user || {}, { size: 'header', label: 'Мой профиль' });
   button.title = user?.display_name || user?.username || 'Мой профиль';
+  enableHeaderAvatarPhotoDrag(button);
+}
+
+const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-photo-position.v1';
+const HEADER_AVATAR_MAX_OFFSET = 5.5;
+const HEADER_AVATAR_BASE_SCALE = 1.35;
+
+function enableHeaderAvatarPhotoDrag(button) {
+  const photo = button.querySelector('.rb-avatar__photo');
+  if (!photo) return;
+
+  let position = { x: 0, y: 0 };
+  try {
+    const saved = JSON.parse(localStorage.getItem(HEADER_AVATAR_POSITION_KEY) || '{}');
+    position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, Number(saved.x) || 0));
+    position.y = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, Number(saved.y) || 0));
+  } catch {}
+
+  const paint = () => {
+    const currentPhoto = button.querySelector('.rb-avatar__photo');
+    if (currentPhoto) {
+      currentPhoto.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${HEADER_AVATAR_BASE_SCALE})`;
+    }
+  };
+  paint();
+  if (button.dataset.photoDragReady === 'true') return;
+  button.dataset.photoDragReady = 'true';
+
+  let pointerId = null;
+  let startX = 0;
+  let startY = 0;
+  let originX = 0;
+  let originY = 0;
+  let moved = false;
+
+  button.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    pointerId = event.pointerId;
+    startX = event.clientX;
+    startY = event.clientY;
+    originX = position.x;
+    originY = position.y;
+    moved = false;
+    button.setPointerCapture?.(pointerId);
+  });
+
+  button.addEventListener('pointermove', event => {
+    if (pointerId === null || event.pointerId !== pointerId) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if (!moved && Math.hypot(dx, dy) < 2) return;
+    moved = true;
+    event.preventDefault();
+    position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originX + dx));
+    position.y = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originY + dy));
+    paint();
+  });
+
+  const finishDrag = event => {
+    if (pointerId === null || event.pointerId !== pointerId) return;
+    if (moved) {
+      try {
+        localStorage.setItem(HEADER_AVATAR_POSITION_KEY, JSON.stringify(position));
+      } catch {}
+      button.addEventListener('click', click => {
+        click.preventDefault();
+        click.stopImmediatePropagation();
+      }, { capture: true, once: true });
+    }
+    pointerId = null;
+  };
+
+  button.addEventListener('pointerup', finishDrag);
+  button.addEventListener('pointercancel', finishDrag);
 }
 
 export function createShell(root) {
