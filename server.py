@@ -885,12 +885,10 @@ def get_posts():
         SELECT posts.id, posts.title, posts.body, posts.created_at,
                users.username AS author,
                users.avatar AS avatar,
-               COALESCE(profile_progress.equipped_frame, '') AS equipped_frame,
                communities.slug AS community_slug,
                communities.name AS community_name
         FROM posts
         LEFT JOIN users ON users.id = posts.user_id
-        LEFT JOIN profile_progress ON profile_progress.user_id = users.id
         LEFT JOIN communities ON communities.id = posts.community_id
     """
     params = []
@@ -1183,7 +1181,6 @@ def message_chats():
                 u.username,
                 u.display_name,
                 u.avatar,
-                COALESCE(pp.equipped_frame, '') AS equipped_frame,
                 m.text,
                 m.{time_column} AS created_at
             FROM messages m
@@ -1192,7 +1189,6 @@ def message_chats():
                   WHEN m.sender_id = ? THEN m.receiver_id
                   ELSE m.sender_id
               END
-            LEFT JOIN profile_progress pp ON pp.user_id = u.id
             WHERE m.sender_id != m.receiver_id
               AND m.id IN (
                 SELECT MAX(m2.id)
@@ -1221,7 +1217,6 @@ def message_chats():
             "username": row[1],
             "display_name": row[2] or row[1],
             "avatar": row[3] or "",
-            "equipped_frame": row[4] or "",
             "last_message": row[5],
             "created_at": row[6]
         }
@@ -1290,10 +1285,8 @@ def message_history():
                 u.username,
                 u.display_name,
                 u.avatar,
-                COALESCE(pp.equipped_frame, '') AS equipped_frame
             FROM messages m
             JOIN users u ON u.id = m.sender_id
-            LEFT JOIN profile_progress pp ON pp.user_id = u.id
             WHERE
                 (m.sender_id = ? AND m.receiver_id = ?)
                 OR
@@ -1314,7 +1307,6 @@ def message_history():
             "username": row[5],
             "display_name": row[6] or row[5],
             "avatar": row[7] or "",
-            "equipped_frame": row[8] or ""
         }
         for row in rows
     ])
