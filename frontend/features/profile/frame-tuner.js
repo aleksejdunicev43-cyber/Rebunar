@@ -59,11 +59,6 @@ function injectStyles() {
     .rb-frame-tuner-field input,.rb-frame-tuner-select{box-sizing:border-box;width:100%;min-width:0;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-main);color:var(--text-main);font:inherit}
     .rb-frame-tuner-select{margin-bottom:12px}
     .rb-frame-tuner-hint{margin:10px 0;color:var(--text-muted);font-size:12px;line-height:1.45;text-align:center}
-    .rb-header-photo-size-panel{display:grid;gap:8px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-main)}
-    .rb-header-photo-size-panel strong{font-size:13px}
-    .rb-header-photo-size-panel input{width:100%;accent-color:var(--accent)}
-    .rb-header-photo-size-value{text-align:center;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
-    .rb-header-photo-size-panel small{color:var(--text-muted);font-size:12px;line-height:1.4}
     .rb-frame-tuner-outline{position:absolute;inset:14%;z-index:3;border:var(--outline-width,2px) solid var(--accent-bright);border-radius:50%;box-sizing:border-box;pointer-events:none;transform:translate(var(--outline-x,0px),var(--outline-y,0px)) scale(var(--outline-scale,1));transform-origin:center}
     .rb-outline-panel{display:grid;gap:10px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-main)}
     .rb-outline-panel>strong{font-size:13px}.rb-outline-row{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(54px,.8fr) 36px;gap:6px;align-items:center;color:var(--text-muted);font-size:12px}
@@ -115,12 +110,6 @@ function openTuner(container, user) {
           <div class="rb-frame-tuner-photo">${user?.avatar ? '<img src="'+String(user.avatar).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" alt="">' : 'Р'}</div>
           <img class="rb-frame-tuner-frame" alt="" draggable="false">
           <div class="rb-frame-tuner-outline" aria-hidden="true"></div>
-        </div>
-        <div class="rb-header-photo-size-panel">
-          <strong>Размер круглой фотографии в шапке</strong>
-          <input class="rb-header-photo-size-range" type="range" min="35" max="75" step="1" value="52" aria-label="Размер круглой фотографии в шапке">
-          <div class="rb-header-photo-size-value" aria-live="polite">52%</div>
-          <small>Меняется только круг фотографии. PNG-рамка остаётся неподвижной.</small>
         </div>
         <p class="rb-frame-tuner-hint">Настройка PNG-рамки выше. Обводка аватара настраивается отдельно ниже.</p>
         <div class="rb-outline-panel"><strong>Обводка основной аватарки</strong>
@@ -186,33 +175,6 @@ function openTuner(container, user) {
   const fields = Object.fromEntries([...overlay.querySelectorAll('[data-axis]')].map(input => [input.dataset.axis,input]));
   const scaleRange = overlay.querySelector('.rb-frame-tuner-range');
   const scaleValue = overlay.querySelector('.rb-frame-tuner-scale-value');
-  const headerPhotoSizeRange = overlay.querySelector('.rb-header-photo-size-range');
-  const headerPhotoSizeValue = overlay.querySelector('.rb-header-photo-size-value');
-  const HEADER_PHOTO_SIZE_KEY = 'rebunar.header-avatar-photo-diameter.v1';
-  let headerPhotoDiameter = 52;
-  try {
-    const savedSize = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
-    if (Number.isFinite(savedSize) && savedSize >= 35 && savedSize <= 75) headerPhotoDiameter = savedSize;
-  } catch {}
-  headerPhotoSizeRange.value = String(headerPhotoDiameter);
-  headerPhotoSizeValue.textContent = headerPhotoDiameter + '%';
-  function applyHeaderPhotoSize(value) {
-    headerPhotoDiameter = Math.max(35, Math.min(75, Number(value) || 52));
-    headerPhotoSizeRange.value = String(headerPhotoDiameter);
-    headerPhotoSizeValue.textContent = headerPhotoDiameter + '%';
-    try { localStorage.setItem(HEADER_PHOTO_SIZE_KEY, String(headerPhotoDiameter)); } catch {}
-    const photoInset = ((100 - headerPhotoDiameter) / 2) + '%';
-    const previewPhoto = overlay.querySelector('.rb-frame-tuner-photo');
-    if (previewPhoto) previewPhoto.style.inset = photoInset;
-    document.querySelectorAll('.rb-avatar--header').forEach(avatar => {
-      avatar.style.setProperty('--rb-header-photo-diameter', headerPhotoDiameter + '%');
-      const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
-      if (photoLayer) photoLayer.style.inset = photoInset;
-    });
-    window.dispatchEvent(new CustomEvent('rebunar:header-avatar-size-updated', { detail: headerPhotoDiameter }));
-  }
-  headerPhotoSizeRange.addEventListener('input', () => applyHeaderPhotoSize(headerPhotoSizeRange.value));
-  applyHeaderPhotoSize(headerPhotoDiameter);
   const pointers = new Map();
   let outlineValues = { scale: 1, width: 2, x: 0, y: 0 };
   try { outlineValues = { ...outlineValues, ...JSON.parse(localStorage.getItem('rebunar.avatar-outline-tuning.v1') || '{}') }; } catch {}
