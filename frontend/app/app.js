@@ -136,7 +136,7 @@ async function handleLogout(event) {
   try {
     await logout();
     try { await disconnectMatrix(); } catch { console.warn('Rebunar: Matrix-соединение не удалось остановить'); }
-    clearUser(); initializeTheme(null); appStarted = false; renderAuthScreen(root, mountApp);
+    clearUser(); initializeTheme(null); appStarted = false; renderAuthScreen(root, enterApp);
   } catch (error) {
     startPresence();
     if (button) { button.disabled = false; button.textContent = 'Выйти из аккаунта'; }
