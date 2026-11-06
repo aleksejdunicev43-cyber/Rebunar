@@ -19,4 +19,4 @@
 
 
 /* Adjustable outline around the profile photo; independent of decorative PNG frames. */
-.rb-avatar--profile .rb-avatar__photo-layer::after{content:"";position:absolute;inset:0;box-sizing:border-box;border:var(--rb-outline-width,2px) solid var(--accent,#55ed83);border-radius:50%;transform:translate(var(--rb-outline-x,0px),var(--rb-outline-y,0px)) scale(var(--rb-outline-scale,1));transform-origin:center;pointer-events:none}
+.rb-avatar--profile .rb-avatar__photo-layer::after{content:none}
