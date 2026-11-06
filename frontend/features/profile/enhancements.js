@@ -132,7 +132,8 @@ async function renderAvatarFrameCollection(container, customization, user) {
       setAvatarFrameArtwork(avatarButton, state.equipped || 'none', user);
     }
 
-    grid.innerHTML = getOrderedAvatarFrames(state).map(frame => {
+    const orderedFrames = getOrderedAvatarFrames(state);
+    grid.innerHTML = orderedFrames.map(frame => {
       const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
       const equipped = Boolean(frame.equipped);
       return `
@@ -146,7 +147,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
         </button>`;
     }).join('');
     grid.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
-      const frame = (state.frames || [])[index];
+      const frame = orderedFrames[index];
       if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (isAvatarFrameUnlocked(frame) ? '' : '<span class="profile-frame-lock">🔒</span>');
     });
 
@@ -177,14 +178,15 @@ function renderFrameState(container, section, state, user) {
   }
   section.querySelector('.profile-frame-progress').innerHTML =
     `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
-  section.querySelector('.profile-frame-grid').innerHTML = (state.frames || []).map(frame => {
+  const orderedFrames = getOrderedAvatarFrames(state);
+  section.querySelector('.profile-frame-grid').innerHTML = orderedFrames.map(frame => {
     const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
     const equipped = Boolean(frame.equipped);
     return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview">${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
   }).join('');
   section.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
-    const frame = (state.frames || [])[index];
-    if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (frame.unlocked ? '' : '<span class="profile-frame-lock">🔒</span>');
+    const frame = orderedFrames[index];
+    if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (isAvatarFrameUnlocked(frame) ? '' : '<span class="profile-frame-lock">🔒</span>');
   });
   section.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
     button.addEventListener('click', async () => {
