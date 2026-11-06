@@ -76,26 +76,6 @@ def init_db():
             )
         """)
         con.execute("""
-            CREATE TABLE IF NOT EXISTS user_avatar_frames (
-                user_id INTEGER NOT NULL,
-                frame_id TEXT NOT NULL,
-                unlocked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY(user_id, frame_id),
-                FOREIGN KEY(user_id) REFERENCES users(id)
-            )
-        """)
-
-        con.execute("""
-            UPDATE profile_progress
-            SET equipped_frame = ''
-            WHERE equipped_frame NOT IN (
-                '', 'frame-1', 'frame-2', 'frame-3', 'frame-4', 'frame-5',
-                'frame-6', 'frame-7', 'frame-8', 'frame-9', 'frame-10',
-                'frame-11', 'frame-12', 'frame-13'
-            )
-        """)
-
-        con.execute("""
             CREATE TABLE IF NOT EXISTS communities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 slug TEXT NOT NULL UNIQUE,
@@ -484,8 +464,7 @@ def me():
         "username": user["username"],
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
-        "avatar": user["avatar"] or "",
-        "equipped_frame": user["equipped_frame"] or ""
+        "avatar": user["avatar"] or ""
     }), 200
 
 
