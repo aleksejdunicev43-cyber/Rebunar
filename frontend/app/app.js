@@ -102,7 +102,7 @@ async function finishBoot(user) {
   }, 300);
 }
 
-const screens = { home:'Главная', store:'Магазин', games:'Игровой центр', communities:'Сообщества', messages:'Сообщения', favorites:'Избранное', studio:'Rebunar Studio', creators:'Творчество', profile:'Профиль', mail:'Почта Rebunar', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
+const screens = { home:'Главная', store:'Магазин', games:'Игровой центр', communities:'Сообщества', messages:'Чаты', favorites:'Избранное', studio:'Rebunar Studio', creators:'Творчество', profile:'Профиль', mail:'Почта Rebunar', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
 
 for (const [path, title] of Object.entries(screens)) {
   registerRoute(path, (params = {}) => {
