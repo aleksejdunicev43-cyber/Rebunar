@@ -11,7 +11,6 @@ import { logout } from '../features/auth/api.js';
 import { renderProfileScreen } from '../features/profile/view.js?v=avatar-system-20261104-6';
 import { enhanceProfileScreen } from '../features/profile/enhancements.js?v=avatar-system-20261104-6';
 import { initProfileCollectionButton } from '../features/profile/collection-button.js';
-import { initAvatarFrameTuner } from '../features/profile/frame-tuner.js?v=avatar-outline-20261105-1';
 import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-system-20261104-6';
@@ -19,7 +18,6 @@ import { renderGamesScreen } from '../features/games/view.js';
 import { renderCommunitiesScreen } from '../features/communities/view.js?v=avatar-system-20261104-6';
 import '../features/messages/messages.css?v=avatar-system-20261104-6';
 import '../shared/avatar.css?v=avatar-system-20261104-7';
-import '../shared/avatar-frames.css?v=avatar-system-20261104-7';
 import '../features/favorites/favorites.css';
 import '../features/games/games.css';
 import '../features/communities/communities.css?v=avatar-system-20261104-6';
@@ -54,7 +52,6 @@ for (const [path, title] of Object.entries(screens)) {
       renderProfileScreen(outlet, user, handleLogout);
       enhanceProfileScreen(outlet, user);
       initProfileCollectionButton(outlet);
-      initAvatarFrameTuner(outlet, user);
       return;
     }
     if (path === 'settings') return renderSettingsScreen(outlet);
