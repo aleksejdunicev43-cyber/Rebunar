@@ -4,7 +4,7 @@
  */
 const sections = {
   store: {
-    eyebrow: 'REBUNAR / MARKETPLACE',
+    eyebrow: 'REBUNAR / МАГАЗИН ИГР',
     title: 'Магазин игр',
     description: 'Место, где игроки находят проекты независимых разработчиков, а авторы публикуют свои игры и получают доход.',
     status: 'МАГАЗИН ГОТОВИТСЯ К ЗАПУСКУ',
@@ -15,8 +15,9 @@ const sections = {
     ]
   },
   studio: {
-    eyebrow: 'REBUNAR / CREATION STUDIO',
+    eyebrow: 'REBUNAR / СОЗДАНИЕ ИГР',
     title: 'Rebunar Studio',
+    subtitle: 'Студия создания игр',
     description: 'Рабочее пространство для создания игр с визуальным редактором и специализированными ИИ-инструментами.',
     status: 'СТУДИЯ — БУДУЩИЙ ЭТАП РАЗВИТИЯ',
     cards: [
@@ -26,7 +27,7 @@ const sections = {
     ]
   },
   creators: {
-    eyebrow: 'REBUNAR / CREATORS',
+    eyebrow: 'REBUNAR / ТВОРЧЕСТВО',
     title: 'Творчество',
     description: 'Пространство для авторов манхвы, вебтунов, анимации, музыки и других цифровых работ.',
     status: 'ТВОРЧЕСКИЕ ИНСТРУМЕНТЫ — В ПЛАНАХ',
@@ -37,7 +38,7 @@ const sections = {
     ]
   },
   mail: {
-    eyebrow: 'REBUNAR / GAME MAIL',
+    eyebrow: 'REBUNAR / ПОЧТА',
     title: 'Почта Rebunar',
     description: 'Отдельный ящик для важных писем от платформы: новости, события, подарки, награды и сообщения администрации.',
     status: 'ПОЧТОВЫЙ ЯЩИК — КАРКАС РАЗДЕЛА',
@@ -48,7 +49,7 @@ const sections = {
     ]
   },
   search: {
-    eyebrow: 'REBUNAR / DISCOVERY',
+    eyebrow: 'REBUNAR / ПОИСК',
     title: 'Поиск',
     description: 'Единый поиск по играм, сообществам, пользователям и творческим работам Rebunar.',
     status: 'ПОИСК БУДЕТ РАСШИРЕН',
@@ -59,7 +60,7 @@ const sections = {
     ]
   },
   notifications: {
-    eyebrow: 'REBUNAR / ACTIVITY',
+    eyebrow: 'REBUNAR / АКТИВНОСТЬ',
     title: 'Уведомления',
     description: 'Здесь будут собраны быстрые события, требующие внимания: реакции, ответы, упоминания, приглашения и новые сообщения.',
     status: 'ЦЕНТР УВЕДОМЛЕНИЙ — КАРКАС РАЗДЕЛА',
@@ -79,6 +80,7 @@ export function renderEcosystemScreen(outlet, key) {
       <header class="ecosystem-hero">
         <span class="ecosystem-eyebrow">${section.eyebrow}</span>
         <h1>${section.title}</h1>
+        ${section.subtitle ? `<h2 class="ecosystem-subtitle">${section.subtitle}</h2>` : ''}
         <p>${section.description}</p>
         <span class="ecosystem-status">${section.status}</span>
       </header>
