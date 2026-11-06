@@ -39,8 +39,6 @@ export function renderProfileScreen(container, user, onLogout) {
           type="button" aria-label="Аватар профиля">
           ${avatar}
         </button>
-        ${user.avatar ? '<button class="profile-avatar-reposition" type="button">Настроить положение фото</button>' : ''}
-
         <input class="profile-avatar-input" type="file"
           accept="image/jpeg,image/png,image/webp" hidden>
 
@@ -108,31 +106,6 @@ export function renderProfileScreen(container, user, onLogout) {
   const fileInput = container.querySelector('.profile-avatar-input');
 
   avatarButton.addEventListener('click', () => fileInput.click());
-
-  const repositionButton = container.querySelector('.profile-avatar-reposition');
-  repositionButton?.addEventListener('click', async () => {
-    repositionButton.disabled = true;
-    const originalText = repositionButton.textContent;
-    repositionButton.textContent = 'Открываем редактор...';
-    try {
-      const response = await fetch(user.avatar, {
-        credentials: 'same-origin',
-        cache: 'no-store'
-      });
-      if (!response.ok) throw new Error('Не удалось загрузить текущую фотографию');
-      const imageBlob = await response.blob();
-      if (!imageBlob.type.startsWith('image/')) {
-        throw new Error('Сервер вернул файл, который не является изображением');
-      }
-      openAvatarEditor(container, imageBlob, getUser() || user, onLogout);
-    } catch (error) {
-      console.error('Rebunar: ошибка открытия настройки положения аватара:', error);
-      showProfileToast(container, error.message || 'Не удалось открыть редактор');
-    } finally {
-      repositionButton.disabled = false;
-      repositionButton.textContent = originalText;
-    }
-  });
 
   fileInput.addEventListener('change', () => {
     const file = fileInput.files?.[0];
