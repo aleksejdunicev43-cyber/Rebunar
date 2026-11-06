@@ -73,6 +73,17 @@ jobs:
           headers = {"Authorization": f"Token {token}"}
           base = f"https://{host}/api/v0/user/{quote(username, safe='')}/files/path"
 
+          # Remove the retired circular avatar PNG directory from the live build.
+          legacy_frames_remote = f"/home/{username}/rebunar_next/frontend/build/assets/frames/"
+          cleanup_url = base + quote(legacy_frames_remote, safe="/")
+          cleanup_response = requests.delete(cleanup_url, headers=headers, timeout=60)
+          if cleanup_response.status_code not in (204, 404):
+              raise SystemExit(
+                  f"Legacy avatar frame cleanup failed: HTTP {cleanup_response.status_code} "
+                  f"{cleanup_response.text[:500]}"
+              )
+          print("Removed legacy circular avatar frame assets (or confirmed they were already absent).")
+
           def upload_with_retry(file, relative, url, index, total):
               max_attempts = 6
               for attempt in range(1, max_attempts + 1):
