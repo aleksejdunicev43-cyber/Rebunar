@@ -11,3 +11,5 @@
 .ecosystem-card p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.55; }
 .ecosystem-footnote { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
 @media (max-width: 900px) { .ecosystem-card-grid { grid-template-columns: 1fr; } }
+
+.ecosystem-subtitle { margin: -4px 0 10px; color: var(--accent); font-size: 15px; font-weight: 750; }
