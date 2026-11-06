@@ -2,7 +2,6 @@
  * REBUNAR — PROFILE STATUS / XP / ACHIEVEMENTS / CUSTOMIZATION
  */
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
-import { avatarMarkup } from '../../shared/avatar.js?v=avatar-outline-20261105-1';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
