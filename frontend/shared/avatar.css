@@ -5,7 +5,7 @@
 .rb-avatar__fallback{display:grid;width:100%;height:100%;place-items:center;color:#f4f4f5;font-size:clamp(14px,42%,28px);font-weight:900;line-height:1}
 .rb-avatar.has-photo .rb-avatar__fallback{display:none}
 .rb-avatar__frame{position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;object-fit:contain;transform:translate(var(--rb-frame-x,0%),var(--rb-frame-y,0%)) scale(var(--rb-frame-scale,1));transform-origin:center;pointer-events:none}
-.rb-avatar--header{--rb-avatar-size:52px;--rb-header-photo-diameter:52%;--rb-avatar-inset:calc((100% - var(--rb-header-photo-diameter))/2)}
+.rb-avatar--header{--rb-avatar-size:52px;--rb-avatar-inset:14%}
 .rb-avatar--profile{--rb-avatar-size:104px;--rb-avatar-inset:14%}
 .rb-avatar--chat{--rb-avatar-size:52px;--rb-avatar-inset:14%}
 .rb-avatar--message{--rb-avatar-size:42px;--rb-avatar-inset:14%}
@@ -14,20 +14,9 @@
 .rb-avatar--public{--rb-avatar-size:142px;--rb-avatar-inset:14%}
 .rb-avatar--community{--rb-avatar-size:40px;--rb-avatar-inset:14%}
 .rb-avatar--preview{--rb-avatar-size:66px;--rb-avatar-inset:14%}
-@media(max-width:480px){.rb-avatar--header{--rb-avatar-size:46px}.rb-avatar--directory{--rb-avatar-size:58px}}
+@media(max-width:480px){.rb-avatar--header{--rb-avatar-size:46px;--rb-avatar-inset:14%}.rb-avatar--directory{--rb-avatar-size:58px}}
 .rb-avatar--chat.messages-header-avatar{--rb-avatar-size:46px;flex-basis:46px;margin-right:2px}
 
 
 /* Adjustable outline around the profile photo; independent of decorative PNG frames. */
 .rb-avatar--profile .rb-avatar__photo-layer::after{content:none}
-
-
-/* Header avatar: resize and move the complete circular photo aperture; keep PNG frame fixed. */
-.header-profile-button {
-  touch-action: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.header-profile-button .rb-avatar__photo-layer {
-  will-change: transform, inset;
-}
