@@ -49,16 +49,15 @@ function updateHeaderProfile(root, user) {
 
   button.innerHTML = avatarMarkup(user || {}, { size: 'header', label: 'Мой профиль' });
   button.title = user?.display_name || user?.username || 'Мой профиль';
-  enableHeaderAvatarPhotoDrag(button);
+  enableHeaderAvatarWholeDrag(button);
 }
 
-const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-photo-position.v1';
-const HEADER_AVATAR_MAX_OFFSET = 5.5;
-const HEADER_AVATAR_BASE_SCALE = 1.35;
+const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-whole-position.v1';
+const HEADER_AVATAR_MAX_OFFSET = 120;
 
-function enableHeaderAvatarPhotoDrag(button) {
-  const photo = button.querySelector('.rb-avatar__photo');
-  if (!photo) return;
+function enableHeaderAvatarWholeDrag(button) {
+  if (button.dataset.wholeDragReady === 'true') return;
+  button.dataset.wholeDragReady = 'true';
 
   let position = { x: 0, y: 0 };
   try {
@@ -68,14 +67,9 @@ function enableHeaderAvatarPhotoDrag(button) {
   } catch {}
 
   const paint = () => {
-    const currentPhoto = button.querySelector('.rb-avatar__photo');
-    if (currentPhoto) {
-      currentPhoto.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${HEADER_AVATAR_BASE_SCALE})`;
-    }
+    button.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
   };
   paint();
-  if (button.dataset.photoDragReady === 'true') return;
-  button.dataset.photoDragReady = 'true';
 
   let pointerId = null;
   let startX = 0;
@@ -99,7 +93,7 @@ function enableHeaderAvatarPhotoDrag(button) {
     if (pointerId === null || event.pointerId !== pointerId) return;
     const dx = event.clientX - startX;
     const dy = event.clientY - startY;
-    if (!moved && Math.hypot(dx, dy) < 2) return;
+    if (!moved && Math.hypot(dx, dy) < 3) return;
     moved = true;
     event.preventDefault();
     position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originX + dx));
@@ -124,7 +118,6 @@ function enableHeaderAvatarPhotoDrag(button) {
   button.addEventListener('pointerup', finishDrag);
   button.addEventListener('pointercancel', finishDrag);
 }
-
 export function createShell(root) {
   root.innerHTML = `
     <div class="app-shell">
