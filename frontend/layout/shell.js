@@ -195,7 +195,7 @@ export function createShell(root) {
             title="Мой профиль">
             <span>Р</span>
           </button>
-          <button type="button" class="header-avatar-size-toggle" aria-label="Размер фотографии аватарки" aria-expanded="false" title="Размер фотографии">↗</button>
+          <button type="button" class="header-avatar-size-toggle" aria-label="Размер фотографии аватарки" aria-expanded="false" title="Размер фотографии"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h7M15 7h5M4 17h3M11 17h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
           <div class="header-avatar-size-panel" hidden>
             <label for="header-avatar-size-range">Размер фотографии</label>
             <input id="header-avatar-size-range" class="header-avatar-size-range" type="range" min="20" max="75" step="1" value="52">
