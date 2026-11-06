@@ -49,138 +49,6 @@ function updateHeaderProfile(root, user) {
 
   button.innerHTML = avatarMarkup(user || {}, { size: 'header', label: 'Мой профиль' });
   button.title = user?.display_name || user?.username || 'Мой профиль';
-  applySavedHeaderPhotoSize(button);
-  enableHeaderAvatarPhotoDrag(button);
-}
-
-const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-circle-position.v2';
-const HEADER_AVATAR_MAX_OFFSET = 18;
-const HEADER_PHOTO_SIZE_KEY = 'rebunar.header-avatar-photo-diameter.v1';
-const HEADER_PHOTO_SIZE_MIN = 20;
-const HEADER_PHOTO_SIZE_MAX = 75;
-
-function applySavedHeaderPhotoSize(root) {
-  const avatar = root.querySelector('.rb-avatar--header');
-  if (!avatar) return;
-  let diameter = 52;
-  try {
-    const saved = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
-    if (Number.isFinite(saved) && saved >= HEADER_PHOTO_SIZE_MIN && saved <= HEADER_PHOTO_SIZE_MAX) diameter = saved;
-  } catch {}
-  const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
-  if (photoLayer) {
-    photoLayer.style.inset = ((100 - diameter) / 2) + '%';
-  }
-}
-
-function setHeaderPhotoDiameter(value, root = document) {
-  const diameter = Math.max(HEADER_PHOTO_SIZE_MIN, Math.min(HEADER_PHOTO_SIZE_MAX, Number(value) || 52));
-  try { localStorage.setItem(HEADER_PHOTO_SIZE_KEY, String(diameter)); } catch {}
-  root.querySelectorAll('.rb-avatar--header').forEach(avatar => {
-    const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
-    if (!photoLayer) return;
-    photoLayer.style.inset = ((100 - diameter) / 2) + '%';
-  });
-  const range = root.querySelector('.header-avatar-size-range');
-  const label = root.querySelector('.header-avatar-size-value');
-  if (range) range.value = String(diameter);
-  if (label) label.textContent = diameter + '%';
-}
-
-function setupHeaderPhotoSizeControl(root) {
-  const toggle = root.querySelector('.header-avatar-size-toggle');
-  const panel = root.querySelector('.header-avatar-size-panel');
-  const range = root.querySelector('.header-avatar-size-range');
-  if (!toggle || !panel || !range || toggle.dataset.ready === 'true') return;
-  toggle.dataset.ready = 'true';
-  let initial = 52;
-  try {
-    const saved = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
-    if (Number.isFinite(saved) && saved >= HEADER_PHOTO_SIZE_MIN && saved <= HEADER_PHOTO_SIZE_MAX) initial = saved;
-  } catch {}
-  setHeaderPhotoDiameter(initial, root);
-  toggle.addEventListener('click', event => {
-    event.preventDefault();
-    event.stopPropagation();
-    const opening = panel.hidden;
-    panel.hidden = !opening;
-    toggle.setAttribute('aria-expanded', String(opening));
-  });
-  range.addEventListener('input', () => setHeaderPhotoDiameter(range.value, root));
-  document.addEventListener('pointerdown', event => {
-    if (panel.hidden || panel.contains(event.target) || toggle.contains(event.target)) return;
-    panel.hidden = true;
-    toggle.setAttribute('aria-expanded', 'false');
-  });
-}
-
-function enableHeaderAvatarPhotoDrag(button) {
-  const photoLayer = button.querySelector('.rb-avatar__photo-layer');
-  if (!photoLayer) return;
-
-  let position = { x: 0, y: 0 };
-  try {
-    const saved = JSON.parse(localStorage.getItem(HEADER_AVATAR_POSITION_KEY) || '{}');
-    position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, Number(saved.x) || 0));
-    position.y = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, Number(saved.y) || 0));
-  } catch {}
-
-  const paint = () => {
-    const currentPhotoLayer = button.querySelector('.rb-avatar__photo-layer');
-    if (currentPhotoLayer) {
-      currentPhotoLayer.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
-    }
-  };
-  paint();
-  if (button.dataset.photoDragReady === 'true') return;
-  button.dataset.photoDragReady = 'true';
-
-  let pointerId = null;
-  let startX = 0;
-  let startY = 0;
-  let originX = 0;
-  let originY = 0;
-  let moved = false;
-
-  button.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    originX = position.x;
-    originY = position.y;
-    moved = false;
-    button.setPointerCapture?.(pointerId);
-  });
-
-  button.addEventListener('pointermove', event => {
-    if (pointerId === null || event.pointerId !== pointerId) return;
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    if (!moved && Math.hypot(dx, dy) < 2) return;
-    moved = true;
-    event.preventDefault();
-    position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originX + dx));
-    position.y = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originY + dy));
-    paint();
-  });
-
-  const finishDrag = event => {
-    if (pointerId === null || event.pointerId !== pointerId) return;
-    if (moved) {
-      try {
-        localStorage.setItem(HEADER_AVATAR_POSITION_KEY, JSON.stringify(position));
-      } catch {}
-      button.addEventListener('click', click => {
-        click.preventDefault();
-        click.stopImmediatePropagation();
-      }, { capture: true, once: true });
-    }
-    pointerId = null;
-  };
-
-  button.addEventListener('pointerup', finishDrag);
-  button.addEventListener('pointercancel', finishDrag);
 }
 
 export function createShell(root) {
@@ -195,14 +63,8 @@ export function createShell(root) {
             data-route="profile"
             aria-label="Мой профиль"
             title="Мой профиль">
-            <span>Р</span>
+            <span>R</span>
           </button>
-          <button type="button" class="header-avatar-size-toggle" aria-label="Размер фотографии аватарки" aria-expanded="false" title="Размер фотографии"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h7M15 7h5M4 17h3M11 17h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
-          <div class="header-avatar-size-panel" hidden>
-            <label for="header-avatar-size-range">Размер фотографии</label>
-            <input id="header-avatar-size-range" class="header-avatar-size-range" type="range" min="20" max="75" step="1" value="52">
-            <output class="header-avatar-size-value">52%</output>
-          </div>
         </div>
 
         <div class="app-logo-image-wrap" aria-label="REBUNAR">
@@ -264,7 +126,6 @@ export function createShell(root) {
     </div>
   `;
 
-  setupHeaderPhotoSizeControl(root);
   updateHeaderProfile(root, getUser());
 
   root.__rebunarHeaderAuthUnsubscribe?.();
