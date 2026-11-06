@@ -75,6 +75,17 @@ def init_db():
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """)
+
+        # Remove legacy circular-avatar frame data from existing installations.
+        con.execute("DROP TABLE IF EXISTS user_avatar_frames")
+        progress_columns = {row[1] for row in con.execute("PRAGMA table_info(profile_progress)")}
+        if "equipped_frame" in progress_columns:
+            try:
+                con.execute("ALTER TABLE profile_progress DROP COLUMN equipped_frame")
+            except sqlite3.OperationalError:
+                pass
+        if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='app_settings'").fetchone():
+            con.execute("DELETE FROM app_settings WHERE setting_key = 'avatar_frame_tuning'")
         con.execute("""
             CREATE TABLE IF NOT EXISTS communities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
