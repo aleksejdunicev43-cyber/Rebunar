@@ -52,13 +52,12 @@ function updateHeaderProfile(root, user) {
   enableHeaderAvatarPhotoDrag(button);
 }
 
-const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-photo-position.v1';
+const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-circle-position.v2';
 const HEADER_AVATAR_MAX_OFFSET = 18;
-const HEADER_AVATAR_BASE_SCALE = 1.35;
 
 function enableHeaderAvatarPhotoDrag(button) {
-  const photo = button.querySelector('.rb-avatar__photo');
-  if (!photo) return;
+  const photoLayer = button.querySelector('.rb-avatar__photo-layer');
+  if (!photoLayer) return;
 
   let position = { x: 0, y: 0 };
   try {
@@ -68,9 +67,9 @@ function enableHeaderAvatarPhotoDrag(button) {
   } catch {}
 
   const paint = () => {
-    const currentPhoto = button.querySelector('.rb-avatar__photo');
-    if (currentPhoto) {
-      currentPhoto.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${HEADER_AVATAR_BASE_SCALE})`;
+    const currentLayer = button.querySelector('.rb-avatar__photo-layer');
+    if (currentLayer) {
+      currentLayer.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
     }
   };
   paint();
