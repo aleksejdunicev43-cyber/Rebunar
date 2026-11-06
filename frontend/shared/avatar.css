@@ -22,12 +22,12 @@
 .rb-avatar--profile .rb-avatar__photo-layer::after{content:none}
 
 
-/* Header avatar: move the complete circular photo layer under the fixed PNG frame. */
+/* Header avatar: keep the clipping circle and PNG frame fixed; adjust the photo itself. */
 .header-profile-button {
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
 }
-.header-profile-button .rb-avatar__photo-layer {
+.header-profile-button .rb-avatar__photo {
   will-change: transform;
 }
