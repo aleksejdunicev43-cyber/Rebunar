@@ -58,7 +58,6 @@ export async function renderUserProfileScreen(container, params = {}) {
           display_name: user.display_name || user.username,
           username: user.username,
           avatar: user.avatar || '',
-          equipped_frame: user.equipped_frame || 'none'
         }
       });
     });
