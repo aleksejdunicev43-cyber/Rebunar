@@ -100,12 +100,21 @@ export function createShell(root) {
       <div class="app-layout">
 
         <aside class="sidebar">
-          <nav class="main-navigation">
-            <button type="button" data-route="home">Главная</button>
-            ${favoritesButton()}
-            <button type="button" data-route="games">Игры</button>
-            <button type="button" data-route="communities">Сообщества</button>
-            ${chatButton()}
+          <nav class="main-navigation" aria-label="Основная навигация">
+            <div class="nav-group">
+              <span class="nav-group-title">ПЛАТФОРМА</span>
+              <button type="button" data-route="home">Главная</button>
+              <button type="button" data-route="store">Магазин</button>
+              <button type="button" data-route="games">Игровой центр</button>
+              <button type="button" data-route="communities">Сообщества</button>
+              ${chatButton()}
+              ${favoritesButton()}
+            </div>
+            <div class="nav-group">
+              <span class="nav-group-title">СОЗДАНИЕ</span>
+              <button type="button" data-route="studio">Rebunar Studio</button>
+              <button type="button" data-route="creators">Творчество</button>
+            </div>
           </nav>
         </aside>
 
@@ -117,10 +126,10 @@ export function createShell(root) {
 
       </div>
 
-      <nav class="mobile-navigation">
+      <nav class="mobile-navigation" aria-label="Быстрая навигация">
         <button type="button" data-route="home">Главная</button>
-        ${favoritesButton()}
-        <button type="button" data-route="games">Игры</button>
+        <button type="button" data-route="store">Магазин</button>
+        <button type="button" data-route="studio">Studio</button>
         <button type="button" data-route="communities">Сообщества</button>
         ${chatButton()}
       </nav>
