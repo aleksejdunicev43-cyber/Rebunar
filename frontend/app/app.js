@@ -3,7 +3,7 @@
  */
 
 import { registerRoute, navigate, initRouter, subscribeToRoute } from './router.js';
-import { createShell } from '../layout/shell.js?v=avatar-outline-20261105-1';
+import { createShell } from '../layout/shell.js?v=boot-preload-20261106-1';
 import { initNavigation } from '../layout/navigation.js';
 import { initializeAuth, getUser, clearUser } from '../features/auth/session.js';
 import { renderAuthScreen } from '../features/auth/view.js';
@@ -34,6 +34,71 @@ import { disconnectMatrix } from '../infrastructure/matrix/client.js';
 
 const root = document.getElementById('app');
 if (!root) throw new Error('Rebunar: элемент #app не найден');
+
+// Keep the first-paint splash outside #app so the real interface can be mounted
+// underneath it without exposing partially loaded header images or avatars.
+let bootScreen = root.querySelector('.rebunar-boot');
+if (bootScreen) document.body.appendChild(bootScreen);
+
+function createBootScreen() {
+  const screen = document.createElement('section');
+  screen.className = 'rebunar-boot';
+  screen.setAttribute('role', 'status');
+  screen.setAttribute('aria-live', 'polite');
+  screen.innerHTML = '<div class="rebunar-boot-content"><div class="rebunar-boot-mark">REBUNAR</div><div class="rebunar-boot-line" aria-hidden="true"></div><div class="rebunar-boot-caption">ЗАГРУЗКА ПРИЛОЖЕНИЯ</div></div>';
+  document.body.appendChild(screen);
+  return screen;
+}
+
+function preloadImage(url) {
+  if (!url) return Promise.resolve();
+  return new Promise(resolve => {
+    const image = new Image();
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timeout);
+      resolve();
+    };
+    const timeout = setTimeout(finish, 2200);
+    image.onload = () => {
+      Promise.resolve(image.decode?.()).catch(() => {}).finally(finish);
+    };
+    image.onerror = finish;
+    image.src = url;
+    if (image.complete) {
+      if (image.naturalWidth > 0) {
+        Promise.resolve(image.decode?.()).catch(() => {}).finally(finish);
+      } else {
+        finish();
+      }
+    }
+  });
+}
+
+function waitForInitialPaint() {
+  return new Promise(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+async function finishBoot(user) {
+  if (!bootScreen) return;
+  const fontReady = document.fonts?.ready || Promise.resolve();
+  await Promise.allSettled([
+    preloadImage('/new/build/rebunar-header.png'),
+    preloadImage(user?.avatar),
+    Promise.race([fontReady, new Promise(resolve => setTimeout(resolve, 1200))])
+  ]);
+  await waitForInitialPaint();
+  const screen = bootScreen;
+  screen.classList.add('is-leaving');
+  setTimeout(() => {
+    screen.remove();
+    if (bootScreen === screen) bootScreen = null;
+  }, 300);
+}
 
 const screens = { home:'Главная', favorites:'Избранное', games:'Игры', communities:'Сообщества', messages:'Сообщения', profile:'Профиль', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
 
@@ -71,7 +136,7 @@ async function handleLogout(event) {
   try {
     await logout();
     try { await disconnectMatrix(); } catch { console.warn('Rebunar: Matrix-соединение не удалось остановить'); }
-    clearUser(); initializeTheme(null); appStarted = false; renderAuthScreen(root, mountApp);
+    clearUser(); initializeTheme(null); appStarted = false; renderAuthScreen(root, enterApp);
   } catch (error) {
     startPresence();
     if (button) { button.disabled = false; button.textContent = 'Выйти из аккаунта'; }
@@ -87,16 +152,24 @@ function mountApp() {
   if (!routerInitialized) { initRouter('home'); routerInitialized = true; } else navigate('home');
 }
 
+function enterApp() {
+  if (!bootScreen) bootScreen = createBootScreen();
+  mountApp();
+  finishBoot(getUser());
+}
+
 async function startApp() {
-  root.innerHTML = `<section class="rebunar-splash" role="status" aria-live="polite"><div class="rebunar-splash-content"><div class="rebunar-splash-mark">REBUNAR</div><div class="rebunar-splash-line" aria-hidden="true"></div><div class="rebunar-splash-caption">ВОЗВРАЩАЕМ ТВОЙ МИР</div></div></section>`;
-  await initializeAuth(); initializeTheme(getUser());
+  await initializeAuth();
+  initializeTheme(getUser());
   if (getUser()) {
     mountApp();
+    await finishBoot(getUser());
     if (new URLSearchParams(window.location.search).has('loginToken')) completeMatrixConnection().catch(() => {});
     return;
   }
   try { consumeMatrixSsoCallback(); } catch {}
-  renderAuthScreen(root, mountApp);
+  renderAuthScreen(root, enterApp);
+  await finishBoot(null);
 }
 
 startApp();

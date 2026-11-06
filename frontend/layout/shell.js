@@ -48,6 +48,8 @@ function updateHeaderProfile(root, user) {
   if (!button) return;
 
   button.innerHTML = avatarMarkup(user || {}, { size: 'header', label: 'Мой профиль' });
+  const photo = button.querySelector('.rb-avatar__photo');
+  if (photo) { photo.loading = 'eager'; photo.fetchPriority = 'high'; }
   button.title = user?.display_name || user?.username || 'Мой профиль';
 }
 
