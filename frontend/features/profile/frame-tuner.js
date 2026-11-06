@@ -75,6 +75,10 @@ function injectStyles() {
 }
 
 export function initAvatarFrameTuner(container, user) {
+  // Keep the editor and all saved tuning logic for future frames, but lock its UI for now.
+  // Re-enable by changing this flag to true when new avatar frames are ready.
+  const FRAME_TUNER_ENABLED = false;
+  if (!FRAME_TUNER_ENABLED) return;
   // This editor only changes local browser settings, so it is safe to expose on the profile.
   if (container.querySelector('.rb-frame-tuner-trigger')) return;
   injectStyles();
