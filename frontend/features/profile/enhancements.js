@@ -2,8 +2,6 @@
  * REBUNAR — PROFILE STATUS / XP / ACHIEVEMENTS / CUSTOMIZATION
  */
 import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
-import { fetchAvatarFrames, equipAvatarFrame } from './frames.js';
-import { getUser, setUser } from '../auth/session.js';
 import { avatarMarkup } from '../../shared/avatar.js?v=avatar-outline-20261105-1';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
@@ -75,7 +73,6 @@ export function enhanceProfileScreen(container, user) {
     </div>
     <div class="profile-locked-customization" aria-label="Будущие возможности персонализации"><button class="profile-locked-option" type="button" disabled aria-disabled="true"><span aria-hidden="true">🔒</span> Загрузить свой арт</button><button class="profile-locked-option" type="button" disabled aria-disabled="true"><span aria-hidden="true">🔒</span> Авторская аниме-обложка</button></div>`;
   details.appendChild(customization);
-  renderAvatarFrameCollection(container, customization, user);
   customization.querySelectorAll('[data-profile-theme]').forEach(button => {
     button.addEventListener('click', () => {
       applyTheme(button.dataset.profileTheme);
@@ -91,142 +88,6 @@ export function enhanceProfileScreen(container, user) {
   });
 }
 
-
-async function renderAvatarFrameCollection(container, customization, user) {
-  const section = document.createElement('section');
-  section.className = 'profile-frame-collection';
-  section.innerHTML = `
-    <div class="profile-feature-heading">
-      <div><span class="profile-feature-kicker">Коллекция</span><strong>Рамки аватара</strong></div>
-      <span class="profile-customization-symbol" aria-hidden="true">◈</span>
-    </div>
-    <p class="profile-customization-description">Выбирай одну из 13 новых рамок или оставь аватар без рамки.</p>
-    <div class="profile-frame-progress" aria-live="polite">Загружаем коллекцию…</div>
-    <div class="profile-frame-grid"></div>
-    <p class="profile-frame-footnote">Все 13 рамок доступны каждому участнику Rebunar.</p>
-  `;
-  customization.appendChild(section);
-
-  try {
-    const state = await fetchAvatarFrames();
-    syncEquippedFrame(user, state.equipped || 'none');
-    const progress = section.querySelector('.profile-frame-progress');
-    const grid = section.querySelector('.profile-frame-grid');
-    const avatarButton = container.querySelector('.profile-avatar-button');
-
-    progress.innerHTML = `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
-    const xpCard = container.querySelector('.profile-xp-card');
-    if (xpCard) {
-      const levelTitle = xpCard.querySelector('.profile-feature-heading strong');
-      const xpValue = xpCard.querySelector('.profile-xp-value');
-      const xpFill = xpCard.querySelector('.profile-xp-fill');
-      const xpTrack = xpCard.querySelector('[role="progressbar"]');
-      const currentXp = Number(state.xp) || 0;
-      const xpNeeded = Number(state.xp_to_next) || 100;
-      if (levelTitle) levelTitle.textContent = 'Уровень ' + (Number(state.level) || 1);
-      if (xpValue) xpValue.textContent = currentXp + ' / ' + xpNeeded + ' XP';
-      if (xpFill) xpFill.style.width = Math.min(100, currentXp / xpNeeded * 100) + '%';
-      if (xpTrack) xpTrack.setAttribute('aria-valuenow', String(currentXp));
-    }
-    if (avatarButton) {
-      setAvatarFrameArtwork(avatarButton, state.equipped || 'none', user);
-    }
-
-    const orderedFrames = getOrderedAvatarFrames(state);
-    grid.innerHTML = orderedFrames.map(frame => {
-      const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
-      const equipped = Boolean(frame.equipped);
-      return `
-        <button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}"
-          data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''}
-          aria-pressed="${equipped}" title="${escapeHTML(frame.description)}">
-          <span class="profile-frame-preview">${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span>
-          <span class="profile-frame-name">${escapeHTML(frame.name)}</span>
-          <span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span>
-          <span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span>
-        </button>`;
-    }).join('');
-    grid.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
-      const frame = orderedFrames[index];
-      if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (isAvatarFrameUnlocked(frame) ? '' : '<span class="profile-frame-lock">🔒</span>');
-    });
-
-    grid.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
-      button.addEventListener('click', async () => {
-        if (button.classList.contains('is-equipped')) return;
-        button.disabled = true;
-        try {
-          const updated = await equipAvatarFrame(button.dataset.frameId);
-          renderFrameState(container, section, updated, user);
-        } catch (error) {
-          showProfileToast(container, error.message || 'Не удалось надеть рамку');
-          button.disabled = false;
-        }
-      });
-    });
-  } catch (error) {
-    section.querySelector('.profile-frame-progress').textContent =
-      error.message || 'Не удалось загрузить коллекцию рамок';
-  }
-}
-
-function renderFrameState(container, section, state, user) {
-  syncEquippedFrame(user, state.equipped || 'none');
-  const avatarButton = container.querySelector('.profile-avatar-button');
-  if (avatarButton) {
-    setAvatarFrameArtwork(avatarButton, state.equipped || 'none', user);
-  }
-  section.querySelector('.profile-frame-progress').innerHTML =
-    `<strong>Уровень ${Number(state.level) || 1}</strong><span>${Number(state.xp) || 0} / ${Number(state.xp_to_next) || 100} XP</span>`;
-  const orderedFrames = getOrderedAvatarFrames(state);
-  section.querySelector('.profile-frame-grid').innerHTML = orderedFrames.map(frame => {
-    const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
-    const equipped = Boolean(frame.equipped);
-    return `<button type="button" class="profile-frame-item rarity-${escapeHTML(frame.rarity.toLowerCase())}${unlocked ? '' : ' is-locked'}${equipped ? ' is-equipped is-equipped-disabled' : ''}" data-frame-id="${escapeHTML(frame.id)}" ${!unlocked || equipped ? 'disabled' : ''} aria-pressed="${equipped}" title="${escapeHTML(frame.description)}"><span class="profile-frame-preview">${unlocked ? '' : '<span class="profile-frame-lock">🔒</span>'}</span><span class="profile-frame-name">${escapeHTML(frame.name)}</span><span class="profile-frame-rarity">${escapeHTML(frame.rarity)}</span><span class="profile-frame-level">${unlocked ? (equipped ? 'Надето' : 'Надеть') : 'Уровень ' + Number(frame.level)}</span></button>`;
-  }).join('');
-  section.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
-    const frame = orderedFrames[index];
-    if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (isAvatarFrameUnlocked(frame) ? '' : '<span class="profile-frame-lock">🔒</span>');
-  });
-  section.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
-    button.addEventListener('click', async () => {
-      if (button.classList.contains('is-equipped')) return;
-      button.disabled = true;
-      try { renderFrameState(container, section, await equipAvatarFrame(button.dataset.frameId), user); }
-      catch (error) { showProfileToast(container, error.message || 'Не удалось надеть рамку'); button.disabled = false; }
-    });
-  });
-}
-
-
-function getOrderedAvatarFrames(state) {
-  const frames = Array.isArray(state?.frames) ? [...state.frames] : [];
-  return frames.sort((a, b) => {
-    if (a.id === 'none') return -1;
-    if (b.id === 'none') return 1;
-    return 0;
-  });
-}
-
-function isAvatarFrameUnlocked(frame) {
-  return frame?.id === 'none' || Boolean(frame?.unlocked);
-}
-
-function syncEquippedFrame(user, frameId) {
-  const current = getUser();
-  if (current && Number(current.id) === Number(user?.id)) {
-    setUser({ ...current, equipped_frame: frameId });
-  }
-}
-
-function framePreviewMarkup(frame, user) {
-  return avatarMarkup({ ...user, equipped_frame: frame.id }, { size: 'preview' });
-}
-
-function setAvatarFrameArtwork(button, frameId, user = getUser()) {
-  if (!button) return;
-  button.innerHTML = avatarMarkup({ ...user, equipped_frame: frameId }, { size: 'profile', label: 'Аватар профиля' });
-}
 
 function openFounderAchievement(container) {
   if (container.querySelector('.profile-achievement-overlay')) return;
