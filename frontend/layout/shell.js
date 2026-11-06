@@ -66,12 +66,17 @@ function applySavedHeaderPhotoSize(root) {
     if (Number.isFinite(saved) && saved >= 35 && saved <= 75) diameter = saved;
   } catch {}
   avatar.style.setProperty('--rb-header-photo-diameter', diameter + '%');
+  const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
+  if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
 }
 
 if (typeof window !== 'undefined') {
   window.addEventListener('rebunar:header-avatar-size-updated', event => {
     document.querySelectorAll('.rb-avatar--header').forEach(avatar => {
-      avatar.style.setProperty('--rb-header-photo-diameter', event.detail + '%');
+      const diameter = Math.max(35, Math.min(75, Number(event.detail) || 52));
+      avatar.style.setProperty('--rb-header-photo-diameter', diameter + '%');
+      const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
+      if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
     });
   });
 }
