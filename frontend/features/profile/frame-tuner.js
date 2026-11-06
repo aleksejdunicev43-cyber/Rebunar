@@ -206,7 +206,8 @@ function openTuner(container, user) {
     if (previewPhoto) previewPhoto.style.inset = photoInset;
     document.querySelectorAll('.rb-avatar--header').forEach(avatar => {
       avatar.style.setProperty('--rb-header-photo-diameter', headerPhotoDiameter + '%');
-      avatar.style.setProperty('--rb-avatar-inset', photoInset);
+      const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
+      if (photoLayer) photoLayer.style.inset = photoInset;
     });
     window.dispatchEvent(new CustomEvent('rebunar:header-avatar-size-updated', { detail: headerPhotoDiameter }));
   }
