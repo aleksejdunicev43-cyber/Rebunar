@@ -50,11 +50,8 @@ function updateHeaderProfile(root, user) {
   button.innerHTML = avatarMarkup(user || {}, { size: 'header', label: 'Мой профиль' });
   button.title = user?.display_name || user?.username || 'Мой профиль';
   applySavedHeaderPhotoSize(button);
-  enableHeaderAvatarPhotoDrag(button);
 }
 
-const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-circle-position.v2';
-const HEADER_AVATAR_MAX_OFFSET = 18;
 const HEADER_PHOTO_SIZE_KEY = 'rebunar.header-avatar-photo-diameter.v1';
 const HEADER_PHOTO_SIZE_MIN = 20;
 const HEADER_PHOTO_SIZE_MAX = 75;
@@ -69,7 +66,10 @@ function applySavedHeaderPhotoSize(root) {
   } catch {}
   avatar.style.setProperty('--rb-header-photo-diameter', diameter + '%');
   const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
-  if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
+  if (photoLayer) {
+    photoLayer.style.inset = ((100 - diameter) / 2) + '%';
+    photoLayer.style.transform = 'none';
+  }
 }
 
 function setHeaderPhotoDiameter(value, root = document) {
@@ -77,7 +77,10 @@ function setHeaderPhotoDiameter(value, root = document) {
   try { localStorage.setItem(HEADER_PHOTO_SIZE_KEY, String(diameter)); } catch {}
   root.querySelectorAll('.rb-avatar--header').forEach(avatar => {
     const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
-    if (photoLayer) photoLayer.style.inset = ((100 - diameter) / 2) + '%';
+    if (photoLayer) {
+      photoLayer.style.inset = ((100 - diameter) / 2) + '%';
+      photoLayer.style.transform = 'none';
+    }
   });
   const range = root.querySelector('.header-avatar-size-range');
   const label = root.querySelector('.header-avatar-size-value');
@@ -110,75 +113,6 @@ function setupHeaderPhotoSizeControl(root) {
     panel.hidden = true;
     toggle.setAttribute('aria-expanded', 'false');
   });
-}
-
-function enableHeaderAvatarPhotoDrag(button) {
-  const photoLayer = button.querySelector('.rb-avatar__photo-layer');
-  if (!photoLayer) return;
-
-  let position = { x: 0, y: 0 };
-  try {
-    const saved = JSON.parse(localStorage.getItem(HEADER_AVATAR_POSITION_KEY) || '{}');
-    position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, Number(saved.x) || 0));
-    position.y = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, Number(saved.y) || 0));
-  } catch {}
-
-  const paint = () => {
-    const currentLayer = button.querySelector('.rb-avatar__photo-layer');
-    if (currentLayer) {
-      currentLayer.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
-    }
-  };
-  paint();
-  if (button.dataset.photoDragReady === 'true') return;
-  button.dataset.photoDragReady = 'true';
-
-  let pointerId = null;
-  let startX = 0;
-  let startY = 0;
-  let originX = 0;
-  let originY = 0;
-  let moved = false;
-
-  button.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    originX = position.x;
-    originY = position.y;
-    moved = false;
-    button.setPointerCapture?.(pointerId);
-  });
-
-  button.addEventListener('pointermove', event => {
-    if (pointerId === null || event.pointerId !== pointerId) return;
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    if (!moved && Math.hypot(dx, dy) < 2) return;
-    moved = true;
-    event.preventDefault();
-    position.x = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originX + dx));
-    position.y = Math.max(-HEADER_AVATAR_MAX_OFFSET, Math.min(HEADER_AVATAR_MAX_OFFSET, originY + dy));
-    paint();
-  });
-
-  const finishDrag = event => {
-    if (pointerId === null || event.pointerId !== pointerId) return;
-    if (moved) {
-      try {
-        localStorage.setItem(HEADER_AVATAR_POSITION_KEY, JSON.stringify(position));
-      } catch {}
-      button.addEventListener('click', click => {
-        click.preventDefault();
-        click.stopImmediatePropagation();
-      }, { capture: true, once: true });
-    }
-    pointerId = null;
-  };
-
-  button.addEventListener('pointerup', finishDrag);
-  button.addEventListener('pointercancel', finishDrag);
 }
 
 export function createShell(root) {
