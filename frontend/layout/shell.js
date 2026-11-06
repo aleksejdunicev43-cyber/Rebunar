@@ -53,15 +53,14 @@ function updateHeaderProfile(root, user) {
 }
 
 const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-photo-position.v1';
-const HEADER_AVATAR_MAX_OFFSET = 8;
+const HEADER_AVATAR_MAX_OFFSET = 5.5;
 const HEADER_AVATAR_BASE_SCALE = 1.35;
 
 function enableHeaderAvatarPhotoDrag(button) {
   if (button.dataset.photoDragReady === 'true') return;
-  button.dataset.photoDragReady = 'true';
-
   const photo = button.querySelector('.rb-avatar__photo');
   if (!photo) return;
+  button.dataset.photoDragReady = 'true';
 
   let position = { x: 0, y: 0 };
   try {
@@ -81,7 +80,6 @@ function enableHeaderAvatarPhotoDrag(button) {
   let originX = 0;
   let originY = 0;
   let moved = false;
-  let suppressClick = false;
 
   button.addEventListener('pointerdown', event => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -112,7 +110,6 @@ function enableHeaderAvatarPhotoDrag(button) {
       try {
         localStorage.setItem(HEADER_AVATAR_POSITION_KEY, JSON.stringify(position));
       } catch {}
-      suppressClick = true;
       button.addEventListener('click', click => {
         click.preventDefault();
         click.stopImmediatePropagation();
