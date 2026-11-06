@@ -67,11 +67,9 @@ function applySavedHeaderPhotoSize(root) {
     const saved = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
     if (Number.isFinite(saved) && saved >= HEADER_PHOTO_SIZE_MIN && saved <= HEADER_PHOTO_SIZE_MAX) diameter = saved;
   } catch {}
-  const photo = avatar.querySelector('.rb-avatar__photo');
-  if (photo) {
-    const imageSize = (diameter / 52) * 100;
-    photo.style.width = imageSize + '%';
-    photo.style.height = imageSize + '%';
+  const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
+  if (photoLayer) {
+    photoLayer.style.inset = ((100 - diameter) / 2) + '%';
   }
 }
 
@@ -79,11 +77,9 @@ function setHeaderPhotoDiameter(value, root = document) {
   const diameter = Math.max(HEADER_PHOTO_SIZE_MIN, Math.min(HEADER_PHOTO_SIZE_MAX, Number(value) || 52));
   try { localStorage.setItem(HEADER_PHOTO_SIZE_KEY, String(diameter)); } catch {}
   root.querySelectorAll('.rb-avatar--header').forEach(avatar => {
-    const photo = avatar.querySelector('.rb-avatar__photo');
-    if (!photo) return;
-    const imageSize = (diameter / 52) * 100;
-    photo.style.width = imageSize + '%';
-    photo.style.height = imageSize + '%';
+    const photoLayer = avatar.querySelector('.rb-avatar__photo-layer');
+    if (!photoLayer) return;
+    photoLayer.style.inset = ((100 - diameter) / 2) + '%';
   });
   const range = root.querySelector('.header-avatar-size-range');
   const label = root.querySelector('.header-avatar-size-value');
@@ -119,8 +115,8 @@ function setupHeaderPhotoSizeControl(root) {
 }
 
 function enableHeaderAvatarPhotoDrag(button) {
-  const photo = button.querySelector('.rb-avatar__photo');
-  if (!photo) return;
+  const photoLayer = button.querySelector('.rb-avatar__photo-layer');
+  if (!photoLayer) return;
 
   let position = { x: 0, y: 0 };
   try {
@@ -130,9 +126,9 @@ function enableHeaderAvatarPhotoDrag(button) {
   } catch {}
 
   const paint = () => {
-    const currentPhoto = button.querySelector('.rb-avatar__photo');
-    if (currentPhoto) {
-      currentPhoto.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
+    const currentPhotoLayer = button.querySelector('.rb-avatar__photo-layer');
+    if (currentPhotoLayer) {
+      currentPhotoLayer.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
     }
   };
   paint();
