@@ -22,10 +22,13 @@
 .rb-avatar--profile .rb-avatar__photo-layer::after{content:none}
 
 
-/* Header avatar: drag the entire avatar (photo and PNG frame) as one element. */
+/* Header avatar: move only the photo; keep its PNG frame fixed. */
 .header-profile-button {
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
+}
+.header-profile-button .rb-avatar__photo {
+  transform-origin: center;
   will-change: transform;
 }
