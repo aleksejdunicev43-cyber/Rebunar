@@ -49,11 +49,32 @@ function updateHeaderProfile(root, user) {
 
   button.innerHTML = avatarMarkup(user || {}, { size: 'header', label: 'Мой профиль' });
   button.title = user?.display_name || user?.username || 'Мой профиль';
+  applySavedHeaderPhotoSize(button);
   enableHeaderAvatarPhotoDrag(button);
 }
 
 const HEADER_AVATAR_POSITION_KEY = 'rebunar.header-avatar-circle-position.v2';
 const HEADER_AVATAR_MAX_OFFSET = 18;
+const HEADER_PHOTO_SIZE_KEY = 'rebunar.header-avatar-photo-diameter.v1';
+
+function applySavedHeaderPhotoSize(root) {
+  const avatar = root.querySelector('.rb-avatar--header');
+  if (!avatar) return;
+  let diameter = 52;
+  try {
+    const saved = Number(localStorage.getItem(HEADER_PHOTO_SIZE_KEY));
+    if (Number.isFinite(saved) && saved >= 35 && saved <= 75) diameter = saved;
+  } catch {}
+  avatar.style.setProperty('--rb-header-photo-diameter', diameter + '%');
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('rebunar:header-avatar-size-updated', event => {
+    document.querySelectorAll('.rb-avatar--header').forEach(avatar => {
+      avatar.style.setProperty('--rb-header-photo-diameter', event.detail + '%');
+    });
+  });
+}
 
 function enableHeaderAvatarPhotoDrag(button) {
   const photoLayer = button.querySelector('.rb-avatar__photo-layer');
