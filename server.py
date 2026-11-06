@@ -1284,7 +1284,7 @@ def message_history():
                 m.{time_column} AS created_at,
                 u.username,
                 u.display_name,
-                u.avatar,
+                u.avatar
             FROM messages m
             JOIN users u ON u.id = m.sender_id
             WHERE
