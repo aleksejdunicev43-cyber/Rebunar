@@ -1217,8 +1217,8 @@ def message_chats():
             "username": row[1],
             "display_name": row[2] or row[1],
             "avatar": row[3] or "",
-            "last_message": row[5],
-            "created_at": row[6]
+            "last_message": row[4],
+            "created_at": row[5]
         }
         for row in rows
     ])
