@@ -132,7 +132,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
       setAvatarFrameArtwork(avatarButton, state.equipped || 'none', user);
     }
 
-    grid.innerHTML = (state.frames || []).map(frame => {
+    grid.innerHTML = getOrderedAvatarFrames(state).map(frame => {
       const unlocked = frame.id === 'none' || Boolean(frame.unlocked);
       const equipped = Boolean(frame.equipped);
       return `
@@ -147,7 +147,7 @@ async function renderAvatarFrameCollection(container, customization, user) {
     }).join('');
     grid.querySelectorAll('.profile-frame-preview').forEach((preview, index) => {
       const frame = (state.frames || [])[index];
-      if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (frame.unlocked ? '' : '<span class="profile-frame-lock">🔒</span>');
+      if (frame) preview.innerHTML = framePreviewMarkup(frame, user) + (isAvatarFrameUnlocked(frame) ? '' : '<span class="profile-frame-lock">🔒</span>');
     });
 
     grid.querySelectorAll('[data-frame-id]:not(:disabled)').forEach(button => {
@@ -196,6 +196,19 @@ function renderFrameState(container, section, state, user) {
   });
 }
 
+
+function getOrderedAvatarFrames(state) {
+  const frames = Array.isArray(state?.frames) ? [...state.frames] : [];
+  return frames.sort((a, b) => {
+    if (a.id === 'none') return -1;
+    if (b.id === 'none') return 1;
+    return 0;
+  });
+}
+
+function isAvatarFrameUnlocked(frame) {
+  return frame?.id === 'none' || Boolean(frame?.unlocked);
+}
 
 function syncEquippedFrame(user, frameId) {
   const current = getUser();
