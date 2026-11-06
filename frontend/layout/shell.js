@@ -129,7 +129,7 @@ export function createShell(root) {
       <nav class="mobile-navigation" aria-label="Быстрая навигация">
         <button type="button" data-route="home">Главная</button>
         <button type="button" data-route="store">Магазин</button>
-        <button type="button" data-route="studio">Studio</button>
+        <button type="button" data-route="studio">Студия</button>
         <button type="button" data-route="communities">Сообщества</button>
         ${chatButton()}
       </nav>
