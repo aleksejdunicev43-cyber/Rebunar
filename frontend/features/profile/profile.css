@@ -196,6 +196,30 @@
   filter: brightness(1.08);
 }
 
+.profile-avatar-reposition {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 13px;
+  color: var(--text-main);
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.profile-avatar-reposition:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-panel-2));
+}
+
+.profile-avatar-reposition:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .profile-avatar-button:active {
   transform: scale(0.97);
 }
