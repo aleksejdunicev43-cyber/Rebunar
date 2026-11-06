@@ -57,10 +57,8 @@ const HEADER_AVATAR_MAX_OFFSET = 5.5;
 const HEADER_AVATAR_BASE_SCALE = 1.35;
 
 function enableHeaderAvatarPhotoDrag(button) {
-  if (button.dataset.photoDragReady === 'true') return;
   const photo = button.querySelector('.rb-avatar__photo');
   if (!photo) return;
-  button.dataset.photoDragReady = 'true';
 
   let position = { x: 0, y: 0 };
   try {
@@ -70,9 +68,14 @@ function enableHeaderAvatarPhotoDrag(button) {
   } catch {}
 
   const paint = () => {
-    photo.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${HEADER_AVATAR_BASE_SCALE})`;
+    const currentPhoto = button.querySelector('.rb-avatar__photo');
+    if (currentPhoto) {
+      currentPhoto.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) scale(${HEADER_AVATAR_BASE_SCALE})`;
+    }
   };
   paint();
+  if (button.dataset.photoDragReady === 'true') return;
+  button.dataset.photoDragReady = 'true';
 
   let pointerId = null;
   let startX = 0;
