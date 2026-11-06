@@ -76,6 +76,12 @@ export function renderProfileScreen(container, user, onLogout) {
           <span class="profile-users-button-arrow" aria-hidden="true">›</span>
         </button>
 
+        <button class="profile-users-button profile-mail-button" type="button" data-route="mail">
+          <span aria-hidden="true">✉</span>
+          Почта Rebunar
+          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
+        </button>
+
         <button class="profile-logout" type="button">
           Выйти из аккаунта
         </button>

@@ -1,0 +1,13 @@
+.ecosystem-screen { display: flex; flex-direction: column; gap: 24px; }
+.ecosystem-hero { position: relative; overflow: hidden; padding: clamp(20px, 4vw, 34px); border: 1px solid var(--border); border-radius: 16px; background: radial-gradient(ellipse at 88% 12%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 42%), var(--bg-panel-2); }
+.ecosystem-eyebrow { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.ecosystem-hero h1 { margin: 12px 0 10px; font-size: clamp(25px, 4vw, 34px); font-weight: 850; }
+.ecosystem-hero p { max-width: 720px; margin: 0; color: var(--text-muted); line-height: 1.65; }
+.ecosystem-status { display: inline-flex; margin-top: 20px; padding: 7px 10px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: 7px; color: var(--text-main); background: color-mix(in srgb, var(--accent) 9%, transparent); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.ecosystem-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ecosystem-card { min-width: 0; padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-panel-2); }
+.ecosystem-card-index { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.ecosystem-card h2 { margin: 13px 0 8px; font-size: 16px; }
+.ecosystem-card p { margin: 0; color: var(--text-muted); font-size: 13px; line-height: 1.55; }
+.ecosystem-footnote { margin: 0; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+@media (max-width: 900px) { .ecosystem-card-grid { grid-template-columns: 1fr; } }

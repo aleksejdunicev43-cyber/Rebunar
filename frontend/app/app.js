@@ -14,6 +14,8 @@ import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-system-20261104-6';
 import { renderGamesScreen } from '../features/games/view.js';
+import { renderEcosystemScreen } from '../features/ecosystem/view.js';
+import '../features/ecosystem/ecosystem.css';
 import { renderCommunitiesScreen } from '../features/communities/view.js?v=avatar-system-20261104-6';
 import '../features/messages/messages.css?v=avatar-system-20261104-6';
 import '../shared/avatar.css?v=avatar-system-20261104-7';
@@ -100,7 +102,7 @@ async function finishBoot(user) {
   }, 300);
 }
 
-const screens = { home:'Главная', favorites:'Избранное', games:'Игры', communities:'Сообщества', messages:'Сообщения', profile:'Профиль', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
+const screens = { home:'Главная', store:'Магазин', games:'Игровой центр', communities:'Сообщества', messages:'Сообщения', favorites:'Избранное', studio:'Rebunar Studio', creators:'Творчество', profile:'Профиль', mail:'Почта Rebunar', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
 
 for (const [path, title] of Object.entries(screens)) {
   registerRoute(path, (params = {}) => {
@@ -110,6 +112,7 @@ for (const [path, title] of Object.entries(screens)) {
     if (path === 'favorites') return renderFavoritesScreen(outlet);
     if (path === 'messages') return renderMessagesScreen(outlet, params);
     if (path === 'games') return renderGamesScreen(outlet);
+    if (['store', 'studio', 'creators', 'mail', 'search', 'notifications'].includes(path)) return renderEcosystemScreen(outlet, path);
     if (path === 'communities') return renderCommunitiesScreen(outlet);
     if (path === 'profile') {
       const user = getUser();
