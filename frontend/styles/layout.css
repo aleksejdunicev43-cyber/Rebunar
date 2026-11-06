@@ -70,6 +70,7 @@
 
 /* Header avatar photo-only size control. The PNG frame is not modified. */
 .header-avatar-size-toggle{display:flex;align-items:center;justify-content:center;flex:0 0 26px;width:26px;height:26px;padding:0;border:1px solid var(--accent);border-radius:7px;background:rgba(0,0,0,.62);color:var(--text-main);font-size:17px;font-weight:800;line-height:1;cursor:pointer}
+.header-avatar-size-toggle svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .header-avatar-size-toggle[aria-expanded="true"]{background:var(--accent);color:#fff}
 .header-avatar-size-panel{position:fixed;top:70px;left:8px;z-index:1000;display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;width:min(240px,calc(100vw - 24px));padding:12px;border:1px solid var(--accent);border-radius:10px;background:var(--bg-panel);color:var(--text-main);box-shadow:0 8px 28px #000b}
 .header-avatar-size-panel[hidden]{display:none}
