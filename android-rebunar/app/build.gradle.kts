@@ -15,10 +15,10 @@ android {
     defaultConfig {
         applicationId = "ru.rebunar.app"
         minSdk = 24
-        // First test APK targets modern ARM Android phones to avoid packaging
-        // three unused Godot engine binaries (x86, x86_64 and 32-bit ARM).
+        // Support both 64-bit and 32-bit ARM Android phones.
+        // Godot publishes native libraries for both ARM ABIs in its Android AAR.
         ndk {
-            abiFilters += setOf("arm64-v8a")
+            abiFilters += setOf("arm64-v8a", "armeabi-v7a")
         }
         targetSdk = 35
         versionCode = 1
