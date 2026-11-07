@@ -25,7 +25,7 @@ function normalizeObjects(source) {
     ? source.map((item, index) => ({
         id: String(item.id || makeId()),
         type: ['player', 'crystal', 'wall', 'exit'].includes(item.type) ? item.type : 'wall',
-        name: String(item.name || (item.type === 'player' ? 'Игрок' : item.type === 'crystal' ? 'Кристалл' : 'Стена')),
+        name: String(item.name || (item.type === 'player' ? 'Игрок' : item.type === 'crystal' ? 'Кристалл' : item.type === 'exit' ? 'Выход' : 'Стена')),
         x: Math.max(12, Math.min(SCENE_WIDTH - 12, Number(item.x) || 80 + index * 45)),
         y: Math.max(12, Math.min(SCENE_HEIGHT - 12, Number(item.y) || 100)),
         size: Math.max(8, Math.min(100, Number(item.size) || 24)),
@@ -243,7 +243,7 @@ export function renderStudioScreen(outlet) {
             <div class="studio-canvas-wrap"><canvas class="studio-game-canvas" width="640" height="360" tabindex="0" aria-label="Сцена игры"></canvas><div class="studio-game-overlay">REBUNAR STUDIO</div></div>
             <div class="studio-game-controls">
               <span class="studio-hint studio-edit-hint">Перетаскивай объекты пальцем или мышью</span>
-              <span class="studio-hint studio-test-hint" hidden>Управление: WASD / стрелки · Собери кристаллы</span>
+              <span class="studio-hint studio-test-hint" hidden>Управление: WASD / стрелки · Собери предметы и найди выход</span>
               <div class="studio-touch-pad"><button data-dir="up" aria-label="Вверх">↑</button><div><button data-dir="left" aria-label="Влево">←</button><button data-dir="down" aria-label="Вниз">↓</button><button data-dir="right" aria-label="Вправо">→</button></div></div>
               <button class="studio-reset-button" type="button">↻ Сбросить тест</button>
             </div>
