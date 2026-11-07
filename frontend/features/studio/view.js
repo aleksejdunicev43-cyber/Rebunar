@@ -1,22 +1,53 @@
 /**
- * REBUNAR STUDIO — first playable foundation.
- * Projects are currently stored in this browser only; cloud sync and AI API come later.
+ * REBUNAR STUDIO — visual 2D editor foundation.
+ * No external AI services or paid APIs are used. Projects stay in this browser for now.
  */
-const STORAGE_KEY = 'rebunar.studio.projects.v1';
-const DEFAULT_PROJECT = {
-  id: 'demo',
-  name: 'Моя первая игра',
-  template: 'topdown',
-  description: 'Найди кристалл и собери очки.',
-  color: '#35d39a',
-  speed: 3,
-  createdAt: Date.now()
-};
+const STORAGE_KEY = 'rebunar.studio.projects.v2';
+const LEGACY_STORAGE_KEY = 'rebunar.studio.projects.v1';
+const DEFAULT_COLOR = '#35d39a';
+const SCENE_WIDTH = 640;
+const SCENE_HEIGHT = 360;
+
+function makeId() {
+  return 'obj-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function defaultObjects() {
+  return [
+    { id: 'player', type: 'player', name: 'Игрок', x: 88, y: 180, size: 26, color: DEFAULT_COLOR },
+    { id: 'crystal', type: 'crystal', name: 'Кристалл', x: 510, y: 180, size: 16, color: '#f5d66b' }
+  ];
+}
+
+function normalizeProject(project) {
+  const objects = Array.isArray(project.objects) && project.objects.length
+    ? project.objects.map((item, index) => ({
+        id: String(item.id || makeId()),
+        type: ['player', 'crystal', 'wall'].includes(item.type) ? item.type : 'wall',
+        name: String(item.name || (item.type === 'player' ? 'Игрок' : item.type === 'crystal' ? 'Кристалл' : 'Стена')),
+        x: Math.max(12, Math.min(SCENE_WIDTH - 12, Number(item.x) || 80 + index * 45)),
+        y: Math.max(12, Math.min(SCENE_HEIGHT - 12, Number(item.y) || 100)),
+        size: Math.max(8, Math.min(100, Number(item.size) || 24)),
+        color: /^#[0-9a-f]{6}$/i.test(item.color || '') ? item.color : (item.type === 'crystal' ? '#f5d66b' : item.type === 'wall' ? '#64747a' : DEFAULT_COLOR)
+      }))
+    : defaultObjects();
+  if (!objects.some(item => item.type === 'player')) objects.unshift(defaultObjects()[0]);
+  return {
+    ...project,
+    id: String(project.id || makeId()),
+    name: String(project.name || 'Новая игра'),
+    template: 'topdown',
+    description: String(project.description || 'Моя первая игра'),
+    objects
+  };
+}
 
 function readProjects() {
   try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(value) ? value : [];
+    const current = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (Array.isArray(current)) return current.map(normalizeProject);
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || '[]');
+    return Array.isArray(legacy) ? legacy.map(normalizeProject) : [];
   } catch {
     return [];
   }
@@ -37,8 +68,8 @@ function escapeHtml(value) {
   })[char]);
 }
 
-function makeId() {
-  return 'game-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+function objectLabel(type) {
+  return type === 'player' ? 'Персонаж' : type === 'crystal' ? 'Предмет' : 'Препятствие';
 }
 
 export function renderStudioScreen(outlet) {
@@ -52,24 +83,20 @@ export function renderStudioScreen(outlet) {
           <div>
             <span class="ecosystem-eyebrow">REBUNAR / STUDIO</span>
             <h1>Rebunar Studio</h1>
-            <p>Создавай игры самостоятельно: начинай с шаблона, запускай проект и настраивай его в редакторе.</p>
+            <p>Бесплатная среда для создания 2D-игр. Создай проект, расставляй объекты на сцене и проверяй игру.</p>
           </div>
-          <span class="studio-status"><i></i> ПЕРВАЯ ВЕРСИЯ</span>
+          <span class="studio-status"><i></i> РЕДАКТОР В РАЗРАБОТКЕ</span>
         </header>
         <section class="studio-start-panel">
           <div class="studio-panel-copy">
             <span class="studio-kicker">НОВЫЙ ПРОЕКТ</span>
             <h2>С чего начнём?</h2>
-            <p>Выбери основу. Это не ограничивает будущую игру — шаблон нужен, чтобы было от чего отталкиваться.</p>
+            <p>Пока доступен базовый шаблон 2D-игры с видом сверху. Другие типы игр добавим после укрепления редактора.</p>
           </div>
           <form class="studio-create-form">
             <label>Название игры<input name="name" maxlength="48" placeholder="Например, Тайна леса" required></label>
             <label>Стартовый шаблон
-              <select name="template">
-                <option value="topdown">2D — вид сверху</option>
-                <option value="platformer" disabled>2D — платформер (следующий этап)</option>
-                <option value="puzzle" disabled>2D — головоломка (следующий этап)</option>
-              </select>
+              <select name="template"><option value="topdown">2D — вид сверху</option></select>
             </label>
             <button class="studio-primary-button" type="submit"><span>＋</span> Создать проект</button>
           </form>
@@ -79,11 +106,11 @@ export function renderStudioScreen(outlet) {
           ${projects.length ? projects.map(project => `
             <article class="studio-project-card" data-project-id="${escapeHtml(project.id)}">
               <div class="studio-project-art"><span class="studio-art-orbit"></span><span class="studio-art-player"></span><span class="studio-art-gem">◆</span><small>2D GAME</small></div>
-              <div class="studio-project-info"><span class="studio-kicker">${project.template === 'platformer' ? 'ПЛАТФОРМЕР' : project.template === 'puzzle' ? 'ГОЛОВОЛОМКА' : 'ВИД СВЕРХУ'}</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description || 'Новый игровой проект')}</p><button class="studio-open-button" data-open-project="${escapeHtml(project.id)}">Открыть редактор <span>→</span></button></div>
+              <div class="studio-project-info"><span class="studio-kicker">ВИД СВЕРХУ · ${project.objects.length} ОБЪЕКТОВ</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description || 'Новый игровой проект')}</p><button class="studio-open-button" data-open-project="${escapeHtml(project.id)}">Открыть редактор <span>→</span></button></div>
             </article>
-          `).join('') : '<div class="studio-empty"><span>✦</span><h3>Здесь появится твоя первая игра</h3><p>Создай проект выше — и сразу перейдём к его запуску и настройке.</p></div>'}
+          `).join('') : '<div class="studio-empty"><span>✦</span><h3>Здесь появится твоя первая игра</h3><p>Создай проект выше — и перейдём к редактору сцены.</p></div>'}
         </div>
-        <p class="studio-storage-note">Сейчас проекты сохраняются только в этом браузере на этом устройстве. Облачное хранение аккаунта добавим отдельно.</p>
+        <p class="studio-storage-note">Проекты пока хранятся в браузере на этом устройстве. Облачное хранение подключим отдельно. Для работы редактора не требуется платный ИИ или внешний API.</p>
       </section>`;
 
     outlet.querySelector('.studio-create-form').addEventListener('submit', event => {
@@ -91,8 +118,11 @@ export function renderStudioScreen(outlet) {
       const form = event.currentTarget;
       const name = form.elements.name.value.trim();
       if (!name) return;
-      const template = form.elements.template.value;
-      const project = { ...DEFAULT_PROJECT, id: makeId(), name, template, createdAt: Date.now() };
+      const project = normalizeProject({
+        id: makeId(), name, template: 'topdown',
+        description: 'Найди кристалл и собери очки.',
+        createdAt: Date.now(), objects: defaultObjects()
+      });
       projects = [project, ...projects];
       if (!writeProjects(projects)) {
         projects = projects.filter(item => item.id !== project.id);
@@ -110,77 +140,302 @@ export function renderStudioScreen(outlet) {
   function openProject(id) {
     activeProject = projects.find(project => project.id === id);
     if (!activeProject) return renderList();
+    activeProject = normalizeProject(activeProject);
     renderEditor();
   }
 
   function renderEditor() {
     const project = activeProject;
+    let mode = 'edit';
+    let selectedId = project.objects.find(item => item.type === 'player')?.id || project.objects[0]?.id;
+    let runtimePlayer = null;
+    let score = 0;
+    let keys = new Set();
+    let frame = 0;
+    let drag = null;
+    const startPositions = project.objects.map(item => ({ id: item.id, x: item.x, y: item.y }));
+
     outlet.innerHTML = `
       <section class="screen studio-screen studio-editor-screen">
         <div class="studio-editor-topbar">
           <button class="studio-back-button" type="button">← Все проекты</button>
-          <div class="studio-editor-project-name"><span class="studio-live-dot"></span><strong>${escapeHtml(project.name)}</strong><small>СОХРАНЕНО ЛОКАЛЬНО</small></div>
-          <button class="studio-save-button" type="button">Сохранить проект</button>
+          <div class="studio-editor-project-name"><span class="studio-live-dot"></span><strong>${escapeHtml(project.name)}</strong><small class="studio-save-status">ЛОКАЛЬНЫЙ ПРОЕКТ</small></div>
+          <button class="studio-save-button" type="button">Сохранить</button>
         </div>
-        <header class="studio-editor-heading"><div><span class="studio-kicker">РЕДАКТОР ПРОЕКТА</span><h1>${escapeHtml(project.name)}</h1><p>Рабочее пространство проекта: игровая сцена, управление и настройки.</p></div><span class="studio-status"><i></i> ИГРА ЗАПУСКАЕТСЯ</span></header>
-        <div class="studio-workspace">
+        <header class="studio-editor-heading"><div><span class="studio-kicker">РАБОЧЕЕ ПРОСТРАНСТВО</span><h1>${escapeHtml(project.name)}</h1><p>Добавляй объекты, перемещай их по сцене, меняй свойства и запускай тест игры.</p></div><span class="studio-status"><i></i> 2D · ВИД СВЕРХУ</span></header>
+        <div class="studio-mode-switch" role="group" aria-label="Режим редактора">
+          <button class="is-active" type="button" data-mode="edit">✥ Редактор сцены</button>
+          <button type="button" data-mode="test">▶ Тест игры</button>
+        </div>
+        <div class="studio-workspace studio-visual-workspace">
+          <aside class="studio-object-panel">
+            <div class="studio-inspector-title"><span class="studio-kicker">ИНСТРУМЕНТЫ</span><strong>Добавить объект</strong></div>
+            <button class="studio-add-object" type="button" data-add="player"><span class="studio-object-symbol player">■</span> Персонаж</button>
+            <button class="studio-add-object" type="button" data-add="crystal"><span class="studio-object-symbol crystal">◆</span> Предмет</button>
+            <button class="studio-add-object" type="button" data-add="wall"><span class="studio-object-symbol wall">▰</span> Препятствие</button>
+            <div class="studio-inspector-divider"></div>
+            <div class="studio-inspector-title"><span class="studio-kicker">СЦЕНА</span><strong>Объекты <span class="studio-object-count">${project.objects.length}</span></strong></div>
+            <div class="studio-object-list"></div>
+            <p class="studio-tool-hint">Выбери объект в списке или коснись его на сцене, чтобы изменить.</p>
+          </aside>
           <section class="studio-preview-panel">
-            <div class="studio-panel-toolbar"><div><span class="studio-kicker">ПРЕДПРОСМОТР</span><strong>Игровая сцена</strong></div><span class="studio-resolution">640 × 360</span></div>
-            <div class="studio-canvas-wrap"><canvas class="studio-game-canvas" width="640" height="360" aria-label="Предпросмотр игры: собери кристалл"></canvas><div class="studio-game-overlay">СОБЕРИ КРИСТАЛЛ <span>◆</span></div></div>
-            <div class="studio-game-controls"><span class="studio-hint">Управление: WASD / стрелки</span><div class="studio-touch-pad"><button data-dir="up" aria-label="Вверх">↑</button><div><button data-dir="left" aria-label="Влево">←</button><button data-dir="down" aria-label="Вниз">↓</button><button data-dir="right" aria-label="Вправо">→</button></div></div><button class="studio-reset-button" type="button">↻ Заново</button></div>
+            <div class="studio-panel-toolbar"><div><span class="studio-kicker">СЦЕНА</span><strong class="studio-canvas-mode-label">Редактирование уровня</strong></div><span class="studio-resolution">640 × 360</span></div>
+            <div class="studio-canvas-wrap"><canvas class="studio-game-canvas" width="640" height="360" tabindex="0" aria-label="Сцена игры"></canvas><div class="studio-game-overlay">REBUNAR STUDIO</div></div>
+            <div class="studio-game-controls">
+              <span class="studio-hint studio-edit-hint">Перетаскивай объекты пальцем или мышью</span>
+              <span class="studio-hint studio-test-hint" hidden>Управление: WASD / стрелки · Собери кристаллы</span>
+              <div class="studio-touch-pad"><button data-dir="up" aria-label="Вверх">↑</button><div><button data-dir="left" aria-label="Влево">←</button><button data-dir="down" aria-label="Вниз">↓</button><button data-dir="right" aria-label="Вправо">→</button></div></div>
+              <button class="studio-reset-button" type="button">↻ Сбросить тест</button>
+            </div>
           </section>
           <aside class="studio-inspector">
-            <div class="studio-inspector-title"><span class="studio-kicker">СВОЙСТВА</span><strong>Персонаж</strong></div>
-            <label class="studio-field">Цвет персонажа<input class="studio-color-input" type="color" value="${escapeHtml(project.color || DEFAULT_PROJECT.color)}"></label>
-            <label class="studio-field">Скорость движения <output class="studio-speed-value">${Number(project.speed) || 3}</output><input class="studio-speed-input" type="range" min="1" max="8" step="1" value="${Number(project.speed) || 3}"></label>
+            <div class="studio-inspector-title"><span class="studio-kicker">СВОЙСТВА</span><strong class="studio-selected-title">Выбери объект</strong></div>
+            <div class="studio-inspector-fields"></div>
+            <div class="studio-inspector-actions"></div>
             <div class="studio-inspector-divider"></div>
             <div class="studio-inspector-title"><span class="studio-kicker">ПРОЕКТ</span><strong>Описание игры</strong></div>
             <label class="studio-field">Название<input class="studio-name-input" maxlength="48" value="${escapeHtml(project.name)}"></label>
-            <label class="studio-field">Идея<textarea class="studio-description-input" rows="4" maxlength="500">${escapeHtml(project.description || '')}</textarea></label>
+            <label class="studio-field">Описание<textarea class="studio-description-input" rows="3" maxlength="500">${escapeHtml(project.description || '')}</textarea></label>
           </aside>
         </div>
-        <div class="studio-editor-footnote">Первый этап редактора: запуск игры, управление, настройка персонажа и локальное сохранение проекта.</div>
+        <p class="studio-editor-footnote">Первая ступень визуального редактора: объекты и их свойства. Проект сохраняется локально на этом устройстве.</p>
       </section>`;
 
     const canvas = outlet.querySelector('.studio-game-canvas');
     const ctx = canvas.getContext('2d');
-    const colorInput = outlet.querySelector('.studio-color-input');
-    const speedInput = outlet.querySelector('.studio-speed-input');
-    const speedValue = outlet.querySelector('.studio-speed-value');
-    let player = { x: 70, y: 170, size: 24 };
-    let gem = { x: 510, y: 170, size: 13 };
-    let score = 0;
-    const keys = new Set();
-    let animationFrame = 0;
+    const objectList = outlet.querySelector('.studio-object-list');
+    const inspectorFields = outlet.querySelector('.studio-inspector-fields');
+    const inspectorActions = outlet.querySelector('.studio-inspector-actions');
+    const saveStatus = outlet.querySelector('.studio-save-status');
+    const modeButtons = outlet.querySelectorAll('[data-mode]');
 
-    function resetGame() {
-      player = { x: 70, y: 170, size: 24 };
-      gem = { x: 510, y: 170, size: 13 };
-      score = 0;
-      draw();
+    function selectedObject() {
+      return project.objects.find(item => item.id === selectedId) || null;
+    }
+
+    function markDirty() {
+      saveStatus.textContent = 'ЕСТЬ ИЗМЕНЕНИЯ';
+      saveStatus.classList.add('is-dirty');
+    }
+
+    function saveProject(showConfirmation = true) {
+      project.name = outlet.querySelector('.studio-name-input').value.trim() || 'Новая игра';
+      project.description = outlet.querySelector('.studio-description-input').value.trim();
+      projects = projects.map(item => item.id === project.id ? project : item);
+      if (!writeProjects(projects)) {
+        alert('Не удалось сохранить проект. Возможно, в браузере недостаточно места.');
+        return false;
+      }
+      saveStatus.textContent = 'СОХРАНЕНО ЛОКАЛЬНО';
+      saveStatus.classList.remove('is-dirty');
+      outlet.querySelector('.studio-editor-heading h1').textContent = project.name;
+      outlet.querySelector('.studio-editor-project-name strong').textContent = project.name;
+      if (showConfirmation) {
+        const button = outlet.querySelector('.studio-save-button');
+        button.textContent = '✓ Сохранено';
+        setTimeout(() => { if (button.isConnected) button.textContent = 'Сохранить'; }, 1300);
+      }
+      return true;
+    }
+
+    function renderObjectList() {
+      objectList.innerHTML = project.objects.map(item => `
+        <button type="button" class="studio-object-row ${item.id === selectedId ? 'is-selected' : ''}" data-select-object="${escapeHtml(item.id)}">
+          <span class="studio-object-symbol ${item.type}">${item.type === 'player' ? '■' : item.type === 'crystal' ? '◆' : '▰'}</span>
+          <span><strong>${escapeHtml(item.name)}</strong><small>${objectLabel(item.type)}</small></span>
+          <span class="studio-object-row-arrow">›</span>
+        </button>`).join('') || '<p class="studio-no-objects">На сцене пока нет объектов.</p>';
+      outlet.querySelector('.studio-object-count').textContent = project.objects.length;
+      objectList.querySelectorAll('[data-select-object]').forEach(button => {
+        button.addEventListener('click', () => {
+          selectedId = button.dataset.selectObject;
+          renderObjectList();
+          renderInspector();
+          draw();
+        });
+      });
+    }
+
+    function renderInspector() {
+      const item = selectedObject();
+      outlet.querySelector('.studio-selected-title').textContent = item ? item.name : 'Выбери объект';
+      if (!item) {
+        inspectorFields.innerHTML = '<p class="studio-no-objects">Выбери объект на сцене или добавь новый.</p>';
+        inspectorActions.innerHTML = '';
+        return;
+      }
+      inspectorFields.innerHTML = `
+        <label class="studio-field">Название<input class="studio-object-name" maxlength="32" value="${escapeHtml(item.name)}"></label>
+        <div class="studio-coordinate-grid">
+          <label class="studio-field">X<input class="studio-object-x" type="number" min="12" max="628" value="${Math.round(item.x)}"></label>
+          <label class="studio-field">Y<input class="studio-object-y" type="number" min="12" max="348" value="${Math.round(item.y)}"></label>
+        </div>
+        <label class="studio-field">Размер <output class="studio-size-value">${Math.round(item.size)}</output><input class="studio-object-size" type="range" min="8" max="80" step="1" value="${Math.round(item.size)}"></label>
+        <label class="studio-field">Цвет<input class="studio-object-color" type="color" value="${item.color}"></label>`;
+      inspectorActions.innerHTML = `
+        <button type="button" class="studio-secondary-action" data-duplicate>＋ Дублировать</button>
+        <button type="button" class="studio-danger-action" data-delete ${item.type === 'player' ? 'disabled title="Игрок должен оставаться на сцене"' : ''}>Удалить объект</button>`;
+
+      const bind = (selector, eventName, callback) => {
+        const input = inspectorFields.querySelector(selector);
+        input.addEventListener(eventName, () => {
+          callback(input);
+          markDirty();
+          draw();
+          if (selector === '.studio-object-name') {
+            outlet.querySelector('.studio-selected-title').textContent = item.name;
+            renderObjectList();
+          }
+        });
+      };
+      bind('.studio-object-name', 'input', input => { item.name = input.value; });
+      bind('.studio-object-x', 'change', input => { item.x = clamp(Number(input.value) || 12, 12, 628); input.value = Math.round(item.x); });
+      bind('.studio-object-y', 'change', input => { item.y = clamp(Number(input.value) || 12, 12, 348); input.value = Math.round(item.y); });
+      bind('.studio-object-size', 'input', input => { item.size = Number(input.value); inspectorFields.querySelector('.studio-size-value').textContent = input.value; });
+      bind('.studio-object-color', 'input', input => { item.color = input.value; });
+      inspectorActions.querySelector('[data-duplicate]')?.addEventListener('click', () => {
+        const copy = { ...item, id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
+        project.objects.push(copy);
+        selectedId = copy.id;
+        markDirty(); renderObjectList(); renderInspector(); draw();
+      });
+      inspectorActions.querySelector('[data-delete]')?.addEventListener('click', () => {
+        if (item.type === 'player') return;
+        project.objects = project.objects.filter(object => object.id !== item.id);
+        selectedId = project.objects[0]?.id || null;
+        markDirty(); renderObjectList(); renderInspector(); draw();
+      });
+    }
+
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
+    function addObject(type) {
+      if (mode !== 'edit') return;
+      const config = type === 'player'
+        ? { type, name: 'Персонаж', size: 26, color: DEFAULT_COLOR }
+        : type === 'crystal'
+          ? { type, name: 'Предмет', size: 16, color: '#f5d66b' }
+          : { type: 'wall', name: 'Препятствие', size: 44, color: '#64747a' };
+      const item = { id: makeId(), ...config, x: 280 + Math.random() * 80, y: 130 + Math.random() * 90 };
+      project.objects.push(item);
+      selectedId = item.id;
+      markDirty(); renderObjectList(); renderInspector(); draw();
     }
 
     function draw() {
-      if (!canvas.isConnected) {
-        cancelAnimationFrame(animationFrame);
-        return;
-      }
-      ctx.clearRect(0, 0, 640, 360);
+      if (!canvas.isConnected) return;
+      ctx.clearRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
       ctx.fillStyle = '#10191a';
-      ctx.fillRect(0, 0, 640, 360);
-      ctx.strokeStyle = 'rgba(93, 190, 154, .13)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x <= 640; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 360); ctx.stroke(); }
-      for (let y = 0; y <= 360; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(640, y); ctx.stroke(); }
-      ctx.fillStyle = 'rgba(53, 211, 154, .12)';
-      ctx.beginPath(); ctx.arc(gem.x, gem.y, 25, 0, Math.PI * 2); ctx.fill();
-      ctx.save(); ctx.translate(gem.x, gem.y); ctx.rotate(Math.PI / 4); ctx.fillStyle = '#f5d66b'; ctx.fillRect(-gem.size / 1.4, -gem.size / 1.4, gem.size * 1.4, gem.size * 1.4); ctx.restore();
-      ctx.fillStyle = project.color || DEFAULT_PROJECT.color;
-      ctx.shadowColor = project.color || DEFAULT_PROJECT.color; ctx.shadowBlur = 18;
-      ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#e9f3ef'; ctx.font = 'bold 14px system-ui'; ctx.fillText('КРИСТАЛЛЫ: ' + score, 18, 28);
-      ctx.fillStyle = 'rgba(230,240,236,.55)'; ctx.font = '12px system-ui'; ctx.fillText('Перемещай персонажа к кристаллу', 18, 348);
+      ctx.fillRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
+      if (mode === 'edit') {
+        ctx.strokeStyle = 'rgba(93,190,154,.13)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= SCENE_WIDTH; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SCENE_HEIGHT); ctx.stroke(); }
+        for (let y = 0; y <= SCENE_HEIGHT; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SCENE_WIDTH, y); ctx.stroke(); }
+      }
+      const playerObject = project.objects.find(item => item.type === 'player');
+      project.objects.forEach(item => {
+        const isSelected = mode === 'edit' && item.id === selectedId;
+        if (item.type === 'wall') {
+          ctx.fillStyle = item.color;
+          ctx.fillRect(item.x - item.size, item.y - item.size / 2, item.size * 2, item.size);
+          ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.strokeRect(item.x - item.size, item.y - item.size / 2, item.size * 2, item.size);
+        } else if (item.type === 'crystal') {
+          ctx.save(); ctx.translate(item.x, item.y); ctx.rotate(Math.PI / 4);
+          ctx.fillStyle = item.color; ctx.shadowColor = item.color; ctx.shadowBlur = 12;
+          ctx.fillRect(-item.size / 1.4, -item.size / 1.4, item.size * 1.4, item.size * 1.4); ctx.restore();
+        } else {
+          const x = mode === 'test' && runtimePlayer ? runtimePlayer.x : item.x;
+          const y = mode === 'test' && runtimePlayer ? runtimePlayer.y : item.y;
+          ctx.fillStyle = item.color; ctx.shadowColor = item.color; ctx.shadowBlur = 16;
+          ctx.fillRect(x - item.size / 2, y - item.size / 2, item.size, item.size); ctx.shadowBlur = 0;
+        }
+        if (isSelected) {
+          ctx.save(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+          if (item.type === 'wall') ctx.strokeRect(item.x - item.size - 5, item.y - item.size / 2 - 5, item.size * 2 + 10, item.size + 10);
+          else ctx.strokeRect(item.x - item.size / 2 - 5, item.y - item.size / 2 - 5, item.size + 10, item.size + 10);
+          ctx.setLineDash([]); ctx.restore();
+        }
+      });
+      if (mode === 'test') {
+        ctx.fillStyle = '#e9f3ef'; ctx.font = 'bold 14px system-ui'; ctx.fillText('КРИСТАЛЛЫ: ' + score, 18, 26);
+        ctx.fillStyle = 'rgba(230,240,236,.55)'; ctx.font = '12px system-ui'; ctx.fillText('Найди все предметы на уровне', 18, 346);
+      }
+      void playerObject;
+    }
+
+    function hitTest(x, y) {
+      for (let index = project.objects.length - 1; index >= 0; index--) {
+        const item = project.objects[index];
+        if (item.type === 'wall') {
+          if (x >= item.x - item.size && x <= item.x + item.size && y >= item.y - item.size / 2 && y <= item.y + item.size / 2) return item;
+        } else if (Math.abs(x - item.x) <= item.size / 2 + 5 && Math.abs(y - item.y) <= item.size / 2 + 5) return item;
+      }
+      return null;
+    }
+
+    function canvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: (event.clientX - rect.left) * SCENE_WIDTH / rect.width, y: (event.clientY - rect.top) * SCENE_HEIGHT / rect.height };
+    }
+
+    canvas.addEventListener('pointerdown', event => {
+      if (mode !== 'edit') return;
+      const point = canvasPoint(event);
+      const item = hitTest(point.x, point.y);
+      selectedId = item?.id || null;
+      if (item) {
+        drag = { id: item.id, dx: point.x - item.x, dy: point.y - item.y };
+        canvas.setPointerCapture?.(event.pointerId);
+      }
+      renderObjectList(); renderInspector(); draw();
+    });
+    canvas.addEventListener('pointermove', event => {
+      if (mode !== 'edit' || !drag) return;
+      const item = project.objects.find(object => object.id === drag.id);
+      if (!item) return;
+      const point = canvasPoint(event);
+      item.x = clamp(point.x - drag.dx, item.type === 'wall' ? item.size : item.size / 2, SCENE_WIDTH - (item.type === 'wall' ? item.size : item.size / 2));
+      item.y = clamp(point.y - drag.dy, item.size / 2, SCENE_HEIGHT - item.size / 2);
+      const xInput = inspectorFields.querySelector('.studio-object-x');
+      const yInput = inspectorFields.querySelector('.studio-object-y');
+      if (xInput) xInput.value = Math.round(item.x);
+      if (yInput) yInput.value = Math.round(item.y);
+      markDirty(); draw();
+    });
+    const stopDrag = () => { drag = null; };
+    canvas.addEventListener('pointerup', stopDrag);
+    canvas.addEventListener('pointercancel', stopDrag);
+
+    function setMode(nextMode) {
+      mode = nextMode;
+      keys.clear();
+      drag = null;
+      modeButtons.forEach(button => button.classList.toggle('is-active', button.dataset.mode === mode));
+      outlet.querySelector('.studio-canvas-mode-label').textContent = mode === 'edit' ? 'Редактирование уровня' : 'Тестирование игры';
+      outlet.querySelector('.studio-edit-hint').hidden = mode !== 'edit';
+      outlet.querySelector('.studio-test-hint').hidden = mode !== 'test';
+      outlet.querySelector('.studio-touch-pad').classList.toggle('is-visible', mode === 'test');
+      outlet.querySelector('.studio-reset-button').hidden = mode !== 'test';
+      outlet.querySelectorAll('.studio-add-object').forEach(button => { button.disabled = mode !== 'edit'; });
+      if (mode === 'test') {
+        runtimePlayer = { ...project.objects.find(item => item.type === 'player') };
+        score = 0;
+      } else {
+        runtimePlayer = null;
+      }
+      draw();
+    }
+
+    function resetTest() {
+      if (mode !== 'test') return;
+      const player = project.objects.find(item => item.type === 'player');
+      if (player) runtimePlayer = { ...player };
+      project.objects.filter(item => item.type === 'crystal').forEach(item => {
+        const start = startPositions.find(position => position.id === item.id);
+        if (start) { item.x = start.x; item.y = start.y; }
+      });
+      score = 0; draw();
     }
 
     function tick() {
@@ -190,66 +445,72 @@ export function renderStudioScreen(outlet) {
         keys.clear();
         return;
       }
-      const speed = Number(project.speed) || 3;
-      if (keys.has('ArrowUp') || keys.has('w')) player.y -= speed;
-      if (keys.has('ArrowDown') || keys.has('s')) player.y += speed;
-      if (keys.has('ArrowLeft') || keys.has('a')) player.x -= speed;
-      if (keys.has('ArrowRight') || keys.has('d')) player.x += speed;
-      player.x = Math.max(14, Math.min(626, player.x));
-      player.y = Math.max(14, Math.min(346, player.y));
-      if (Math.hypot(player.x - gem.x, player.y - gem.y) < 25) {
-        score += 1;
-        gem.x = 45 + Math.random() * 550;
-        gem.y = 45 + Math.random() * 270;
+      if (mode === 'test' && runtimePlayer) {
+        const speed = 3;
+        let nextX = runtimePlayer.x;
+        let nextY = runtimePlayer.y;
+        if (keys.has('ArrowUp') || keys.has('w')) nextY -= speed;
+        if (keys.has('ArrowDown') || keys.has('s')) nextY += speed;
+        if (keys.has('ArrowLeft') || keys.has('a')) nextX -= speed;
+        if (keys.has('ArrowRight') || keys.has('d')) nextX += speed;
+        const half = runtimePlayer.size / 2;
+        nextX = clamp(nextX, half, SCENE_WIDTH - half);
+        nextY = clamp(nextY, half, SCENE_HEIGHT - half);
+        const blocked = project.objects.some(item => item.type === 'wall' &&
+          nextX + half > item.x - item.size && nextX - half < item.x + item.size &&
+          nextY + half > item.y - item.size / 2 && nextY - half < item.y + item.size / 2);
+        if (!blocked) { runtimePlayer.x = nextX; runtimePlayer.y = nextY; }
+        project.objects.filter(item => item.type === 'crystal').forEach(item => {
+          if (Math.hypot(runtimePlayer.x - item.x, runtimePlayer.y - item.y) < half + item.size) {
+            score += 1;
+            item.x = 36 + Math.random() * 568;
+            item.y = 36 + Math.random() * 288;
+          }
+        });
+        draw();
       }
-      draw();
-      animationFrame = requestAnimationFrame(tick);
+      frame = requestAnimationFrame(tick);
     }
 
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
     function onKeyDown(event) {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(event.key)) {
-        if (canvas.isConnected) event.preventDefault();
-        keys.add(event.key);
+      if (mode !== 'test') return;
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(event.key)) {
+        event.preventDefault();
+        keys.add(event.key.toLowerCase().startsWith('arrow') ? event.key : event.key.toLowerCase());
       }
     }
-    function onKeyUp(event) { keys.delete(event.key); }
+    function onKeyUp(event) {
+      keys.delete(event.key.toLowerCase().startsWith('arrow') ? event.key : event.key.toLowerCase());
+    }
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+
+    outlet.querySelectorAll('[data-add]').forEach(button => button.addEventListener('click', () => addObject(button.dataset.add)));
+    modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+    outlet.querySelector('.studio-reset-button').addEventListener('click', resetTest);
+    outlet.querySelector('.studio-save-button').addEventListener('click', () => saveProject(true));
+    outlet.querySelector('.studio-name-input').addEventListener('input', event => { project.name = event.target.value; markDirty(); });
+    outlet.querySelector('.studio-description-input').addEventListener('input', event => { project.description = event.target.value; markDirty(); });
+    outlet.querySelector('.studio-back-button').addEventListener('click', () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
+      cancelAnimationFrame(frame);
+      saveProject(false);
+      renderList();
+    });
+
     outlet.querySelectorAll('[data-dir]').forEach(button => {
-      const map = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+      const map = { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright' };
       const key = map[button.dataset.dir];
       const release = () => keys.delete(key);
-      button.addEventListener('pointerdown', event => { event.preventDefault(); keys.add(key); });
+      button.addEventListener('pointerdown', event => { if (mode !== 'test') return; event.preventDefault(); keys.add(key); button.setPointerCapture?.(event.pointerId); });
       button.addEventListener('pointerup', release);
       button.addEventListener('pointerleave', release);
       button.addEventListener('pointercancel', release);
     });
-    colorInput.addEventListener('input', () => { project.color = colorInput.value; draw(); });
-    speedInput.addEventListener('input', () => { project.speed = Number(speedInput.value); speedValue.textContent = speedInput.value; });
-    outlet.querySelector('.studio-reset-button').addEventListener('click', resetGame);
-    outlet.querySelector('.studio-back-button').addEventListener('click', () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('keyup', onKeyUp);
-      cancelAnimationFrame(animationFrame);
-      renderList();
-    });
-    outlet.querySelector('.studio-save-button').addEventListener('click', saveProject);
-    function saveProject() {
-      project.name = outlet.querySelector('.studio-name-input').value.trim() || 'Новая игра';
-      project.description = outlet.querySelector('.studio-description-input').value.trim();
-      project.color = colorInput.value;
-      project.speed = Number(speedInput.value);
-      projects = projects.map(item => item.id === project.id ? project : item);
-      if (writeProjects(projects)) {
-        const button = outlet.querySelector('.studio-save-button');
-        button.textContent = '✓ Сохранено';
-        outlet.querySelector('.studio-editor-heading h1').textContent = project.name;
-        outlet.querySelector('.studio-editor-project-name strong').textContent = project.name;
-        setTimeout(() => { if (button.isConnected) button.textContent = 'Сохранить проект'; }, 1500);
-      } else {
-        alert('Не удалось сохранить изменения в памяти браузера.');
-      }
-    }
+
+    renderObjectList();
+    renderInspector();
     draw();
     tick();
   }
