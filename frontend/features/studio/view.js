@@ -117,6 +117,7 @@ export function renderStudioScreen(outlet) {
             <p>Бесплатная среда для создания 2D-игр. Создай проект, расставляй объекты на сцене и проверяй игру.</p>
           </div>
           <span class="studio-status"><i></i> РЕДАКТОР В РАЗРАБОТКЕ</span>
+          ${navigator.userAgent.includes('RebunarAndroid') ? '<a class="studio-native-engine-button" href="rebunar://studio/godot">Открыть встроенный Godot <span>↗</span></a>' : ''}
         </header>
         <section class="studio-start-panel">
           <div class="studio-panel-copy">
