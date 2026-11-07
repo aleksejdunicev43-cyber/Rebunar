@@ -7,12 +7,12 @@ android {
     namespace = "ru.rebunar.app"
     compileSdk = 35
 
-    defaultConfig {
-        // Godot stores project metadata in hidden asset directories.
-        androidResources {
-            ignoreAssetsPattern = "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
-        }
+    // Keep Godot's project metadata directories when packaging Android assets.
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
 
+    defaultConfig {
         applicationId = "ru.rebunar.app"
         minSdk = 23
         targetSdk = 35
