@@ -527,7 +527,7 @@ export function renderStudioScreen(outlet) {
         renderInspector(); markDirty(); draw();
       });
       inspectorActions.querySelector('[data-duplicate]')?.addEventListener('click', () => {
-        const copy = { ...item, id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
+        const copy = { ...item, animationFrames: [...(item.animationFrames || [])], id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
         activeLevel.objects.push(copy);
         selectedId = copy.id;
         markDirty(); renderObjectList(); renderInspector(); draw();
@@ -810,7 +810,7 @@ export function renderStudioScreen(outlet) {
       const copy = {
         id: makeId(),
         name: activeLevel.name + ' — копия',
-        objects: activeLevel.objects.map(item => ({ ...item, id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) })),
+        objects: activeLevel.objects.map(item => ({ ...item, animationFrames: [...(item.animationFrames || [])], id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) })),
         backgroundImage: activeLevel.backgroundImage,
         musicData: activeLevel.musicData,
         collectSoundData: activeLevel.collectSoundData
