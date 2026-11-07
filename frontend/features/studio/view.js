@@ -15,7 +15,8 @@ function makeId() {
 function defaultObjects() {
   return [
     { id: 'player', type: 'player', name: 'Игрок', x: 88, y: 180, size: 26, color: DEFAULT_COLOR },
-    { id: 'crystal', type: 'crystal', name: 'Кристалл', x: 510, y: 180, size: 16, color: '#f5d66b' }
+    { id: 'crystal', type: 'crystal', name: 'Кристалл', x: 510, y: 180, size: 16, color: '#f5d66b' },
+    { id: 'exit', type: 'exit', name: 'Выход', x: 570, y: 300, size: 30, color: '#62e5c1' }
   ];
 }
 
@@ -23,7 +24,7 @@ function normalizeObjects(source) {
   const objects = Array.isArray(source) && source.length
     ? source.map((item, index) => ({
         id: String(item.id || makeId()),
-        type: ['player', 'crystal', 'wall'].includes(item.type) ? item.type : 'wall',
+        type: ['player', 'crystal', 'wall', 'exit'].includes(item.type) ? item.type : 'wall',
         name: String(item.name || (item.type === 'player' ? 'Игрок' : item.type === 'crystal' ? 'Кристалл' : 'Стена')),
         x: Math.max(12, Math.min(SCENE_WIDTH - 12, Number(item.x) || 80 + index * 45)),
         y: Math.max(12, Math.min(SCENE_HEIGHT - 12, Number(item.y) || 100)),
@@ -94,7 +95,7 @@ function escapeHtml(value) {
 }
 
 function objectLabel(type) {
-  return type === 'player' ? 'Персонаж' : type === 'crystal' ? 'Предмет' : 'Препятствие';
+  return type === 'player' ? 'Персонаж' : type === 'crystal' ? 'Предмет' : type === 'exit' ? 'Выход с уровня' : 'Препятствие';
 }
 
 export function renderStudioScreen(outlet) {
@@ -177,6 +178,8 @@ export function renderStudioScreen(outlet) {
     let runtimePlayer = null;
     let runtimeObjects = null;
     let score = 0;
+    let won = false;
+    let gameMessage = '';
     let keys = new Set();
     let frame = 0;
     let drag = null;
@@ -229,6 +232,7 @@ export function renderStudioScreen(outlet) {
             <button class="studio-add-object" type="button" data-add="player"><span class="studio-object-symbol player">■</span> Персонаж</button>
             <button class="studio-add-object" type="button" data-add="crystal"><span class="studio-object-symbol crystal">◆</span> Предмет</button>
             <button class="studio-add-object" type="button" data-add="wall"><span class="studio-object-symbol wall">▰</span> Препятствие</button>
+            <button class="studio-add-object" type="button" data-add="exit"><span class="studio-object-symbol exit">◎</span> Выход</button>
             <div class="studio-inspector-divider"></div>
             <div class="studio-inspector-title"><span class="studio-kicker">СЦЕНА</span><strong>Объекты <span class="studio-object-count">${activeLevel.objects.length}</span></strong></div>
             <div class="studio-object-list"></div>
@@ -500,7 +504,9 @@ export function renderStudioScreen(outlet) {
         ? { type, name: 'Персонаж', size: 26, color: DEFAULT_COLOR }
         : type === 'crystal'
           ? { type, name: 'Предмет', size: 16, color: '#f5d66b' }
-          : { type: 'wall', name: 'Препятствие', size: 44, color: '#64747a' };
+          : type === 'exit'
+            ? { type, name: 'Выход', size: 30, color: '#62e5c1' }
+            : { type: 'wall', name: 'Препятствие', size: 44, color: '#64747a' };
       const item = { id: makeId(), ...config, x: 280 + Math.random() * 80, y: 130 + Math.random() * 90 };
       activeLevel.objects.push(item);
       selectedId = item.id;
@@ -529,6 +535,7 @@ export function renderStudioScreen(outlet) {
       }
       const sceneObjects = mode === 'test' && runtimeObjects ? runtimeObjects : activeLevel.objects;
       sceneObjects.forEach(item => {
+        if (mode === 'test' && item.collected) return;
         const isSelected = mode === 'edit' && item.id === selectedId;
         const objectImage = item.imageData ? cacheImage(item.imageData) : null;
         const drawX = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.x : item.x;
@@ -549,6 +556,12 @@ export function renderStudioScreen(outlet) {
           ctx.save(); ctx.translate(item.x, item.y); ctx.rotate(Math.PI / 4);
           ctx.fillStyle = item.color; ctx.shadowColor = item.color; ctx.shadowBlur = 12;
           ctx.fillRect(-item.size / 1.4, -item.size / 1.4, item.size * 1.4, item.size * 1.4); ctx.restore();
+        } else if (item.type === 'exit') {
+          ctx.save(); ctx.translate(item.x, item.y);
+          ctx.strokeStyle = item.color; ctx.lineWidth = 5; ctx.shadowColor = item.color; ctx.shadowBlur = 15;
+          ctx.beginPath(); ctx.arc(0, 0, item.size / 2, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, item.size / 3, 0, Math.PI * 2); ctx.stroke();
+          ctx.restore();
         } else {
           ctx.fillStyle = item.color; ctx.shadowColor = item.color; ctx.shadowBlur = 16;
           ctx.fillRect(drawX - item.size / 2, drawY - item.size / 2, item.size, item.size); ctx.shadowBlur = 0;
@@ -561,8 +574,17 @@ export function renderStudioScreen(outlet) {
         }
       });
       if (mode === 'test') {
-        ctx.fillStyle = '#e9f3ef'; ctx.font = 'bold 14px system-ui'; ctx.fillText('КРИСТАЛЛЫ: ' + score, 18, 26);
-        ctx.fillStyle = 'rgba(230,240,236,.55)'; ctx.font = '12px system-ui'; ctx.fillText('Найди все предметы на уровне', 18, 346);
+        ctx.fillStyle = '#e9f3ef'; ctx.font = 'bold 14px system-ui'; ctx.fillText('СОБРАНО: ' + score, 18, 26);
+        ctx.fillStyle = 'rgba(230,240,236,.75)'; ctx.font = '12px system-ui';
+        ctx.fillText(gameMessage || 'Собери предметы и найди выход', 18, 346);
+        if (won) {
+          ctx.fillStyle = 'rgba(4,12,13,.78)'; ctx.fillRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
+          ctx.textAlign = 'center'; ctx.fillStyle = '#70efbd'; ctx.font = 'bold 34px system-ui';
+          ctx.fillText('УРОВЕНЬ ПРОЙДЕН!', SCENE_WIDTH / 2, SCENE_HEIGHT / 2 - 8);
+          ctx.fillStyle = '#e9f3ef'; ctx.font = '15px system-ui';
+          ctx.fillText('Предметов собрано: ' + score, SCENE_WIDTH / 2, SCENE_HEIGHT / 2 + 24);
+          ctx.textAlign = 'start';
+        }
       }
     }
 
@@ -621,9 +643,9 @@ export function renderStudioScreen(outlet) {
       outlet.querySelector('.studio-reset-button').hidden = mode !== 'test';
       outlet.querySelectorAll('.studio-add-object').forEach(button => { button.disabled = mode !== 'edit'; });
       if (mode === 'test') {
-        runtimeObjects = activeLevel.objects.map(item => ({ ...item }));
+        runtimeObjects = activeLevel.objects.map(item => ({ ...item, collected: false }));
         runtimePlayer = { ...runtimeObjects.find(item => item.type === 'player') };
-        score = 0;
+        score = 0; won = false; gameMessage = '';
         startLevelMusic();
       } else {
         stopLevelAudio();
@@ -635,10 +657,10 @@ export function renderStudioScreen(outlet) {
 
     function resetTest() {
       if (mode !== 'test') return;
-      runtimeObjects = activeLevel.objects.map(item => ({ ...item }));
+      runtimeObjects = activeLevel.objects.map(item => ({ ...item, collected: false }));
       const player = runtimeObjects.find(item => item.type === 'player');
       if (player) runtimePlayer = { ...player };
-      score = 0; draw();
+      score = 0; won = false; gameMessage = ''; draw();
     }
 
     function tick() {
@@ -648,7 +670,7 @@ export function renderStudioScreen(outlet) {
         keys.clear();
         return;
       }
-      if (mode === 'test' && runtimePlayer) {
+      if (mode === 'test' && runtimePlayer && !won) {
         const speed = 3;
         let nextX = runtimePlayer.x;
         let nextY = runtimePlayer.y;
@@ -663,14 +685,26 @@ export function renderStudioScreen(outlet) {
           nextX + half > item.x - item.size && nextX - half < item.x + item.size &&
           nextY + half > item.y - item.size / 2 && nextY - half < item.y + item.size / 2);
         if (!blocked) { runtimePlayer.x = nextX; runtimePlayer.y = nextY; }
-        runtimeObjects.filter(item => item.type === 'crystal').forEach(item => {
+        runtimeObjects.filter(item => item.type === 'crystal' && !item.collected).forEach(item => {
           if (Math.hypot(runtimePlayer.x - item.x, runtimePlayer.y - item.y) < half + item.size) {
             score += 1;
+            item.collected = true;
             playCollectSound();
-            item.x = 36 + Math.random() * 568;
-            item.y = 36 + Math.random() * 288;
           }
         });
+        const exit = runtimeObjects.find(item => item.type === 'exit');
+        const remaining = runtimeObjects.filter(item => item.type === 'crystal' && !item.collected).length;
+        if (exit && Math.hypot(runtimePlayer.x - exit.x, runtimePlayer.y - exit.y) < half + exit.size / 2) {
+          if (remaining === 0) {
+            won = true; gameMessage = 'Уровень успешно завершён';
+            keys.clear();
+            if (musicPlayer) musicPlayer.pause();
+          } else {
+            gameMessage = 'Сначала собери все предметы: ' + remaining;
+          }
+        } else if (gameMessage && !gameMessage.startsWith('Сначала')) {
+          gameMessage = '';
+        }
         draw();
       }
       frame = requestAnimationFrame(tick);
@@ -678,6 +712,7 @@ export function renderStudioScreen(outlet) {
 
     function onKeyDown(event) {
       if (mode !== 'test') return;
+      if (won) return;
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(event.key)) {
         event.preventDefault();
         keys.add(event.key.toLowerCase().startsWith('arrow') ? event.key : event.key.toLowerCase());
