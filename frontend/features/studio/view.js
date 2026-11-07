@@ -478,7 +478,7 @@ export function renderStudioScreen(outlet) {
           <div class="studio-animation-frames studio-direction-frames">${(item.directionalAnimations?.[animationDirectionEditor] || []).map((frame, index) => `<div class="studio-animation-frame"><img src="${frame}" alt="Кадр ${index + 1}"><span>${index + 1}</span><button type="button" data-remove-direction-frame="${index}" aria-label="Удалить кадр ${index + 1}">×</button></div>`).join('') || '<small>Для этого состояния кадры ещё не добавлены.</small>'}</div>
           <small>Добавляй до 4 кадров отдельно для каждого состояния. Если кадров нет, используется обычное изображение или общая анимация.</small>
         </div>` : ''}
-        </div>`;
+      `;
       inspectorActions.innerHTML = `
         <button type="button" class="studio-secondary-action" data-duplicate>＋ Дублировать</button>
         <button type="button" class="studio-danger-action" data-delete ${item.type === 'player' ? 'disabled title="Игрок должен оставаться на сцене"' : ''}>Удалить объект</button>`;
@@ -764,7 +764,7 @@ export function renderStudioScreen(outlet) {
       runtimeObjects = activeLevel.objects.map(item => ({ ...item, collected: false }));
       const player = runtimeObjects.find(item => item.type === 'player');
       if (player) runtimePlayer = { ...player };
-      score = 0; won = false; gameMessage = ''; draw();
+      score = 0; won = false; gameMessage = ''; runtimeDirection = 'down'; runtimeMoving = false; draw();
     }
 
     function tick() {
