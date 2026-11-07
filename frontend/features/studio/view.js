@@ -330,7 +330,7 @@ export function renderStudioScreen(outlet) {
       });
       totalAudio -= replacedData.length;
       totalAssets -= replacedData.length;
-      return totalAudio + nextData.length <= 900000 && totalAssets + nextData.length <= 3800000;
+      return totalAudio + nextData.length <= 900000 && totalAssets + nextData.length <= 3200000;
     }
     function readAudioFile(file) {
       return new Promise((resolve, reject) => {
@@ -356,7 +356,7 @@ export function renderStudioScreen(outlet) {
         level.objects.forEach(object => { total += (object.imageData || '').length; });
       });
       total -= replacedData.length;
-      return total + nextData.length <= 3800000;
+      return total + nextData.length <= 3200000;
     }
     const objectList = outlet.querySelector('.studio-object-list');
     const inspectorFields = outlet.querySelector('.studio-inspector-fields');
@@ -462,7 +462,7 @@ export function renderStudioScreen(outlet) {
         try {
           const data = await compressImageFile(file);
           if (!canStoreImage(project, data, item.imageData)) {
-            alert('В проекте достигнут лимит изображений (примерно 3 МБ после сжатия). Удали ненужные картинки или уменьши их количество.');
+            alert('В проекте достигнут общий лимит ресурсов (около 3,2 МБ). Удали ненужные изображения или аудиофайлы.');
             event.target.value = '';
             return;
           }
@@ -815,7 +815,7 @@ export function renderStudioScreen(outlet) {
       try {
         const data = await compressImageFile(file);
         if (!canStoreImage(project, data, activeLevel.backgroundImage)) {
-          alert('В проекте достигнут лимит изображений (примерно 3 МБ после сжатия). Удали ненужные картинки или уменьши их количество.');
+          alert('В проекте достигнут общий лимит ресурсов (около 3,2 МБ). Удали ненужные изображения или аудиофайлы.');
           event.target.value = '';
           return;
         }
