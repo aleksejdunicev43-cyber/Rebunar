@@ -15,6 +15,8 @@ import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-system-20261104-6';
 import { renderGamesScreen } from '../features/games/view.js';
 import { renderEcosystemScreen } from '../features/ecosystem/view.js';
+import { renderStudioScreen } from '../features/studio/view.js';
+import '../features/studio/studio.css';
 import '../features/ecosystem/ecosystem.css';
 import { renderCommunitiesScreen } from '../features/communities/view.js?v=avatar-system-20261104-6';
 import '../features/messages/messages.css?v=avatar-system-20261104-6';
@@ -112,7 +114,8 @@ for (const [path, title] of Object.entries(screens)) {
     if (path === 'favorites') return renderFavoritesScreen(outlet);
     if (path === 'messages') return renderMessagesScreen(outlet, params);
     if (path === 'games') return renderGamesScreen(outlet);
-    if (['store', 'studio', 'creators', 'mail', 'search', 'notifications'].includes(path)) return renderEcosystemScreen(outlet, path);
+    if (path === 'studio') return renderStudioScreen(outlet);
+    if (['store', 'creators', 'mail', 'search', 'notifications'].includes(path)) return renderEcosystemScreen(outlet, path);
     if (path === 'communities') return renderCommunitiesScreen(outlet);
     if (path === 'profile') {
       const user = getUser();
