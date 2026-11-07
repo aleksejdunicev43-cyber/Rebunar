@@ -30,7 +30,9 @@ function normalizeObjects(source) {
         y: Math.max(12, Math.min(SCENE_HEIGHT - 12, Number(item.y) || 100)),
         size: Math.max(8, Math.min(100, Number(item.size) || 24)),
         color: /^#[0-9a-f]{6}$/i.test(item.color || '') ? item.color : (item.type === 'crystal' ? '#f5d66b' : item.type === 'wall' ? '#64747a' : DEFAULT_COLOR),
-        imageData: typeof item.imageData === 'string' && item.imageData.startsWith('data:image/') ? item.imageData : ''
+        imageData: typeof item.imageData === 'string' && item.imageData.startsWith('data:image/') ? item.imageData : '',
+        animationFrames: Array.isArray(item.animationFrames) ? item.animationFrames.filter(frame => typeof frame === 'string' && frame.startsWith('data:image/')).slice(0, 4) : [],
+        animationSpeed: Math.max(80, Math.min(1000, Number(item.animationSpeed) || 180))
       }))
     : defaultObjects();
   if (!objects.some(item => item.type === 'player')) objects.unshift(defaultObjects()[0]);
@@ -183,6 +185,7 @@ export function renderStudioScreen(outlet) {
     let keys = new Set();
     let frame = 0;
     let drag = null;
+    let animationPreview = false;
 
     outlet.innerHTML = `
       <section class="screen studio-screen studio-editor-screen">
@@ -357,7 +360,7 @@ export function renderStudioScreen(outlet) {
       let total = 0;
       targetProject.levels.forEach(level => {
         total += (level.backgroundImage || '').length + (level.musicData || '').length + (level.collectSoundData || '').length;
-        level.objects.forEach(object => { total += (object.imageData || '').length; });
+        level.objects.forEach(object => { total += (object.imageData || '').length + (object.animationFrames || []).reduce((sum, frame) => sum + frame.length, 0); });
       });
       total -= replacedData.length;
       return total + nextData.length <= 3200000;
@@ -437,6 +440,17 @@ export function renderStudioScreen(outlet) {
           <input class="studio-object-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
           ${item.imageData ? '<button type="button" class="studio-asset-remove">Убрать изображение</button>' : ''}
           <small>PNG, JPG или WebP. Картинка будет подогнана под размер объекта.</small>
+        </div>
+        <div class="studio-animation-controls">
+          <span class="studio-kicker">КАДРОВАЯ АНИМАЦИЯ</span>
+          <div class="studio-animation-toolbar">
+            <button type="button" class="studio-animation-upload">＋ Добавить кадры</button>
+            <input class="studio-animation-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+            <button type="button" class="studio-animation-preview">${animationPreview ? 'Остановить' : '▶ Просмотр'}</button>
+          </div>
+          <label class="studio-field">Скорость: <output class="studio-animation-speed-value">${item.animationSpeed}</output> мс/кадр<input class="studio-animation-speed" type="range" min="80" max="1000" step="20" value="${item.animationSpeed}"></label>
+          <div class="studio-animation-frames">${item.animationFrames.map((frame, index) => `<div class="studio-animation-frame"><img src="${frame}" alt="Кадр ${index + 1}"><span>${index + 1}</span><button type="button" data-remove-frame="${index}" aria-label="Удалить кадр ${index + 1}">×</button></div>`).join('') || '<small>Кадры не добавлены. Можно загрузить до 4 изображений.</small>'}</div>
+          <small>Загрузи 2–4 изображения одного персонажа в разных позах. Кадры будут проигрываться по кругу. Общий лимит ресурсов проекта — около 3,2 МБ.</small>
         </div>`;
       inspectorActions.innerHTML = `
         <button type="button" class="studio-secondary-action" data-duplicate>＋ Дублировать</button>
@@ -460,6 +474,36 @@ export function renderStudioScreen(outlet) {
       bind('.studio-object-size', 'input', input => { item.size = Number(input.value); inspectorFields.querySelector('.studio-size-value').textContent = input.value; });
       bind('.studio-object-color', 'input', input => { item.color = input.value; });
       inspectorFields.querySelector('.studio-asset-upload').addEventListener('click', () => inspectorFields.querySelector('.studio-object-image-input').click());
+      inspectorFields.querySelector('.studio-animation-upload').addEventListener('click', () => inspectorFields.querySelector('.studio-animation-input').click());
+      inspectorFields.querySelector('.studio-animation-input').addEventListener('change', async event => {
+        const files = Array.from(event.target.files || []).slice(0, Math.max(0, 4 - item.animationFrames.length));
+        if (!files.length) { event.target.value = ''; return; }
+        try {
+          for (const file of files) {
+            const data = await compressImageFile(file);
+            if (!canStoreImage(project, data)) { alert('Не хватает места для кадра. Удали другие ресурсы или выбери изображения меньшего размера.'); break; }
+            item.animationFrames.push(data);
+          }
+          animationPreview = item.animationFrames.length > 1;
+          markDirty(); renderInspector(); draw();
+        } catch (error) { alert(error.message || 'Не удалось загрузить кадры.'); }
+        event.target.value = '';
+      });
+      inspectorFields.querySelector('.studio-animation-speed').addEventListener('input', event => {
+        item.animationSpeed = Number(event.target.value);
+        inspectorFields.querySelector('.studio-animation-speed-value').textContent = item.animationSpeed;
+        markDirty(); draw();
+      });
+      inspectorFields.querySelector('.studio-animation-preview').addEventListener('click', () => {
+        animationPreview = !animationPreview;
+        inspectorFields.querySelector('.studio-animation-preview').textContent = animationPreview ? 'Остановить' : '▶ Просмотр';
+        draw();
+      });
+      inspectorFields.querySelectorAll('[data-remove-frame]').forEach(button => button.addEventListener('click', () => {
+        item.animationFrames.splice(Number(button.dataset.removeFrame), 1);
+        if (item.animationFrames.length < 2) animationPreview = false;
+        renderInspector(); markDirty(); draw();
+      }));
       inspectorFields.querySelector('.studio-object-image-input').addEventListener('change', async event => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -537,7 +581,11 @@ export function renderStudioScreen(outlet) {
       sceneObjects.forEach(item => {
         if (mode === 'test' && item.collected) return;
         const isSelected = mode === 'edit' && item.id === selectedId;
-        const objectImage = item.imageData ? cacheImage(item.imageData) : null;
+        const frames = Array.isArray(item.animationFrames) ? item.animationFrames : [];
+        const shouldAnimate = frames.length > 1 && (mode === 'test' || (mode === 'edit' && animationPreview));
+        const animationIndex = shouldAnimate ? Math.floor(performance.now() / (item.animationSpeed || 180)) % frames.length : 0;
+        const imageData = shouldAnimate ? frames[animationIndex] : (frames[0] || item.imageData);
+        const objectImage = imageData ? cacheImage(imageData) : null;
         const drawX = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.x : item.x;
         const drawY = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.y : item.y;
         if (objectImage?.complete && objectImage.naturalWidth) {
@@ -705,6 +753,8 @@ export function renderStudioScreen(outlet) {
         } else {
           gameMessage = '';
         }
+        draw();
+      } else if (mode === 'edit' && animationPreview) {
         draw();
       }
       frame = requestAnimationFrame(tick);
