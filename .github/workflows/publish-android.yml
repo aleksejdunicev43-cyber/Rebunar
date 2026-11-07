@@ -25,16 +25,34 @@ jobs:
       - name: Checkout current Rebunar repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build trusted Rebunar frontend
+        run: |
+          npm ci
+          npm run build
+          test -s frontend/build/index.html
+          grep -R -q 'rebunar://studio/godot' frontend/build/assets
+
       - name: Checkout Android application source
         uses: actions/checkout@v4
         with:
-          ref: feature/rebunar-android-shell
+          ref: feature/android-bundled-frontend
           path: android-source
 
-      - name: Prepare Android project
+      - name: Prepare Android project and bundle frontend
         run: |
           cp -R android-source/android-rebunar ./android-rebunar
           cp android-source/rebunar_avatar.png ./rebunar_avatar.png
+          mkdir -p android-rebunar/app/src/main/assets/build
+          cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
+          test -s android-rebunar/app/src/main/assets/build/index.html
+          unzip -l android-source/android-rebunar/app/src/main/assets/project.godot >/dev/null 2>&1 || true
+
 
       - name: Prepare application icon
         run: |
@@ -76,6 +94,22 @@ jobs:
 
       - name: Build release APK
         run: gradle -p android-rebunar :app:assembleDebug
+
+      - name: Verify embedded Godot and bundled frontend assets
+        run: |
+          APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -l "$APK" | grep -q 'assets/project.godot'
+          unzip -l "$APK" | grep -q 'assets/main.gd'
+          unzip -l "$APK" | grep -q 'assets/build/index.html'
+
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-android-godot-preview
+          path: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
