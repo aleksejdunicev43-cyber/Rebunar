@@ -186,6 +186,7 @@ export function renderStudioScreen(outlet) {
     let won = false;
     let gameMessage = '';
     let keys = new Set();
+    const touchPointers = new Map();
     let frame = 0;
     let drag = null;
     let animationPreview = false;
@@ -270,6 +271,30 @@ export function renderStudioScreen(outlet) {
         <p class="studio-editor-footnote">Первая ступень визуального редактора: объекты и их свойства. Проект сохраняется локально на этом устройстве.</p>
       </section>`;
 
+    const editorScreen = outlet.querySelector('.studio-editor-screen');
+    const compactEditor = window.matchMedia('(max-width: 900px)').matches || (navigator.maxTouchPoints || 0) > 0;
+    if (compactEditor) {
+      editorScreen.classList.add('studio-mobile-editor');
+      const orientationHint = document.createElement('p');
+      orientationHint.className = 'studio-orientation-hint';
+      orientationHint.textContent = 'Для удобной работы поверни телефон горизонтально.';
+      editorScreen.querySelector('.studio-editor-topbar').after(orientationHint);
+      // Fullscreen is required by many Android browsers before they allow landscape locking.
+      try {
+        const fullscreenRequest = editorScreen.requestFullscreen
+          ? editorScreen.requestFullscreen({ navigationUI: 'hide' })
+          : Promise.reject(new Error('Fullscreen is unavailable'));
+        Promise.resolve(fullscreenRequest).catch(() => {}).then(() => {
+          try { return screen.orientation?.lock?.('landscape'); } catch { return null; }
+        }).catch(() => {});
+      } catch {}
+    }
+    function releaseEditorDisplay() {
+      try { screen.orientation?.unlock?.(); } catch {}
+      if (document.fullscreenElement === editorScreen) {
+        try { document.exitFullscreen?.().catch?.(() => {}); } catch {}
+      }
+    }
     const canvas = outlet.querySelector('.studio-game-canvas');
     const ctx = canvas.getContext('2d');
     let musicPlayer = null;
@@ -982,20 +1007,40 @@ export function renderStudioScreen(outlet) {
     outlet.querySelector('.studio-back-button').addEventListener('click', () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('keyup', onKeyUp);
+      document.removeEventListener('pointerup', releaseTouchPointer);
+      document.removeEventListener('pointercancel', releaseTouchPointer);
+      window.removeEventListener('blur', clearMovementInput);
+      releaseEditorDisplay();
       stopLevelAudio();
       cancelAnimationFrame(frame);
       saveProject(false);
       renderList();
     });
 
+    const touchDirectionKeys = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
+    function releaseTouchPointer(event) {
+      const key = touchPointers.get(event.pointerId);
+      if (key) keys.delete(key);
+      touchPointers.delete(event.pointerId);
+    }
+    function clearMovementInput() {
+      keys.clear();
+      touchPointers.clear();
+    }
+    document.addEventListener('pointerup', releaseTouchPointer);
+    document.addEventListener('pointercancel', releaseTouchPointer);
+    window.addEventListener('blur', clearMovementInput);
     outlet.querySelectorAll('[data-dir]').forEach(button => {
-      const map = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
-      const key = map[button.dataset.dir];
-      const release = () => keys.delete(key);
-      button.addEventListener('pointerdown', event => { if (mode !== 'test') return; event.preventDefault(); keys.add(key); button.setPointerCapture?.(event.pointerId); });
-      button.addEventListener('pointerup', release);
-      button.addEventListener('pointerleave', release);
-      button.addEventListener('pointercancel', release);
+      const key = touchDirectionKeys[button.dataset.dir];
+      button.addEventListener('pointerdown', event => {
+        if (mode !== 'test' || !key || won) return;
+        event.preventDefault();
+        keys.add(key);
+        touchPointers.set(event.pointerId, key);
+        button.classList.add('is-pressed');
+      });
+      button.addEventListener('pointerup', () => button.classList.remove('is-pressed'));
+      button.addEventListener('pointercancel', () => button.classList.remove('is-pressed'));
     });
 
     renderObjectList();
