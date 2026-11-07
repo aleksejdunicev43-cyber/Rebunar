@@ -498,7 +498,7 @@ export function renderStudioScreen(outlet) {
     });
 
     outlet.querySelectorAll('[data-dir]').forEach(button => {
-      const map = { up: 'arrowup', down: 'arrowdown', left: 'arrowleft', right: 'arrowright' };
+      const map = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
       const key = map[button.dataset.dir];
       const release = () => keys.delete(key);
       button.addEventListener('pointerdown', event => { if (mode !== 'test') return; event.preventDefault(); keys.add(key); button.setPointerCapture?.(event.pointerId); });
