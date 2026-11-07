@@ -58,6 +58,13 @@ jobs:
           test -s android-rebunar/app/src/main/assets/project.godot
           test -s android-rebunar/app/src/main/assets/main.gd
 
+      - name: Verify Android shell has native Godot and bundled frontend support
+        run: |
+          grep -q 'serveBundledFrontend' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'rebunar://studio/godot' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'org.godotengine:godot:4.7.2.stable' android-rebunar/app/build.gradle.kts
+          grep -q 'minSdk = 24' android-rebunar/app/build.gradle.kts
+
 
       - name: Prepare application icon
         run: |
