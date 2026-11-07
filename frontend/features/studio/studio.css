@@ -107,3 +107,6 @@
 .studio-audio-hint{margin:9px 0 0;line-height:1.5}
 @media(max-width:650px){.studio-audio-controls{grid-template-columns:1fr}.studio-audio-item{grid-template-columns:minmax(0,1fr) auto auto}}
 @media(max-width:380px){.studio-audio-item{grid-template-columns:minmax(0,1fr) auto}.studio-audio-item>div{grid-column:1/-1}}
+
+
+.studio-object-symbol.exit{color:#62e5c1}
