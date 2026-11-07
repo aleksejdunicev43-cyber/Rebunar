@@ -541,7 +541,8 @@ export function renderStudioScreen(outlet) {
       const trimmed = name.trim().slice(0, 40);
       if (!trimmed) { alert('Название уровня не может быть пустым.'); return; }
       activeLevel.name = trimmed;
-      levelSelect.querySelector(`option[value="${CSS.escape(activeLevel.id)}"]`).textContent = trimmed;
+      const selectedOption = Array.from(levelSelect.options).find(option => option.value === activeLevel.id);
+      if (selectedOption) selectedOption.textContent = trimmed;
       markDirty();
     });
     outlet.querySelector('.studio-level-duplicate').addEventListener('click', () => {
