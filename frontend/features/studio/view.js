@@ -400,7 +400,7 @@ export function renderStudioScreen(outlet) {
     function renderObjectList() {
       objectList.innerHTML = activeLevel.objects.map(item => `
         <button type="button" class="studio-object-row ${item.id === selectedId ? 'is-selected' : ''}" data-select-object="${escapeHtml(item.id)}">
-          <span class="studio-object-symbol ${item.type}">${item.type === 'player' ? '■' : item.type === 'crystal' ? '◆' : '▰'}</span>
+          <span class="studio-object-symbol ${item.type}">${item.type === 'player' ? '■' : item.type === 'crystal' ? '◆' : item.type === 'exit' ? '◎' : '▰'}</span>
           <span><strong>${escapeHtml(item.name)}</strong><small>${objectLabel(item.type)}</small></span>
           <span class="studio-object-row-arrow">›</span>
         </button>`).join('') || '<p class="studio-no-objects">На сцене пока нет объектов.</p>';
@@ -702,7 +702,7 @@ export function renderStudioScreen(outlet) {
           } else {
             gameMessage = 'Сначала собери все предметы: ' + remaining;
           }
-        } else if (gameMessage && !gameMessage.startsWith('Сначала')) {
+        } else {
           gameMessage = '';
         }
         draw();
