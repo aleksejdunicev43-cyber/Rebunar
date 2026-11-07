@@ -176,6 +176,14 @@ export function renderStudioScreen(outlet) {
   }
 
   function renderEditor() {
+    const previousEditor = document.querySelector('.studio-editor-screen');
+    if (previousEditor) {
+      try { screen.orientation?.unlock?.(); } catch {}
+      if (document.fullscreenElement === previousEditor) {
+        try { document.exitFullscreen?.().catch?.(() => {}); } catch {}
+      }
+      previousEditor.remove();
+    }
     const project = activeProject;
     let activeLevel = project.levels.find(level => level.id === project.activeLevelId) || project.levels[0];
     let mode = 'edit';
@@ -273,6 +281,10 @@ export function renderStudioScreen(outlet) {
 
     const editorScreen = outlet.querySelector('.studio-editor-screen');
     const compactEditor = window.matchMedia('(max-width: 900px)').matches || (navigator.maxTouchPoints || 0) > 0;
+    // Mount the editor outside the social-feed shell as a dedicated workspace.
+    document.body.classList.add('rebunar-studio-active');
+    document.body.appendChild(editorScreen);
+
     if (compactEditor) {
       editorScreen.classList.add('studio-mobile-editor');
       const orientationHint = document.createElement('p');
@@ -294,6 +306,8 @@ export function renderStudioScreen(outlet) {
       if (document.fullscreenElement === editorScreen) {
         try { document.exitFullscreen?.().catch?.(() => {}); } catch {}
       }
+      editorScreen.remove();
+      document.body.classList.remove('rebunar-studio-active');
     }
     const canvas = outlet.querySelector('.studio-game-canvas');
     const ctx = canvas.getContext('2d');
