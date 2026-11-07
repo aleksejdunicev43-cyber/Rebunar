@@ -52,7 +52,7 @@ export function renderStudioScreen(outlet) {
           <div>
             <span class="ecosystem-eyebrow">REBUNAR / STUDIO</span>
             <h1>Rebunar Studio</h1>
-            <p>Создавай игру постепенно: сначала запусти основу, затем меняй её в редакторе и подключай ИИ-помощника.</p>
+            <p>Создавай игры самостоятельно: начинай с шаблона, запускай проект и настраивай его в редакторе.</p>
           </div>
           <span class="studio-status"><i></i> ПЕРВАЯ ВЕРСИЯ</span>
         </header>
@@ -83,10 +83,6 @@ export function renderStudioScreen(outlet) {
             </article>
           `).join('') : '<div class="studio-empty"><span>✦</span><h3>Здесь появится твоя первая игра</h3><p>Создай проект выше — и сразу перейдём к его запуску и настройке.</p></div>'}
         </div>
-        <section class="studio-roadmap">
-          <div><span class="studio-kicker">КАК БУДЕТ РАСТИ СТУДИЯ</span><h2>От идеи до публикации</h2></div>
-          <div class="studio-roadmap-steps"><article><b>01</b><strong>Игровая основа</strong><span>Запускаемый шаблон и сохранение проекта</span></article><article><b>02</b><strong>Визуальный редактор</strong><span>Сцены, персонажи, объекты и правила</span></article><article><b>03</b><strong>ИИ-помощник</strong><span>Создание и изменение игры по описанию</span></article><article><b>04</b><strong>Публикация</strong><span>Сборка и размещение в магазине Rebunar</span></article></div>
-        </section>
         <p class="studio-storage-note">Сейчас проекты сохраняются только в этом браузере на этом устройстве. Облачное хранение аккаунта добавим отдельно.</p>
       </section>`;
 
@@ -126,7 +122,7 @@ export function renderStudioScreen(outlet) {
           <div class="studio-editor-project-name"><span class="studio-live-dot"></span><strong>${escapeHtml(project.name)}</strong><small>СОХРАНЕНО ЛОКАЛЬНО</small></div>
           <button class="studio-save-button" type="button">Сохранить проект</button>
         </div>
-        <header class="studio-editor-heading"><div><span class="studio-kicker">РЕДАКТОР ПРОЕКТА</span><h1>${escapeHtml(project.name)}</h1><p>Это первая рабочая версия: можно запустить игру, управлять персонажем и менять его внешний вид и скорость.</p></div><span class="studio-status"><i></i> ИГРА ЗАПУСКАЕТСЯ</span></header>
+        <header class="studio-editor-heading"><div><span class="studio-kicker">РЕДАКТОР ПРОЕКТА</span><h1>${escapeHtml(project.name)}</h1><p>Рабочее пространство проекта: игровая сцена, управление и настройки.</p></div><span class="studio-status"><i></i> ИГРА ЗАПУСКАЕТСЯ</span></header>
         <div class="studio-workspace">
           <section class="studio-preview-panel">
             <div class="studio-panel-toolbar"><div><span class="studio-kicker">ПРЕДПРОСМОТР</span><strong>Игровая сцена</strong></div><span class="studio-resolution">640 × 360</span></div>
@@ -141,10 +137,9 @@ export function renderStudioScreen(outlet) {
             <div class="studio-inspector-title"><span class="studio-kicker">ПРОЕКТ</span><strong>Описание игры</strong></div>
             <label class="studio-field">Название<input class="studio-name-input" maxlength="48" value="${escapeHtml(project.name)}"></label>
             <label class="studio-field">Идея<textarea class="studio-description-input" rows="4" maxlength="500">${escapeHtml(project.description || '')}</textarea></label>
-            <div class="studio-ai-card"><span class="studio-ai-symbol">✧</span><div><strong>ИИ-помощник</strong><p>Подключим ИИ-модель через серверный API. Ключи доступа не будут храниться в браузере.</p><span>ПОДГОТАВЛИВАЕТСЯ</span></div></div>
           </aside>
         </div>
-        <div class="studio-editor-footnote">Это первый прототип редактора, а не финальная игровая студия. Сейчас работают запуск игры, управление, изменение цвета и скорости, а также локальное сохранение.</div>
+        <div class="studio-editor-footnote">Первый этап редактора: запуск игры, управление, настройка персонажа и локальное сохранение проекта.</div>
       </section>`;
 
     const canvas = outlet.querySelector('.studio-game-canvas');
