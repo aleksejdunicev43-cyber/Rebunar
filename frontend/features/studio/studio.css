@@ -352,3 +352,27 @@ body.rebunar-studio-active .studio-panel-toolbar {
     grid-template-columns: minmax(104px, 14vw) minmax(0,1fr) minmax(132px, 17vw) !important;
   }
 }
+
+
+/* Native Godot runtime entry — shown only inside the Rebunar Android app. */
+.studio-native-engine-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex:none;
+  min-height:40px;
+  padding:0 14px;
+  border:1px solid color-mix(in srgb,var(--accent) 58%,var(--border));
+  border-radius:8px;
+  background:color-mix(in srgb,var(--accent) 13%,var(--bg-panel));
+  color:var(--text-main);
+  font-size:11px;
+  font-weight:850;
+  text-decoration:none;
+}
+.studio-native-engine-button span{color:var(--accent);font-size:16px}
+.studio-native-engine-button:active{background:color-mix(in srgb,var(--accent) 22%,var(--bg-panel))}
+@media(max-width:680px){
+  .studio-native-engine-button{width:100%;box-sizing:border-box}
+}
