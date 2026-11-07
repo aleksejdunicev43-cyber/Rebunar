@@ -211,7 +211,7 @@ body.rebunar-studio-active > #app,
 body.rebunar-studio-active .app-shell { display: none !important; }
 body.rebunar-studio-active > .studio-editor-screen {
   position: fixed !important; inset: 0 !important; z-index: 10000 !important;
-  display: grid !important; grid-template-rows: auto auto auto minmax(0,1fr) !important;
+  display: grid !important; grid-template-rows: auto auto auto auto minmax(0,1fr) !important;
   align-content: stretch !important; gap: 8px !important;
   width: 100vw !important; height: 100dvh !important; min-height: 0 !important;
   max-height: 100dvh !important; box-sizing: border-box !important;
@@ -291,7 +291,7 @@ body.rebunar-studio-active .studio-inspector-actions { flex:0 0 auto; }
   body.rebunar-studio-active .studio-touch-pad button { min-width:29px; min-height:26px; font-size:12px; }
 }
 @media (max-width:680px) and (orientation:portrait) {
-  body.rebunar-studio-active > .studio-editor-screen { grid-template-rows:auto auto auto minmax(0,1fr) !important; }
+  body.rebunar-studio-active > .studio-editor-screen { grid-template-rows:auto auto auto auto minmax(0,1fr) !important; }
   body.rebunar-studio-active .studio-level-manager { max-height:76px; flex-wrap:wrap; }
   body.rebunar-studio-active .studio-audio-manager { max-height:68px; flex-wrap:wrap; }
   body.rebunar-studio-active .studio-visual-workspace { grid-template-columns:minmax(0,1fr) !important; grid-template-rows:minmax(0,1fr) !important; }
