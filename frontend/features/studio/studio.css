@@ -203,3 +203,98 @@
 @media (max-width: 680px) and (orientation: portrait) {
   .studio-editor-screen.studio-mobile-editor .studio-visual-workspace { grid-template-columns: 1fr; }
 }
+
+
+/* REBUNAR STUDIO — dedicated fixed workbench layout */
+body.rebunar-studio-active { overflow: hidden !important; }
+body.rebunar-studio-active > #app,
+body.rebunar-studio-active .app-shell { display: none !important; }
+body.rebunar-studio-active > .studio-editor-screen {
+  position: fixed !important; inset: 0 !important; z-index: 10000 !important;
+  display: grid !important; grid-template-rows: auto auto auto auto minmax(0,1fr) !important;
+  align-content: stretch !important; gap: 8px !important;
+  width: 100vw !important; height: 100dvh !important; min-height: 0 !important;
+  max-height: 100dvh !important; box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)) !important;
+  overflow: hidden !important; overscroll-behavior: none !important; background: var(--bg-main) !important;
+}
+body.rebunar-studio-active .studio-editor-topbar { min-height: 34px; max-height: 38px; overflow: hidden; }
+body.rebunar-studio-active .studio-editor-heading,
+body.rebunar-studio-active .studio-editor-footnote,
+body.rebunar-studio-active .studio-orientation-hint { display: none !important; }
+body.rebunar-studio-active .studio-level-manager {
+  display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:10px;
+  min-height:38px; max-height:42px; box-sizing:border-box; padding:5px 9px; overflow:hidden;
+}
+body.rebunar-studio-active .studio-level-heading { display:flex; flex-direction:row; align-items:center; gap:7px; flex:0 0 auto; }
+body.rebunar-studio-active .studio-level-heading .studio-kicker { display:none; }
+body.rebunar-studio-active .studio-level-heading strong { font-size:11px; }
+body.rebunar-studio-active .studio-level-controls { display:flex; flex:1 1 auto; justify-content:flex-end; flex-wrap:nowrap; gap:5px; min-width:0; }
+body.rebunar-studio-active .studio-level-controls button,
+body.rebunar-studio-active .studio-level-select { min-height:28px; max-width:140px; padding:4px 7px; font-size:9px; }
+body.rebunar-studio-active .studio-audio-manager {
+  display:flex; align-items:center; gap:8px; min-height:38px; max-height:42px;
+  box-sizing:border-box; margin:0; padding:4px 8px; overflow:hidden;
+}
+body.rebunar-studio-active .studio-audio-manager > .studio-level-heading { flex:0 0 auto; }
+body.rebunar-studio-active .studio-audio-controls {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); flex:1 1 auto; gap:6px; min-width:0; margin:0;
+}
+body.rebunar-studio-active .studio-audio-item { grid-template-columns:minmax(0,1fr) auto auto; gap:4px; padding:3px 5px; min-height:28px; }
+body.rebunar-studio-active .studio-audio-item strong { font-size:9px; }
+body.rebunar-studio-active .studio-audio-item small,
+body.rebunar-studio-active .studio-audio-hint { display:none !important; }
+body.rebunar-studio-active .studio-audio-item button { min-height:24px; padding:0 6px; font-size:8px; }
+body.rebunar-studio-active .studio-mode-switch { min-height:34px; max-height:36px; align-items:center; }
+body.rebunar-studio-active .studio-mode-switch button { min-height:28px; padding:0 11px; }
+body.rebunar-studio-active .studio-visual-workspace {
+  display:grid !important; grid-template-columns:minmax(128px,17vw) minmax(0,1fr) minmax(165px,21vw) !important;
+  grid-template-rows:minmax(0,1fr) !important; align-items:stretch !important; gap:8px !important;
+  min-width:0 !important; min-height:0 !important; height:100% !important; overflow:hidden !important;
+}
+body.rebunar-studio-active .studio-object-panel,
+body.rebunar-studio-active .studio-inspector {
+  display:flex !important; flex-direction:column !important; min-width:0 !important; min-height:0 !important;
+  max-height:none !important; padding:8px !important; overflow-x:hidden !important; overflow-y:auto !important; overscroll-behavior:contain;
+}
+body.rebunar-studio-active .studio-object-list { max-height:none; min-height:0; overflow-y:auto; }
+body.rebunar-studio-active .studio-preview-panel {
+  display:flex; flex-direction:column; justify-content:center; min-width:0; min-height:0; padding:8px; overflow:hidden;
+}
+body.rebunar-studio-active .studio-panel-toolbar { flex:0 0 auto; margin-bottom:6px; }
+body.rebunar-studio-active .studio-canvas-wrap {
+  display:flex; align-items:center; justify-content:center; flex:1 1 auto; min-width:0; min-height:0; overflow:hidden;
+}
+body.rebunar-studio-active .studio-game-canvas {
+  display:block; width:auto !important; height:auto !important; max-width:100% !important; max-height:100% !important;
+  aspect-ratio:16/9; object-fit:contain;
+}
+body.rebunar-studio-active .studio-game-controls { flex:0 0 auto; min-height:38px; margin-top:6px; }
+body.rebunar-studio-active .studio-touch-pad button { min-width:34px; min-height:30px; }
+body.rebunar-studio-active .studio-inspector-fields { min-height:0; }
+body.rebunar-studio-active .studio-inspector-actions { flex:0 0 auto; }
+@media (max-width:900px) and (orientation:landscape), (max-height:560px) and (orientation:landscape) {
+  body.rebunar-studio-active > .studio-editor-screen { gap:5px !important; padding:5px !important; }
+  body.rebunar-studio-active .studio-editor-topbar { min-height:29px; max-height:31px; }
+  body.rebunar-studio-active .studio-level-manager,
+  body.rebunar-studio-active .studio-audio-manager { min-height:32px; max-height:34px; padding:3px 6px; }
+  body.rebunar-studio-active .studio-level-controls button,
+  body.rebunar-studio-active .studio-level-select { min-height:24px; }
+  body.rebunar-studio-active .studio-mode-switch { min-height:29px; max-height:30px; }
+  body.rebunar-studio-active .studio-mode-switch button { min-height:24px; }
+  body.rebunar-studio-active .studio-visual-workspace { grid-template-columns:118px minmax(0,1fr) 155px !important; gap:5px !important; }
+  body.rebunar-studio-active .studio-object-panel,
+  body.rebunar-studio-active .studio-inspector,
+  body.rebunar-studio-active .studio-preview-panel { padding:5px !important; }
+  body.rebunar-studio-active .studio-game-controls { min-height:31px; margin-top:3px; }
+  body.rebunar-studio-active .studio-touch-pad button { min-width:29px; min-height:26px; font-size:12px; }
+}
+@media (max-width:680px) and (orientation:portrait) {
+  body.rebunar-studio-active > .studio-editor-screen { grid-template-rows:auto auto auto auto minmax(0,1fr) !important; }
+  body.rebunar-studio-active .studio-level-manager { max-height:76px; flex-wrap:wrap; }
+  body.rebunar-studio-active .studio-audio-manager { max-height:68px; flex-wrap:wrap; }
+  body.rebunar-studio-active .studio-visual-workspace { grid-template-columns:minmax(0,1fr) !important; grid-template-rows:minmax(0,1fr) !important; }
+  body.rebunar-studio-active .studio-object-panel,
+  body.rebunar-studio-active .studio-inspector { display:none !important; }
+}
