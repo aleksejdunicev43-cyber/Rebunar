@@ -67,8 +67,8 @@ export function renderStudioScreen(outlet) {
             <label>Стартовый шаблон
               <select name="template">
                 <option value="topdown">2D — вид сверху</option>
-                <option value="platformer">2D — платформер (основа)</option>
-                <option value="puzzle">2D — головоломка (основа)</option>
+                <option value="platformer" disabled>2D — платформер (следующий этап)</option>
+                <option value="puzzle" disabled>2D — головоломка (следующий этап)</option>
               </select>
             </label>
             <button class="studio-primary-button" type="submit"><span>＋</span> Создать проект</button>
