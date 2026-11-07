@@ -189,7 +189,12 @@ export function renderStudioScreen(outlet) {
     }
 
     function tick() {
-      if (!canvas.isConnected) return;
+      if (!canvas.isConnected) {
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+        keys.clear();
+        return;
+      }
       const speed = Number(project.speed) || 3;
       if (keys.has('ArrowUp') || keys.has('w')) player.y -= speed;
       if (keys.has('ArrowDown') || keys.has('s')) player.y += speed;
