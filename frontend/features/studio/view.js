@@ -320,13 +320,17 @@ export function renderStudioScreen(outlet) {
       });
     }
     function canStoreAudio(targetProject, nextData, replacedData = '') {
-      let total = 0;
+      let totalAssets = 0;
+      let totalAudio = 0;
       targetProject.levels.forEach(level => {
-        total += (level.musicData || '').length + (level.collectSoundData || '').length + (level.backgroundImage || '').length;
-        level.objects.forEach(object => { total += (object.imageData || '').length; });
+        const levelAudio = (level.musicData || '').length + (level.collectSoundData || '').length;
+        totalAudio += levelAudio;
+        totalAssets += levelAudio + (level.backgroundImage || '').length;
+        level.objects.forEach(object => { totalAssets += (object.imageData || '').length; });
       });
-      total -= replacedData.length;
-      return total + nextData.length <= 3800000;
+      totalAudio -= replacedData.length;
+      totalAssets -= replacedData.length;
+      return totalAudio + nextData.length <= 900000 && totalAssets + nextData.length <= 3800000;
     }
     function readAudioFile(file) {
       return new Promise((resolve, reject) => {
