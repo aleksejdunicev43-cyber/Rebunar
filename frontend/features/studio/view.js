@@ -458,12 +458,14 @@ export function renderStudioScreen(outlet) {
       sceneObjects.forEach(item => {
         const isSelected = mode === 'edit' && item.id === selectedId;
         const objectImage = item.imageData ? cacheImage(item.imageData) : null;
+        const drawX = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.x : item.x;
+        const drawY = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.y : item.y;
         if (objectImage?.complete && objectImage.naturalWidth) {
           ctx.save();
           if (item.type === 'wall') {
-            ctx.drawImage(objectImage, item.x - item.size, item.y - item.size / 2, item.size * 2, item.size);
+            ctx.drawImage(objectImage, drawX - item.size, drawY - item.size / 2, item.size * 2, item.size);
           } else {
-            ctx.drawImage(objectImage, item.x - item.size / 2, item.y - item.size / 2, item.size, item.size);
+            ctx.drawImage(objectImage, drawX - item.size / 2, drawY - item.size / 2, item.size, item.size);
           }
           ctx.restore();
         } else if (item.type === 'wall') {
@@ -475,10 +477,8 @@ export function renderStudioScreen(outlet) {
           ctx.fillStyle = item.color; ctx.shadowColor = item.color; ctx.shadowBlur = 12;
           ctx.fillRect(-item.size / 1.4, -item.size / 1.4, item.size * 1.4, item.size * 1.4); ctx.restore();
         } else {
-          const x = mode === 'test' && runtimePlayer ? runtimePlayer.x : item.x;
-          const y = mode === 'test' && runtimePlayer ? runtimePlayer.y : item.y;
           ctx.fillStyle = item.color; ctx.shadowColor = item.color; ctx.shadowBlur = 16;
-          ctx.fillRect(x - item.size / 2, y - item.size / 2, item.size, item.size); ctx.shadowBlur = 0;
+          ctx.fillRect(drawX - item.size / 2, drawY - item.size / 2, item.size, item.size); ctx.shadowBlur = 0;
         }
         if (isSelected) {
           ctx.save(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
@@ -664,7 +664,22 @@ export function renderStudioScreen(outlet) {
     });
 
     const backgroundInput = outlet.querySelector('.studio-background-input');
-    outlet.querySelector('.studio-background-button').addEventListener('click', () => backgroundInput.click());
+    const backgroundButton = outlet.querySelector('.studio-background-button');
+    if (activeLevel.backgroundImage) {
+      backgroundButton.textContent = 'Заменить фон';
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'studio-background-remove';
+      remove.textContent = 'Убрать фон';
+      backgroundButton.after(remove);
+      remove.addEventListener('click', () => {
+        activeLevel.backgroundImage = '';
+        remove.remove();
+        backgroundButton.textContent = '▧ Фон уровня';
+        markDirty(); draw();
+      });
+    }
+    backgroundButton.addEventListener('click', () => backgroundInput.click());
     backgroundInput.addEventListener('change', async event => {
       const file = event.target.files?.[0];
       if (!file) return;
@@ -678,6 +693,21 @@ export function renderStudioScreen(outlet) {
         activeLevel.backgroundImage = data;
         cacheImage(data);
         markDirty(); draw();
+        const oldButton = outlet.querySelector('.studio-background-button');
+        oldButton.textContent = 'Заменить фон';
+        if (!outlet.querySelector('.studio-background-remove')) {
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'studio-background-remove';
+          remove.textContent = 'Убрать фон';
+          oldButton.after(remove);
+          remove.addEventListener('click', () => {
+            activeLevel.backgroundImage = '';
+            remove.remove();
+            oldButton.textContent = '▧ Фон уровня';
+            markDirty(); draw();
+          });
+        }
       } catch (error) {
         alert(error.message || 'Не удалось загрузить фон.');
       }
