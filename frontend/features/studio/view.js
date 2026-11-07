@@ -261,9 +261,11 @@ export function renderStudioScreen(outlet) {
     const ctx = canvas.getContext('2d');
     let musicPlayer = null;
     let soundPlayer = null;
+    let soundPlayerData = '';
     function stopLevelAudio() {
       if (musicPlayer) { musicPlayer.pause(); musicPlayer.currentTime = 0; musicPlayer = null; }
       if (soundPlayer) { soundPlayer.pause(); soundPlayer.currentTime = 0; soundPlayer = null; }
+      soundPlayerData = '';
     }
     function startLevelMusic() {
       if (!activeLevel.musicData) return;
@@ -272,9 +274,10 @@ export function renderStudioScreen(outlet) {
     }
     function playCollectSound() {
       if (!activeLevel.collectSoundData) return;
-      if (!soundPlayer || soundPlayer.src !== activeLevel.collectSoundData) {
+      if (!soundPlayer || soundPlayerData !== activeLevel.collectSoundData) {
         soundPlayer = new Audio(activeLevel.collectSoundData);
         soundPlayer.volume = 0.7;
+        soundPlayerData = activeLevel.collectSoundData;
       }
       soundPlayer.currentTime = 0;
       soundPlayer.play().catch(() => {});
@@ -319,10 +322,11 @@ export function renderStudioScreen(outlet) {
     function canStoreAudio(targetProject, nextData, replacedData = '') {
       let total = 0;
       targetProject.levels.forEach(level => {
-        total += (level.musicData || '').length + (level.collectSoundData || '').length;
+        total += (level.musicData || '').length + (level.collectSoundData || '').length + (level.backgroundImage || '').length;
+        level.objects.forEach(object => { total += (object.imageData || '').length; });
       });
       total -= replacedData.length;
-      return total + nextData.length <= 900000;
+      return total + nextData.length <= 3800000;
     }
     function readAudioFile(file) {
       return new Promise((resolve, reject) => {
@@ -344,11 +348,11 @@ export function renderStudioScreen(outlet) {
     function canStoreImage(targetProject, nextData, replacedData = '') {
       let total = 0;
       targetProject.levels.forEach(level => {
-        if (level.backgroundImage) total += level.backgroundImage.length;
-        level.objects.forEach(object => { if (object.imageData) total += object.imageData.length; });
+        total += (level.backgroundImage || '').length + (level.musicData || '').length + (level.collectSoundData || '').length;
+        level.objects.forEach(object => { total += (object.imageData || '').length; });
       });
       total -= replacedData.length;
-      return total + nextData.length <= 3200000;
+      return total + nextData.length <= 3800000;
     }
     const objectList = outlet.querySelector('.studio-object-list');
     const inspectorFields = outlet.querySelector('.studio-inspector-fields');
@@ -778,7 +782,7 @@ export function renderStudioScreen(outlet) {
       activeLevel.musicData = ''; renderAudioControls(); markDirty();
     });
     outlet.querySelector('.studio-sound-remove').addEventListener('click', () => {
-      if (soundPlayer) { soundPlayer.pause(); soundPlayer = null; }
+      if (soundPlayer) { soundPlayer.pause(); soundPlayer = null; soundPlayerData = ''; }
       activeLevel.collectSoundData = ''; renderAudioControls(); markDirty();
     });
     renderAudioControls();
