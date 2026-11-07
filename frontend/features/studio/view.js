@@ -149,11 +149,11 @@ export function renderStudioScreen(outlet) {
     let mode = 'edit';
     let selectedId = project.objects.find(item => item.type === 'player')?.id || project.objects[0]?.id;
     let runtimePlayer = null;
+    let runtimeObjects = null;
     let score = 0;
     let keys = new Set();
     let frame = 0;
     let drag = null;
-    const startPositions = project.objects.map(item => ({ id: item.id, x: item.x, y: item.y }));
 
     outlet.innerHTML = `
       <section class="screen studio-screen studio-editor-screen">
@@ -333,8 +333,8 @@ export function renderStudioScreen(outlet) {
         for (let x = 0; x <= SCENE_WIDTH; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SCENE_HEIGHT); ctx.stroke(); }
         for (let y = 0; y <= SCENE_HEIGHT; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SCENE_WIDTH, y); ctx.stroke(); }
       }
-      const playerObject = project.objects.find(item => item.type === 'player');
-      project.objects.forEach(item => {
+      const sceneObjects = mode === 'test' && runtimeObjects ? runtimeObjects : project.objects;
+      sceneObjects.forEach(item => {
         const isSelected = mode === 'edit' && item.id === selectedId;
         if (item.type === 'wall') {
           ctx.fillStyle = item.color;
@@ -361,7 +361,6 @@ export function renderStudioScreen(outlet) {
         ctx.fillStyle = '#e9f3ef'; ctx.font = 'bold 14px system-ui'; ctx.fillText('КРИСТАЛЛЫ: ' + score, 18, 26);
         ctx.fillStyle = 'rgba(230,240,236,.55)'; ctx.font = '12px system-ui'; ctx.fillText('Найди все предметы на уровне', 18, 346);
       }
-      void playerObject;
     }
 
     function hitTest(x, y) {
@@ -419,22 +418,21 @@ export function renderStudioScreen(outlet) {
       outlet.querySelector('.studio-reset-button').hidden = mode !== 'test';
       outlet.querySelectorAll('.studio-add-object').forEach(button => { button.disabled = mode !== 'edit'; });
       if (mode === 'test') {
-        runtimePlayer = { ...project.objects.find(item => item.type === 'player') };
+        runtimeObjects = project.objects.map(item => ({ ...item }));
+        runtimePlayer = { ...runtimeObjects.find(item => item.type === 'player') };
         score = 0;
       } else {
         runtimePlayer = null;
+        runtimeObjects = null;
       }
       draw();
     }
 
     function resetTest() {
       if (mode !== 'test') return;
-      const player = project.objects.find(item => item.type === 'player');
+      runtimeObjects = project.objects.map(item => ({ ...item }));
+      const player = runtimeObjects.find(item => item.type === 'player');
       if (player) runtimePlayer = { ...player };
-      project.objects.filter(item => item.type === 'crystal').forEach(item => {
-        const start = startPositions.find(position => position.id === item.id);
-        if (start) { item.x = start.x; item.y = start.y; }
-      });
       score = 0; draw();
     }
 
@@ -456,11 +454,11 @@ export function renderStudioScreen(outlet) {
         const half = runtimePlayer.size / 2;
         nextX = clamp(nextX, half, SCENE_WIDTH - half);
         nextY = clamp(nextY, half, SCENE_HEIGHT - half);
-        const blocked = project.objects.some(item => item.type === 'wall' &&
+        const blocked = runtimeObjects.some(item => item.type === 'wall' &&
           nextX + half > item.x - item.size && nextX - half < item.x + item.size &&
           nextY + half > item.y - item.size / 2 && nextY - half < item.y + item.size / 2);
         if (!blocked) { runtimePlayer.x = nextX; runtimePlayer.y = nextY; }
-        project.objects.filter(item => item.type === 'crystal').forEach(item => {
+        runtimeObjects.filter(item => item.type === 'crystal').forEach(item => {
           if (Math.hypot(runtimePlayer.x - item.x, runtimePlayer.y - item.y) < half + item.size) {
             score += 1;
             item.x = 36 + Math.random() * 568;
