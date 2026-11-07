@@ -19,9 +19,9 @@ function defaultObjects() {
   ];
 }
 
-function normalizeProject(project) {
-  const objects = Array.isArray(project.objects) && project.objects.length
-    ? project.objects.map((item, index) => ({
+function normalizeObjects(source) {
+  const objects = Array.isArray(source) && source.length
+    ? source.map((item, index) => ({
         id: String(item.id || makeId()),
         type: ['player', 'crystal', 'wall'].includes(item.type) ? item.type : 'wall',
         name: String(item.name || (item.type === 'player' ? 'Игрок' : item.type === 'crystal' ? 'Кристалл' : 'Стена')),
@@ -32,13 +32,34 @@ function normalizeProject(project) {
       }))
     : defaultObjects();
   if (!objects.some(item => item.type === 'player')) objects.unshift(defaultObjects()[0]);
+  return objects;
+}
+
+function normalizeLevel(level, index) {
+  return {
+    id: String(level.id || makeId()),
+    name: String(level.name || `Уровень ${index + 1}`),
+    objects: normalizeObjects(level.objects)
+  };
+}
+
+function normalizeProject(project) {
+  // Older projects stored one scene directly in project.objects.
+  const sourceLevels = Array.isArray(project.levels) && project.levels.length
+    ? project.levels
+    : [{ id: 'level-1', name: 'Уровень 1', objects: project.objects }];
+  const levels = sourceLevels.map(normalizeLevel);
+  const activeLevelId = levels.some(level => level.id === project.activeLevelId)
+    ? project.activeLevelId
+    : levels[0].id;
   return {
     ...project,
     id: String(project.id || makeId()),
     name: String(project.name || 'Новая игра'),
     template: 'topdown',
     description: String(project.description || 'Моя первая игра'),
-    objects
+    levels,
+    activeLevelId
   };
 }
 
@@ -106,7 +127,7 @@ export function renderStudioScreen(outlet) {
           ${projects.length ? projects.map(project => `
             <article class="studio-project-card" data-project-id="${escapeHtml(project.id)}">
               <div class="studio-project-art"><span class="studio-art-orbit"></span><span class="studio-art-player"></span><span class="studio-art-gem">◆</span><small>2D GAME</small></div>
-              <div class="studio-project-info"><span class="studio-kicker">ВИД СВЕРХУ · ${project.objects.length} ОБЪЕКТОВ</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description || 'Новый игровой проект')}</p><button class="studio-open-button" data-open-project="${escapeHtml(project.id)}">Открыть редактор <span>→</span></button></div>
+              <div class="studio-project-info"><span class="studio-kicker">ВИД СВЕРХУ · ${project.levels.reduce((total, level) => total + level.objects.length, 0)} ОБЪЕКТОВ · ${project.levels.length} УР.</span><h3>${escapeHtml(project.name)}</h3><p>${escapeHtml(project.description || 'Новый игровой проект')}</p><button class="studio-open-button" data-open-project="${escapeHtml(project.id)}">Открыть редактор <span>→</span></button></div>
             </article>
           `).join('') : '<div class="studio-empty"><span>✦</span><h3>Здесь появится твоя первая игра</h3><p>Создай проект выше — и перейдём к редактору сцены.</p></div>'}
         </div>
@@ -121,7 +142,7 @@ export function renderStudioScreen(outlet) {
       const project = normalizeProject({
         id: makeId(), name, template: 'topdown',
         description: 'Найди кристалл и собери очки.',
-        createdAt: Date.now(), objects: defaultObjects()
+        createdAt: Date.now(), levels: [{ id: makeId(), name: 'Уровень 1', objects: defaultObjects() }]
       });
       projects = [project, ...projects];
       if (!writeProjects(projects)) {
@@ -146,8 +167,9 @@ export function renderStudioScreen(outlet) {
 
   function renderEditor() {
     const project = activeProject;
+    let activeLevel = project.levels.find(level => level.id === project.activeLevelId) || project.levels[0];
     let mode = 'edit';
-    let selectedId = project.objects.find(item => item.type === 'player')?.id || project.objects[0]?.id;
+    let selectedId = activeLevel.objects.find(item => item.type === 'player')?.id || activeLevel.objects[0]?.id;
     let runtimePlayer = null;
     let runtimeObjects = null;
     let score = 0;
@@ -163,6 +185,18 @@ export function renderStudioScreen(outlet) {
           <button class="studio-save-button" type="button">Сохранить</button>
         </div>
         <header class="studio-editor-heading"><div><span class="studio-kicker">РАБОЧЕЕ ПРОСТРАНСТВО</span><h1>${escapeHtml(project.name)}</h1><p>Добавляй объекты, перемещай их по сцене, меняй свойства и запускай тест игры.</p></div><span class="studio-status"><i></i> 2D · ВИД СВЕРХУ</span></header>
+        <div class="studio-level-manager">
+          <div class="studio-level-heading"><span class="studio-kicker">СТРУКТУРА ИГРЫ</span><strong>Уровни</strong></div>
+          <div class="studio-level-controls">
+            <select class="studio-level-select" aria-label="Выбрать уровень">
+              ${project.levels.map(level => `<option value="${escapeHtml(level.id)}" ${level.id === activeLevel.id ? 'selected' : ''}>${escapeHtml(level.name)}</option>`).join('')}
+            </select>
+            <button type="button" class="studio-level-add">＋ Новый уровень</button>
+            <button type="button" class="studio-level-rename">Переименовать</button>
+            <button type="button" class="studio-level-duplicate">Копировать</button>
+            <button type="button" class="studio-level-delete" ${project.levels.length <= 1 ? 'disabled' : ''}>Удалить</button>
+          </div>
+        </div>
         <div class="studio-mode-switch" role="group" aria-label="Режим редактора">
           <button class="is-active" type="button" data-mode="edit">✥ Редактор сцены</button>
           <button type="button" data-mode="test">▶ Тест игры</button>
@@ -174,7 +208,7 @@ export function renderStudioScreen(outlet) {
             <button class="studio-add-object" type="button" data-add="crystal"><span class="studio-object-symbol crystal">◆</span> Предмет</button>
             <button class="studio-add-object" type="button" data-add="wall"><span class="studio-object-symbol wall">▰</span> Препятствие</button>
             <div class="studio-inspector-divider"></div>
-            <div class="studio-inspector-title"><span class="studio-kicker">СЦЕНА</span><strong>Объекты <span class="studio-object-count">${project.objects.length}</span></strong></div>
+            <div class="studio-inspector-title"><span class="studio-kicker">СЦЕНА</span><strong>Объекты <span class="studio-object-count">${activeLevel.objects.length}</span></strong></div>
             <div class="studio-object-list"></div>
             <p class="studio-tool-hint">Выбери объект в списке или коснись его на сцене, чтобы изменить.</p>
           </aside>
@@ -210,7 +244,7 @@ export function renderStudioScreen(outlet) {
     const modeButtons = outlet.querySelectorAll('[data-mode]');
 
     function selectedObject() {
-      return project.objects.find(item => item.id === selectedId) || null;
+      return activeLevel.objects.find(item => item.id === selectedId) || null;
     }
 
     function markDirty() {
@@ -239,13 +273,13 @@ export function renderStudioScreen(outlet) {
     }
 
     function renderObjectList() {
-      objectList.innerHTML = project.objects.map(item => `
+      objectList.innerHTML = activeLevel.objects.map(item => `
         <button type="button" class="studio-object-row ${item.id === selectedId ? 'is-selected' : ''}" data-select-object="${escapeHtml(item.id)}">
           <span class="studio-object-symbol ${item.type}">${item.type === 'player' ? '■' : item.type === 'crystal' ? '◆' : '▰'}</span>
           <span><strong>${escapeHtml(item.name)}</strong><small>${objectLabel(item.type)}</small></span>
           <span class="studio-object-row-arrow">›</span>
         </button>`).join('') || '<p class="studio-no-objects">На сцене пока нет объектов.</p>';
-      outlet.querySelector('.studio-object-count').textContent = project.objects.length;
+      outlet.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
       objectList.querySelectorAll('[data-select-object]').forEach(button => {
         button.addEventListener('click', () => {
           selectedId = button.dataset.selectObject;
@@ -295,14 +329,14 @@ export function renderStudioScreen(outlet) {
       bind('.studio-object-color', 'input', input => { item.color = input.value; });
       inspectorActions.querySelector('[data-duplicate]')?.addEventListener('click', () => {
         const copy = { ...item, id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
-        project.objects.push(copy);
+        activeLevel.objects.push(copy);
         selectedId = copy.id;
         markDirty(); renderObjectList(); renderInspector(); draw();
       });
       inspectorActions.querySelector('[data-delete]')?.addEventListener('click', () => {
         if (item.type === 'player') return;
-        project.objects = project.objects.filter(object => object.id !== item.id);
-        selectedId = project.objects[0]?.id || null;
+        activeLevel.objects = activeLevel.objects.filter(object => object.id !== item.id);
+        selectedId = activeLevel.objects[0]?.id || null;
         markDirty(); renderObjectList(); renderInspector(); draw();
       });
     }
@@ -317,7 +351,7 @@ export function renderStudioScreen(outlet) {
           ? { type, name: 'Предмет', size: 16, color: '#f5d66b' }
           : { type: 'wall', name: 'Препятствие', size: 44, color: '#64747a' };
       const item = { id: makeId(), ...config, x: 280 + Math.random() * 80, y: 130 + Math.random() * 90 };
-      project.objects.push(item);
+      activeLevel.objects.push(item);
       selectedId = item.id;
       markDirty(); renderObjectList(); renderInspector(); draw();
     }
@@ -333,7 +367,7 @@ export function renderStudioScreen(outlet) {
         for (let x = 0; x <= SCENE_WIDTH; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SCENE_HEIGHT); ctx.stroke(); }
         for (let y = 0; y <= SCENE_HEIGHT; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SCENE_WIDTH, y); ctx.stroke(); }
       }
-      const sceneObjects = mode === 'test' && runtimeObjects ? runtimeObjects : project.objects;
+      const sceneObjects = mode === 'test' && runtimeObjects ? runtimeObjects : activeLevel.objects;
       sceneObjects.forEach(item => {
         const isSelected = mode === 'edit' && item.id === selectedId;
         if (item.type === 'wall') {
@@ -364,8 +398,8 @@ export function renderStudioScreen(outlet) {
     }
 
     function hitTest(x, y) {
-      for (let index = project.objects.length - 1; index >= 0; index--) {
-        const item = project.objects[index];
+      for (let index = activeLevel.objects.length - 1; index >= 0; index--) {
+        const item = activeLevel.objects[index];
         if (item.type === 'wall') {
           if (x >= item.x - item.size && x <= item.x + item.size && y >= item.y - item.size / 2 && y <= item.y + item.size / 2) return item;
         } else if (Math.abs(x - item.x) <= item.size / 2 + 5 && Math.abs(y - item.y) <= item.size / 2 + 5) return item;
@@ -391,7 +425,7 @@ export function renderStudioScreen(outlet) {
     });
     canvas.addEventListener('pointermove', event => {
       if (mode !== 'edit' || !drag) return;
-      const item = project.objects.find(object => object.id === drag.id);
+      const item = activeLevel.objects.find(object => object.id === drag.id);
       if (!item) return;
       const point = canvasPoint(event);
       item.x = clamp(point.x - drag.dx, item.type === 'wall' ? item.size : item.size / 2, SCENE_WIDTH - (item.type === 'wall' ? item.size : item.size / 2));
@@ -418,7 +452,7 @@ export function renderStudioScreen(outlet) {
       outlet.querySelector('.studio-reset-button').hidden = mode !== 'test';
       outlet.querySelectorAll('.studio-add-object').forEach(button => { button.disabled = mode !== 'edit'; });
       if (mode === 'test') {
-        runtimeObjects = project.objects.map(item => ({ ...item }));
+        runtimeObjects = activeLevel.objects.map(item => ({ ...item }));
         runtimePlayer = { ...runtimeObjects.find(item => item.type === 'player') };
         score = 0;
       } else {
@@ -430,7 +464,7 @@ export function renderStudioScreen(outlet) {
 
     function resetTest() {
       if (mode !== 'test') return;
-      runtimeObjects = project.objects.map(item => ({ ...item }));
+      runtimeObjects = activeLevel.objects.map(item => ({ ...item }));
       const player = runtimeObjects.find(item => item.type === 'player');
       if (player) runtimePlayer = { ...player };
       score = 0; draw();
@@ -482,6 +516,56 @@ export function renderStudioScreen(outlet) {
     }
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
+
+    const levelSelect = outlet.querySelector('.studio-level-select');
+    levelSelect.addEventListener('change', () => {
+      if (mode === 'test') setMode('edit');
+      activeLevel = project.levels.find(level => level.id === levelSelect.value) || project.levels[0];
+      project.activeLevelId = activeLevel.id;
+      selectedId = activeLevel.objects.find(item => item.type === 'player')?.id || activeLevel.objects[0]?.id;
+      runtimeObjects = null; runtimePlayer = null; score = 0;
+      outlet.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
+      renderObjectList(); renderInspector(); draw(); markDirty();
+    });
+    outlet.querySelector('.studio-level-add').addEventListener('click', () => {
+      if (project.levels.length >= 50) { alert('В одном проекте пока можно создать не больше 50 уровней.'); return; }
+      const level = { id: makeId(), name: `Уровень ${project.levels.length + 1}`, objects: defaultObjects() };
+      project.levels.push(level);
+      project.activeLevelId = level.id;
+      saveProject(false);
+      renderEditor();
+    });
+    outlet.querySelector('.studio-level-rename').addEventListener('click', () => {
+      const name = prompt('Название уровня:', activeLevel.name);
+      if (name === null) return;
+      const trimmed = name.trim().slice(0, 40);
+      if (!trimmed) { alert('Название уровня не может быть пустым.'); return; }
+      activeLevel.name = trimmed;
+      const selectedOption = Array.from(levelSelect.options).find(option => option.value === activeLevel.id);
+      if (selectedOption) selectedOption.textContent = trimmed;
+      markDirty();
+    });
+    outlet.querySelector('.studio-level-duplicate').addEventListener('click', () => {
+      if (project.levels.length >= 50) { alert('В одном проекте пока можно создать не больше 50 уровней.'); return; }
+      const copy = {
+        id: makeId(),
+        name: activeLevel.name + ' — копия',
+        objects: activeLevel.objects.map(item => ({ ...item, id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) }))
+      };
+      project.levels.push(copy);
+      project.activeLevelId = copy.id;
+      saveProject(false);
+      renderEditor();
+    });
+    outlet.querySelector('.studio-level-delete').addEventListener('click', () => {
+      if (project.levels.length <= 1) return;
+      if (!confirm(`Удалить «${activeLevel.name}»? Объекты этого уровня будут удалены.`)) return;
+      project.levels = project.levels.filter(level => level.id !== activeLevel.id);
+      activeLevel = project.levels[0];
+      project.activeLevelId = activeLevel.id;
+      saveProject(false);
+      renderEditor();
+    });
 
     outlet.querySelectorAll('[data-add]').forEach(button => button.addEventListener('click', () => addObject(button.dataset.add)));
     modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));

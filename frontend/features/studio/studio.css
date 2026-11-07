@@ -57,3 +57,22 @@
   .studio-mode-switch{width:100%}
   .studio-mode-switch button{flex:1;padding:0 8px}
 }
+
+
+/* Multi-level project structure */
+.studio-level-manager{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 15px;border:1px solid var(--border);border-radius:12px;background:var(--bg-panel-2)}
+.studio-level-heading{display:flex;flex-direction:column;gap:4px;flex:none}
+.studio-level-heading>strong{color:var(--text-main);font-size:13px}
+.studio-level-controls{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px;min-width:0}
+.studio-level-select{min-width:145px;max-width:220px;min-height:35px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);font:inherit;font-size:11px}
+.studio-level-controls button{min-height:35px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);font-size:10px;font-weight:750;cursor:pointer}
+.studio-level-controls .studio-level-add{border-color:color-mix(in srgb,var(--accent) 50%,var(--border));color:var(--accent)}
+.studio-level-controls .studio-level-delete{color:#ff929b}
+.studio-level-controls button:disabled{opacity:.35;cursor:not-allowed}
+@media(max-width:680px){
+  .studio-level-manager{align-items:stretch;flex-direction:column;gap:10px;padding:12px}
+  .studio-level-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));justify-content:stretch}
+  .studio-level-select{grid-column:1/-1;width:100%;max-width:none}
+  .studio-level-controls button{width:100%;padding:0 6px;font-size:9px}
+  .studio-level-controls .studio-level-add{grid-column:1/-1}
+}
