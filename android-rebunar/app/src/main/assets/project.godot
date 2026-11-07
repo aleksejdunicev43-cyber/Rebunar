@@ -1,0 +1,17 @@
+; Rebunar's first embedded Godot runtime project.
+; The editor UI will remain native to Rebunar and communicate with this runtime.
+config_version=5
+
+[application]
+config/name="Rebunar Godot Runtime"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[display]
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
