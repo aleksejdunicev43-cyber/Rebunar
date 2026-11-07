@@ -309,7 +309,7 @@ export function renderStudioScreen(outlet) {
       editorScreen.remove();
       document.body.classList.remove('rebunar-studio-active');
     }
-    const canvas = outlet.querySelector('.studio-game-canvas');
+    const canvas = editorScreen.querySelector('.studio-game-canvas');
     const ctx = canvas.getContext('2d');
     let musicPlayer = null;
     let soundPlayer = null;
@@ -410,11 +410,11 @@ export function renderStudioScreen(outlet) {
       total -= replacedData.length;
       return total + nextData.length <= 3200000;
     }
-    const objectList = outlet.querySelector('.studio-object-list');
-    const inspectorFields = outlet.querySelector('.studio-inspector-fields');
-    const inspectorActions = outlet.querySelector('.studio-inspector-actions');
-    const saveStatus = outlet.querySelector('.studio-save-status');
-    const modeButtons = outlet.querySelectorAll('[data-mode]');
+    const objectList = editorScreen.querySelector('.studio-object-list');
+    const inspectorFields = editorScreen.querySelector('.studio-inspector-fields');
+    const inspectorActions = editorScreen.querySelector('.studio-inspector-actions');
+    const saveStatus = editorScreen.querySelector('.studio-save-status');
+    const modeButtons = editorScreen.querySelectorAll('[data-mode]');
 
     function selectedObject() {
       return activeLevel.objects.find(item => item.id === selectedId) || null;
@@ -426,8 +426,8 @@ export function renderStudioScreen(outlet) {
     }
 
     function saveProject(showConfirmation = true) {
-      project.name = outlet.querySelector('.studio-name-input').value.trim() || 'Новая игра';
-      project.description = outlet.querySelector('.studio-description-input').value.trim();
+      project.name = editorScreen.querySelector('.studio-name-input').value.trim() || 'Новая игра';
+      project.description = editorScreen.querySelector('.studio-description-input').value.trim();
       projects = projects.map(item => item.id === project.id ? project : item);
       if (!writeProjects(projects)) {
         alert('Не удалось сохранить проект. Возможно, в браузере недостаточно места.');
@@ -435,10 +435,10 @@ export function renderStudioScreen(outlet) {
       }
       saveStatus.textContent = 'СОХРАНЕНО ЛОКАЛЬНО';
       saveStatus.classList.remove('is-dirty');
-      outlet.querySelector('.studio-editor-heading h1').textContent = project.name;
-      outlet.querySelector('.studio-editor-project-name strong').textContent = project.name;
+      editorScreen.querySelector('.studio-editor-heading h1').textContent = project.name;
+      editorScreen.querySelector('.studio-editor-project-name strong').textContent = project.name;
       if (showConfirmation) {
-        const button = outlet.querySelector('.studio-save-button');
+        const button = editorScreen.querySelector('.studio-save-button');
         button.textContent = '✓ Сохранено';
         setTimeout(() => { if (button.isConnected) button.textContent = 'Сохранить'; }, 1300);
       }
@@ -452,7 +452,7 @@ export function renderStudioScreen(outlet) {
           <span><strong>${escapeHtml(item.name)}</strong><small>${objectLabel(item.type)}</small></span>
           <span class="studio-object-row-arrow">›</span>
         </button>`).join('') || '<p class="studio-no-objects">На сцене пока нет объектов.</p>';
-      outlet.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
+      editorScreen.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
       objectList.querySelectorAll('[data-select-object]').forEach(button => {
         button.addEventListener('click', () => {
           selectedId = button.dataset.selectObject;
@@ -465,7 +465,7 @@ export function renderStudioScreen(outlet) {
 
     function renderInspector() {
       const item = selectedObject();
-      outlet.querySelector('.studio-selected-title').textContent = item ? item.name : 'Выбери объект';
+      editorScreen.querySelector('.studio-selected-title').textContent = item ? item.name : 'Выбери объект';
       if (!item) {
         inspectorFields.innerHTML = '<p class="studio-no-objects">Выбери объект на сцене или добавь новый.</p>';
         inspectorActions.innerHTML = '';
@@ -529,7 +529,7 @@ export function renderStudioScreen(outlet) {
           markDirty();
           draw();
           if (selector === '.studio-object-name') {
-            outlet.querySelector('.studio-selected-title').textContent = item.name;
+            editorScreen.querySelector('.studio-selected-title').textContent = item.name;
             renderObjectList();
           }
         });
@@ -779,12 +779,12 @@ export function renderStudioScreen(outlet) {
       keys.clear();
       drag = null;
       modeButtons.forEach(button => button.classList.toggle('is-active', button.dataset.mode === mode));
-      outlet.querySelector('.studio-canvas-mode-label').textContent = mode === 'edit' ? 'Редактирование уровня' : 'Тестирование игры';
-      outlet.querySelector('.studio-edit-hint').hidden = mode !== 'edit';
-      outlet.querySelector('.studio-test-hint').hidden = mode !== 'test';
-      outlet.querySelector('.studio-touch-pad').classList.toggle('is-visible', mode === 'test');
-      outlet.querySelector('.studio-reset-button').hidden = mode !== 'test';
-      outlet.querySelectorAll('.studio-add-object').forEach(button => { button.disabled = mode !== 'edit'; });
+      editorScreen.querySelector('.studio-canvas-mode-label').textContent = mode === 'edit' ? 'Редактирование уровня' : 'Тестирование игры';
+      editorScreen.querySelector('.studio-edit-hint').hidden = mode !== 'edit';
+      editorScreen.querySelector('.studio-test-hint').hidden = mode !== 'test';
+      editorScreen.querySelector('.studio-touch-pad').classList.toggle('is-visible', mode === 'test');
+      editorScreen.querySelector('.studio-reset-button').hidden = mode !== 'test';
+      editorScreen.querySelectorAll('.studio-add-object').forEach(button => { button.disabled = mode !== 'edit'; });
       if (mode === 'test') {
         runtimeObjects = activeLevel.objects.map(item => ({ ...item, collected: false }));
         runtimePlayer = { ...runtimeObjects.find(item => item.type === 'player') };
@@ -873,7 +873,7 @@ export function renderStudioScreen(outlet) {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
 
-    const levelSelect = outlet.querySelector('.studio-level-select');
+    const levelSelect = editorScreen.querySelector('.studio-level-select');
     levelSelect.addEventListener('change', () => {
       if (mode === 'test') setMode('edit');
       stopLevelAudio();
@@ -881,12 +881,12 @@ export function renderStudioScreen(outlet) {
       project.activeLevelId = activeLevel.id;
       selectedId = activeLevel.objects.find(item => item.type === 'player')?.id || activeLevel.objects[0]?.id;
       runtimeObjects = null; runtimePlayer = null; score = 0;
-      outlet.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
+      editorScreen.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
       renderBackgroundControls();
       renderAudioControls();
       renderObjectList(); renderInspector(); draw(); markDirty();
     });
-    outlet.querySelector('.studio-level-add').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-level-add').addEventListener('click', () => {
       if (project.levels.length >= 50) { alert('В одном проекте пока можно создать не больше 50 уровней.'); return; }
       const level = { id: makeId(), name: `Уровень ${project.levels.length + 1}`, objects: defaultObjects(), backgroundImage: '', musicData: '', collectSoundData: '' };
       project.levels.push(level);
@@ -894,7 +894,7 @@ export function renderStudioScreen(outlet) {
       saveProject(false);
       renderEditor();
     });
-    outlet.querySelector('.studio-level-rename').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-level-rename').addEventListener('click', () => {
       const name = prompt('Название уровня:', activeLevel.name);
       if (name === null) return;
       const trimmed = name.trim().slice(0, 40);
@@ -904,7 +904,7 @@ export function renderStudioScreen(outlet) {
       if (selectedOption) selectedOption.textContent = trimmed;
       markDirty();
     });
-    outlet.querySelector('.studio-level-duplicate').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-level-duplicate').addEventListener('click', () => {
       if (project.levels.length >= 50) { alert('В одном проекте пока можно создать не больше 50 уровней.'); return; }
       const copy = {
         id: makeId(),
@@ -919,7 +919,7 @@ export function renderStudioScreen(outlet) {
       saveProject(false);
       renderEditor();
     });
-    outlet.querySelector('.studio-level-delete').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-level-delete').addEventListener('click', () => {
       if (project.levels.length <= 1) return;
       if (!confirm(`Удалить «${activeLevel.name}»? Объекты этого уровня будут удалены.`)) return;
       project.levels = project.levels.filter(level => level.id !== activeLevel.id);
@@ -929,15 +929,15 @@ export function renderStudioScreen(outlet) {
       renderEditor();
     });
 
-    const musicInput = outlet.querySelector('.studio-music-input');
-    const soundInput = outlet.querySelector('.studio-sound-input');
-    const musicUploadButton = outlet.querySelector('.studio-music-upload');
-    const soundUploadButton = outlet.querySelector('.studio-sound-upload');
+    const musicInput = editorScreen.querySelector('.studio-music-input');
+    const soundInput = editorScreen.querySelector('.studio-sound-input');
+    const musicUploadButton = editorScreen.querySelector('.studio-music-upload');
+    const soundUploadButton = editorScreen.querySelector('.studio-sound-upload');
     function renderAudioControls() {
-      outlet.querySelector('.studio-music-status').textContent = activeLevel.musicData ? 'Музыка добавлена' : 'Не загружена';
-      outlet.querySelector('.studio-sound-status').textContent = activeLevel.collectSoundData ? 'Звук добавлен' : 'Не загружен';
-      outlet.querySelector('.studio-music-remove').hidden = !activeLevel.musicData;
-      outlet.querySelector('.studio-sound-remove').hidden = !activeLevel.collectSoundData;
+      editorScreen.querySelector('.studio-music-status').textContent = activeLevel.musicData ? 'Музыка добавлена' : 'Не загружена';
+      editorScreen.querySelector('.studio-sound-status').textContent = activeLevel.collectSoundData ? 'Звук добавлен' : 'Не загружен';
+      editorScreen.querySelector('.studio-music-remove').hidden = !activeLevel.musicData;
+      editorScreen.querySelector('.studio-sound-remove').hidden = !activeLevel.collectSoundData;
       musicUploadButton.textContent = activeLevel.musicData ? 'Заменить' : '＋ Музыка';
       soundUploadButton.textContent = activeLevel.collectSoundData ? 'Заменить' : '＋ Звук';
     }
@@ -965,19 +965,19 @@ export function renderStudioScreen(outlet) {
       } catch (error) { alert(error.message || 'Не удалось загрузить звук.'); }
       event.target.value = '';
     });
-    outlet.querySelector('.studio-music-remove').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-music-remove').addEventListener('click', () => {
       if (musicPlayer) { musicPlayer.pause(); musicPlayer = null; }
       activeLevel.musicData = ''; renderAudioControls(); markDirty();
     });
-    outlet.querySelector('.studio-sound-remove').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-sound-remove').addEventListener('click', () => {
       if (soundPlayer) { soundPlayer.pause(); soundPlayer = null; soundPlayerData = ''; }
       activeLevel.collectSoundData = ''; renderAudioControls(); markDirty();
     });
     renderAudioControls();
-    const backgroundInput = outlet.querySelector('.studio-background-input');
-    const backgroundButton = outlet.querySelector('.studio-background-button');
+    const backgroundInput = editorScreen.querySelector('.studio-background-input');
+    const backgroundButton = editorScreen.querySelector('.studio-background-button');
     function renderBackgroundControls() {
-      outlet.querySelector('.studio-background-remove')?.remove();
+      editorScreen.querySelector('.studio-background-remove')?.remove();
       backgroundButton.textContent = activeLevel.backgroundImage ? 'Заменить фон' : '▧ Фон уровня';
       if (!activeLevel.backgroundImage) return;
       const remove = document.createElement('button');
@@ -1012,13 +1012,13 @@ export function renderStudioScreen(outlet) {
       }
       event.target.value = '';
     });
-    outlet.querySelectorAll('[data-add]').forEach(button => button.addEventListener('click', () => addObject(button.dataset.add)));
+    editorScreen.querySelectorAll('[data-add]').forEach(button => button.addEventListener('click', () => addObject(button.dataset.add)));
     modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
-    outlet.querySelector('.studio-reset-button').addEventListener('click', resetTest);
-    outlet.querySelector('.studio-save-button').addEventListener('click', () => saveProject(true));
-    outlet.querySelector('.studio-name-input').addEventListener('input', event => { project.name = event.target.value; markDirty(); });
-    outlet.querySelector('.studio-description-input').addEventListener('input', event => { project.description = event.target.value; markDirty(); });
-    outlet.querySelector('.studio-back-button').addEventListener('click', () => {
+    editorScreen.querySelector('.studio-reset-button').addEventListener('click', resetTest);
+    editorScreen.querySelector('.studio-save-button').addEventListener('click', () => saveProject(true));
+    editorScreen.querySelector('.studio-name-input').addEventListener('input', event => { project.name = event.target.value; markDirty(); });
+    editorScreen.querySelector('.studio-description-input').addEventListener('input', event => { project.description = event.target.value; markDirty(); });
+    editorScreen.querySelector('.studio-back-button').addEventListener('click', () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('keyup', onKeyUp);
       document.removeEventListener('pointerup', releaseTouchPointer);
@@ -1044,7 +1044,7 @@ export function renderStudioScreen(outlet) {
     document.addEventListener('pointerup', releaseTouchPointer);
     document.addEventListener('pointercancel', releaseTouchPointer);
     window.addEventListener('blur', clearMovementInput);
-    outlet.querySelectorAll('[data-dir]').forEach(button => {
+    editorScreen.querySelectorAll('[data-dir]').forEach(button => {
       const key = touchDirectionKeys[button.dataset.dir];
       button.addEventListener('pointerdown', event => {
         if (mode !== 'test' || !key || won) return;
