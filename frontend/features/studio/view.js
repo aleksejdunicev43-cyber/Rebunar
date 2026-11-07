@@ -20,6 +20,8 @@ function defaultObjects() {
   ];
 }
 
+const ANIMATION_STATES = ['idle', 'up', 'down', 'left', 'right'];
+
 function normalizeObjects(source) {
   const objects = Array.isArray(source) && source.length
     ? source.map((item, index) => ({
@@ -32,6 +34,7 @@ function normalizeObjects(source) {
         color: /^#[0-9a-f]{6}$/i.test(item.color || '') ? item.color : (item.type === 'crystal' ? '#f5d66b' : item.type === 'wall' ? '#64747a' : DEFAULT_COLOR),
         imageData: typeof item.imageData === 'string' && item.imageData.startsWith('data:image/') ? item.imageData : '',
         animationFrames: Array.isArray(item.animationFrames) ? item.animationFrames.filter(frame => typeof frame === 'string' && frame.startsWith('data:image/')).slice(0, 4) : [],
+        directionalAnimations: Object.fromEntries(ANIMATION_STATES.map(state => [state, Array.isArray(item.directionalAnimations?.[state]) ? item.directionalAnimations[state].filter(frame => typeof frame === 'string' && frame.startsWith('data:image/')).slice(0, 4) : []])),
         animationSpeed: Math.max(80, Math.min(1000, Number(item.animationSpeed) || 180))
       }))
     : defaultObjects();
@@ -186,6 +189,9 @@ export function renderStudioScreen(outlet) {
     let frame = 0;
     let drag = null;
     let animationPreview = false;
+    let animationDirectionEditor = 'idle';
+    let runtimeDirection = 'down';
+    let runtimeMoving = false;
 
     outlet.innerHTML = `
       <section class="screen studio-screen studio-editor-screen">
@@ -360,7 +366,7 @@ export function renderStudioScreen(outlet) {
       let total = 0;
       targetProject.levels.forEach(level => {
         total += (level.backgroundImage || '').length + (level.musicData || '').length + (level.collectSoundData || '').length;
-        level.objects.forEach(object => { total += (object.imageData || '').length + (object.animationFrames || []).reduce((sum, frame) => sum + frame.length, 0); });
+        level.objects.forEach(object => { total += (object.imageData || '').length + (object.animationFrames || []).reduce((sum, frame) => sum + frame.length, 0) + ANIMATION_STATES.reduce((sum, state) => sum + (object.directionalAnimations?.[state] || []).reduce((frameSum, frame) => frameSum + frame.length, 0), 0); });
       });
       total -= replacedData.length;
       return total + nextData.length <= 3200000;
@@ -451,7 +457,28 @@ export function renderStudioScreen(outlet) {
           <label class="studio-field">Скорость: <output class="studio-animation-speed-value">${item.animationSpeed}</output> мс/кадр<input class="studio-animation-speed" type="range" min="80" max="1000" step="20" value="${item.animationSpeed}"></label>
           <div class="studio-animation-frames">${item.animationFrames.map((frame, index) => `<div class="studio-animation-frame"><img src="${frame}" alt="Кадр ${index + 1}"><span>${index + 1}</span><button type="button" data-remove-frame="${index}" aria-label="Удалить кадр ${index + 1}">×</button></div>`).join('') || '<small>Кадры не добавлены. Можно загрузить до 4 изображений.</small>'}</div>
           <small>Загрузи 2–4 изображения одного персонажа в разных позах. Кадры будут проигрываться по кругу. Общий лимит ресурсов проекта — около 3,2 МБ.</small>
-        </div>`;
+        </div>
+        ${item.type === 'player' ? `
+        <div class="studio-animation-controls studio-directional-controls">
+          <span class="studio-kicker">АНИМАЦИЯ ПЕРСОНАЖА ПО НАПРАВЛЕНИЯМ</span>
+          <label class="studio-field">Состояние
+            <select class="studio-direction-select">
+              <option value="idle" ${animationDirectionEditor === 'idle' ? 'selected' : ''}>Покой</option>
+              <option value="up" ${animationDirectionEditor === 'up' ? 'selected' : ''}>Движение вверх</option>
+              <option value="down" ${animationDirectionEditor === 'down' ? 'selected' : ''}>Движение вниз</option>
+              <option value="left" ${animationDirectionEditor === 'left' ? 'selected' : ''}>Движение влево</option>
+              <option value="right" ${animationDirectionEditor === 'right' ? 'selected' : ''}>Движение вправо</option>
+            </select>
+          </label>
+          <div class="studio-animation-toolbar">
+            <button type="button" class="studio-direction-upload">＋ Кадры состояния</button>
+            <input class="studio-direction-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+            <span class="studio-direction-count">${(item.directionalAnimations?.[animationDirectionEditor] || []).length}/4</span>
+          </div>
+          <div class="studio-animation-frames studio-direction-frames">${(item.directionalAnimations?.[animationDirectionEditor] || []).map((frame, index) => `<div class="studio-animation-frame"><img src="${frame}" alt="Кадр ${index + 1}"><span>${index + 1}</span><button type="button" data-remove-direction-frame="${index}" aria-label="Удалить кадр ${index + 1}">×</button></div>`).join('') || '<small>Для этого состояния кадры ещё не добавлены.</small>'}</div>
+          <small>Добавляй до 4 кадров отдельно для каждого состояния. Если кадров нет, используется обычное изображение или общая анимация.</small>
+        </div>` : ''}
+      `;
       inspectorActions.innerHTML = `
         <button type="button" class="studio-secondary-action" data-duplicate>＋ Дублировать</button>
         <button type="button" class="studio-danger-action" data-delete ${item.type === 'player' ? 'disabled title="Игрок должен оставаться на сцене"' : ''}>Удалить объект</button>`;
@@ -474,6 +501,31 @@ export function renderStudioScreen(outlet) {
       bind('.studio-object-size', 'input', input => { item.size = Number(input.value); inspectorFields.querySelector('.studio-size-value').textContent = input.value; });
       bind('.studio-object-color', 'input', input => { item.color = input.value; });
       inspectorFields.querySelector('.studio-asset-upload').addEventListener('click', () => inspectorFields.querySelector('.studio-object-image-input').click());
+      if (item.type === 'player') {
+        if (!item.directionalAnimations) item.directionalAnimations = Object.fromEntries(ANIMATION_STATES.map(state => [state, []]));
+        inspectorFields.querySelector('.studio-direction-select').addEventListener('change', event => {
+          animationDirectionEditor = event.target.value;
+          renderInspector();
+        });
+        inspectorFields.querySelector('.studio-direction-upload').addEventListener('click', () => inspectorFields.querySelector('.studio-direction-input').click());
+        inspectorFields.querySelector('.studio-direction-input').addEventListener('change', async event => {
+          const frames = item.directionalAnimations[animationDirectionEditor] || (item.directionalAnimations[animationDirectionEditor] = []);
+          const files = Array.from(event.target.files || []).slice(0, Math.max(0, 4 - frames.length));
+          try {
+            for (const file of files) {
+              const data = await compressImageFile(file);
+              if (!canStoreImage(project, data)) { alert('Не хватает места для кадров. Удали другие ресурсы или выбери изображения меньшего размера.'); break; }
+              frames.push(data);
+            }
+            markDirty(); renderInspector(); draw();
+          } catch (error) { alert(error.message || 'Не удалось загрузить кадры.'); }
+          event.target.value = '';
+        });
+        inspectorFields.querySelectorAll('[data-remove-direction-frame]').forEach(button => button.addEventListener('click', () => {
+          item.directionalAnimations[animationDirectionEditor].splice(Number(button.dataset.removeDirectionFrame), 1);
+          renderInspector(); markDirty(); draw();
+        }));
+      }
       inspectorFields.querySelector('.studio-animation-upload').addEventListener('click', () => inspectorFields.querySelector('.studio-animation-input').click());
       inspectorFields.querySelector('.studio-animation-input').addEventListener('change', async event => {
         const files = Array.from(event.target.files || []).slice(0, Math.max(0, 4 - item.animationFrames.length));
@@ -527,7 +579,7 @@ export function renderStudioScreen(outlet) {
         renderInspector(); markDirty(); draw();
       });
       inspectorActions.querySelector('[data-duplicate]')?.addEventListener('click', () => {
-        const copy = { ...item, animationFrames: [...(item.animationFrames || [])], id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
+        const copy = { ...item, animationFrames: [...(item.animationFrames || [])], directionalAnimations: Object.fromEntries(ANIMATION_STATES.map(state => [state, [...(item.directionalAnimations?.[state] || [])]])), id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
         activeLevel.objects.push(copy);
         selectedId = copy.id;
         markDirty(); renderObjectList(); renderInspector(); draw();
@@ -584,7 +636,11 @@ export function renderStudioScreen(outlet) {
         const frames = Array.isArray(item.animationFrames) ? item.animationFrames : [];
         const shouldAnimate = frames.length > 1 && (mode === 'test' || (mode === 'edit' && animationPreview));
         const animationIndex = shouldAnimate ? Math.floor(performance.now() / (item.animationSpeed || 180)) % frames.length : 0;
-        const imageData = shouldAnimate ? frames[animationIndex] : (frames[0] || item.imageData);
+        const directionalFrames = mode === 'test' && item.type === 'player' ? (item.directionalAnimations?.[runtimeMoving ? runtimeDirection : 'idle'] || []) : [];
+        const activeFrames = directionalFrames.length ? directionalFrames : frames;
+        const animateActiveFrames = activeFrames.length > 1 && (mode === 'test' ? (item.type !== 'player' || runtimeMoving || directionalFrames.length > 0) : shouldAnimate);
+        const activeIndex = animateActiveFrames ? Math.floor(performance.now() / (item.animationSpeed || 180)) % activeFrames.length : 0;
+        const imageData = activeFrames.length ? activeFrames[activeIndex] : (shouldAnimate ? frames[animationIndex] : item.imageData);
         const objectImage = imageData ? cacheImage(imageData) : null;
         const drawX = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.x : item.x;
         const drawY = mode === 'test' && item.type === 'player' && runtimePlayer ? runtimePlayer.y : item.y;
@@ -693,7 +749,7 @@ export function renderStudioScreen(outlet) {
       if (mode === 'test') {
         runtimeObjects = activeLevel.objects.map(item => ({ ...item, collected: false }));
         runtimePlayer = { ...runtimeObjects.find(item => item.type === 'player') };
-        score = 0; won = false; gameMessage = '';
+        score = 0; won = false; gameMessage = ''; runtimeDirection = 'down'; runtimeMoving = false;
         startLevelMusic();
       } else {
         stopLevelAudio();
@@ -708,7 +764,7 @@ export function renderStudioScreen(outlet) {
       runtimeObjects = activeLevel.objects.map(item => ({ ...item, collected: false }));
       const player = runtimeObjects.find(item => item.type === 'player');
       if (player) runtimePlayer = { ...player };
-      score = 0; won = false; gameMessage = ''; draw();
+      score = 0; won = false; gameMessage = ''; runtimeDirection = 'down'; runtimeMoving = false; draw();
     }
 
     function tick() {
@@ -726,13 +782,17 @@ export function renderStudioScreen(outlet) {
         if (keys.has('ArrowDown') || keys.has('s')) nextY += speed;
         if (keys.has('ArrowLeft') || keys.has('a')) nextX -= speed;
         if (keys.has('ArrowRight') || keys.has('d')) nextX += speed;
+        const moveX = nextX - runtimePlayer.x;
+        const moveY = nextY - runtimePlayer.y;
+        runtimeMoving = moveX !== 0 || moveY !== 0;
+        if (runtimeMoving) runtimeDirection = Math.abs(moveX) > Math.abs(moveY) ? (moveX < 0 ? 'left' : 'right') : (moveY < 0 ? 'up' : 'down');
         const half = runtimePlayer.size / 2;
         nextX = clamp(nextX, half, SCENE_WIDTH - half);
         nextY = clamp(nextY, half, SCENE_HEIGHT - half);
         const blocked = runtimeObjects.some(item => item.type === 'wall' &&
           nextX + half > item.x - item.size && nextX - half < item.x + item.size &&
           nextY + half > item.y - item.size / 2 && nextY - half < item.y + item.size / 2);
-        if (!blocked) { runtimePlayer.x = nextX; runtimePlayer.y = nextY; }
+        if (!blocked) { runtimePlayer.x = nextX; runtimePlayer.y = nextY; } else { runtimeMoving = false; }
         runtimeObjects.filter(item => item.type === 'crystal' && !item.collected).forEach(item => {
           if (Math.hypot(runtimePlayer.x - item.x, runtimePlayer.y - item.y) < half + item.size) {
             score += 1;
@@ -810,7 +870,7 @@ export function renderStudioScreen(outlet) {
       const copy = {
         id: makeId(),
         name: activeLevel.name + ' — копия',
-        objects: activeLevel.objects.map(item => ({ ...item, animationFrames: [...(item.animationFrames || [])], id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) })),
+        objects: activeLevel.objects.map(item => ({ ...item, animationFrames: [...(item.animationFrames || [])], directionalAnimations: Object.fromEntries(ANIMATION_STATES.map(state => [state, [...(item.directionalAnimations?.[state] || [])]])), id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) })),
         backgroundImage: activeLevel.backgroundImage,
         musicData: activeLevel.musicData,
         collectSoundData: activeLevel.collectSoundData
