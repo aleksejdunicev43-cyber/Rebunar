@@ -41,7 +41,9 @@ function normalizeLevel(level, index) {
     id: String(level.id || makeId()),
     name: String(level.name || `Уровень ${index + 1}`),
     objects: normalizeObjects(level.objects),
-    backgroundImage: typeof level.backgroundImage === 'string' && level.backgroundImage.startsWith('data:image/') ? level.backgroundImage : ''
+    backgroundImage: typeof level.backgroundImage === 'string' && level.backgroundImage.startsWith('data:image/') ? level.backgroundImage : '',
+    musicData: typeof level.musicData === 'string' && level.musicData.startsWith('data:audio/') ? level.musicData : '',
+    collectSoundData: typeof level.collectSoundData === 'string' && level.collectSoundData.startsWith('data:audio/') ? level.collectSoundData : ''
   };
 }
 
@@ -199,6 +201,24 @@ export function renderStudioScreen(outlet) {
             <button type="button" class="studio-level-delete" ${project.levels.length <= 1 ? 'disabled' : ''}>Удалить</button>
           </div>
         </div>
+        <section class="studio-audio-manager">
+          <div class="studio-level-heading"><span class="studio-kicker">ЗВУКОВОЕ ОФОРМЛЕНИЕ</span><strong>Аудио уровня</strong></div>
+          <div class="studio-audio-controls">
+            <div class="studio-audio-item">
+              <div><strong>Фоновая музыка</strong><small class="studio-music-status">Не загружена</small></div>
+              <button type="button" class="studio-music-upload">＋ Музыка</button>
+              <input class="studio-music-input" type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/mp4,audio/webm,.mp3,.ogg,.wav,.m4a,.webm" hidden>
+              <button type="button" class="studio-music-remove" hidden>Убрать</button>
+            </div>
+            <div class="studio-audio-item">
+              <div><strong>Звук предмета</strong><small class="studio-sound-status">Не загружен</small></div>
+              <button type="button" class="studio-sound-upload">＋ Звук</button>
+              <input class="studio-sound-input" type="file" accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/mp4,audio/webm,.mp3,.ogg,.wav,.m4a,.webm" hidden>
+              <button type="button" class="studio-sound-remove" hidden>Убрать</button>
+            </div>
+          </div>
+          <p class="studio-audio-hint">Музыка играет в тесте уровня, звук срабатывает при сборе предмета. MP3, OGG, WAV, M4A или WebM.</p>
+        </section>
         <div class="studio-mode-switch" role="group" aria-label="Режим редактора">
           <button class="is-active" type="button" data-mode="edit">✥ Редактор сцены</button>
           <button type="button" data-mode="test">▶ Тест игры</button>
@@ -239,6 +259,29 @@ export function renderStudioScreen(outlet) {
 
     const canvas = outlet.querySelector('.studio-game-canvas');
     const ctx = canvas.getContext('2d');
+    let musicPlayer = null;
+    let soundPlayer = null;
+    let soundPlayerData = '';
+    function stopLevelAudio() {
+      if (musicPlayer) { musicPlayer.pause(); musicPlayer.currentTime = 0; musicPlayer = null; }
+      if (soundPlayer) { soundPlayer.pause(); soundPlayer.currentTime = 0; soundPlayer = null; }
+      soundPlayerData = '';
+    }
+    function startLevelMusic() {
+      if (!activeLevel.musicData) return;
+      if (!musicPlayer) { musicPlayer = new Audio(activeLevel.musicData); musicPlayer.loop = true; musicPlayer.volume = 0.35; }
+      musicPlayer.play().catch(() => {});
+    }
+    function playCollectSound() {
+      if (!activeLevel.collectSoundData) return;
+      if (!soundPlayer || soundPlayerData !== activeLevel.collectSoundData) {
+        soundPlayer = new Audio(activeLevel.collectSoundData);
+        soundPlayer.volume = 0.7;
+        soundPlayerData = activeLevel.collectSoundData;
+      }
+      soundPlayer.currentTime = 0;
+      soundPlayer.play().catch(() => {});
+    }
     const assetImageCache = new Map();
     function cacheImage(data) {
       if (!data) return null;
@@ -276,11 +319,41 @@ export function renderStudioScreen(outlet) {
         reader.readAsDataURL(file);
       });
     }
+    function canStoreAudio(targetProject, nextData, replacedData = '') {
+      let totalAssets = 0;
+      let totalAudio = 0;
+      targetProject.levels.forEach(level => {
+        const levelAudio = (level.musicData || '').length + (level.collectSoundData || '').length;
+        totalAudio += levelAudio;
+        totalAssets += levelAudio + (level.backgroundImage || '').length;
+        level.objects.forEach(object => { totalAssets += (object.imageData || '').length; });
+      });
+      totalAudio -= replacedData.length;
+      totalAssets -= replacedData.length;
+      return totalAudio + nextData.length <= 900000 && totalAssets + nextData.length <= 3200000;
+    }
+    function readAudioFile(file) {
+      return new Promise((resolve, reject) => {
+        const allowed = ['audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/webm', 'audio/x-m4a'];
+        const extensionOk = /\.(mp3|ogg|wav|m4a|webm)$/i.test(file.name || '');
+        if (!allowed.includes(file.type) && !extensionOk) return reject(new Error('Формат не поддерживается. Выбери MP3, OGG, WAV, M4A или WebM.'));
+        if (file.size > 2 * 1024 * 1024) return reject(new Error('Аудиофайл слишком большой. Максимум — 2 МБ.'));
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Не удалось прочитать аудиофайл.'));
+        reader.onload = () => {
+          const data = String(reader.result || '');
+          if (!data.startsWith('data:audio/')) return reject(new Error('Браузер не распознал аудиофайл.'));
+          if (data.length > 460000) return reject(new Error('После чтения файл слишком большой для локального проекта. Выбери аудио до 330 КБ.'));
+          resolve(data);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
     function canStoreImage(targetProject, nextData, replacedData = '') {
       let total = 0;
       targetProject.levels.forEach(level => {
-        if (level.backgroundImage) total += level.backgroundImage.length;
-        level.objects.forEach(object => { if (object.imageData) total += object.imageData.length; });
+        total += (level.backgroundImage || '').length + (level.musicData || '').length + (level.collectSoundData || '').length;
+        level.objects.forEach(object => { total += (object.imageData || '').length; });
       });
       total -= replacedData.length;
       return total + nextData.length <= 3200000;
@@ -389,7 +462,7 @@ export function renderStudioScreen(outlet) {
         try {
           const data = await compressImageFile(file);
           if (!canStoreImage(project, data, item.imageData)) {
-            alert('В проекте достигнут лимит изображений (примерно 3 МБ после сжатия). Удали ненужные картинки или уменьши их количество.');
+            alert('В проекте достигнут общий лимит ресурсов (около 3,2 МБ). Удали ненужные изображения или аудиофайлы.');
             event.target.value = '';
             return;
           }
@@ -551,7 +624,9 @@ export function renderStudioScreen(outlet) {
         runtimeObjects = activeLevel.objects.map(item => ({ ...item }));
         runtimePlayer = { ...runtimeObjects.find(item => item.type === 'player') };
         score = 0;
+        startLevelMusic();
       } else {
+        stopLevelAudio();
         runtimePlayer = null;
         runtimeObjects = null;
       }
@@ -591,6 +666,7 @@ export function renderStudioScreen(outlet) {
         runtimeObjects.filter(item => item.type === 'crystal').forEach(item => {
           if (Math.hypot(runtimePlayer.x - item.x, runtimePlayer.y - item.y) < half + item.size) {
             score += 1;
+            playCollectSound();
             item.x = 36 + Math.random() * 568;
             item.y = 36 + Math.random() * 288;
           }
@@ -616,17 +692,19 @@ export function renderStudioScreen(outlet) {
     const levelSelect = outlet.querySelector('.studio-level-select');
     levelSelect.addEventListener('change', () => {
       if (mode === 'test') setMode('edit');
+      stopLevelAudio();
       activeLevel = project.levels.find(level => level.id === levelSelect.value) || project.levels[0];
       project.activeLevelId = activeLevel.id;
       selectedId = activeLevel.objects.find(item => item.type === 'player')?.id || activeLevel.objects[0]?.id;
       runtimeObjects = null; runtimePlayer = null; score = 0;
       outlet.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
       renderBackgroundControls();
+      renderAudioControls();
       renderObjectList(); renderInspector(); draw(); markDirty();
     });
     outlet.querySelector('.studio-level-add').addEventListener('click', () => {
       if (project.levels.length >= 50) { alert('В одном проекте пока можно создать не больше 50 уровней.'); return; }
-      const level = { id: makeId(), name: `Уровень ${project.levels.length + 1}`, objects: defaultObjects() };
+      const level = { id: makeId(), name: `Уровень ${project.levels.length + 1}`, objects: defaultObjects(), backgroundImage: '', musicData: '', collectSoundData: '' };
       project.levels.push(level);
       project.activeLevelId = level.id;
       saveProject(false);
@@ -647,7 +725,10 @@ export function renderStudioScreen(outlet) {
       const copy = {
         id: makeId(),
         name: activeLevel.name + ' — копия',
-        objects: activeLevel.objects.map(item => ({ ...item, id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) }))
+        objects: activeLevel.objects.map(item => ({ ...item, id: makeId(), x: Math.min(SCENE_WIDTH - 20, item.x + 24), y: Math.min(SCENE_HEIGHT - 20, item.y + 20) })),
+        backgroundImage: activeLevel.backgroundImage,
+        musicData: activeLevel.musicData,
+        collectSoundData: activeLevel.collectSoundData
       };
       project.levels.push(copy);
       project.activeLevelId = copy.id;
@@ -664,6 +745,51 @@ export function renderStudioScreen(outlet) {
       renderEditor();
     });
 
+    const musicInput = outlet.querySelector('.studio-music-input');
+    const soundInput = outlet.querySelector('.studio-sound-input');
+    const musicUploadButton = outlet.querySelector('.studio-music-upload');
+    const soundUploadButton = outlet.querySelector('.studio-sound-upload');
+    function renderAudioControls() {
+      outlet.querySelector('.studio-music-status').textContent = activeLevel.musicData ? 'Музыка добавлена' : 'Не загружена';
+      outlet.querySelector('.studio-sound-status').textContent = activeLevel.collectSoundData ? 'Звук добавлен' : 'Не загружен';
+      outlet.querySelector('.studio-music-remove').hidden = !activeLevel.musicData;
+      outlet.querySelector('.studio-sound-remove').hidden = !activeLevel.collectSoundData;
+      musicUploadButton.textContent = activeLevel.musicData ? 'Заменить' : '＋ Музыка';
+      soundUploadButton.textContent = activeLevel.collectSoundData ? 'Заменить' : '＋ Звук';
+    }
+    musicUploadButton.addEventListener('click', () => musicInput.click());
+    soundUploadButton.addEventListener('click', () => soundInput.click());
+    musicInput.addEventListener('change', async event => {
+      const file = event.target.files?.[0]; if (!file) return;
+      try {
+        const data = await readAudioFile(file);
+        if (!canStoreAudio(project, data, activeLevel.musicData)) throw new Error('В проекте достигнут лимит аудио (около 900 КБ). Удали ненужные дорожки.');
+        if (musicPlayer) { musicPlayer.pause(); musicPlayer = null; }
+        activeLevel.musicData = data;
+        renderAudioControls(); markDirty();
+      } catch (error) { alert(error.message || 'Не удалось загрузить музыку.'); }
+      event.target.value = '';
+    });
+    soundInput.addEventListener('change', async event => {
+      const file = event.target.files?.[0]; if (!file) return;
+      try {
+        const data = await readAudioFile(file);
+        if (!canStoreAudio(project, data, activeLevel.collectSoundData)) throw new Error('В проекте достигнут лимит аудио (около 900 КБ). Удали ненужные дорожки.');
+        if (soundPlayer) { soundPlayer.pause(); soundPlayer = null; }
+        activeLevel.collectSoundData = data;
+        renderAudioControls(); markDirty();
+      } catch (error) { alert(error.message || 'Не удалось загрузить звук.'); }
+      event.target.value = '';
+    });
+    outlet.querySelector('.studio-music-remove').addEventListener('click', () => {
+      if (musicPlayer) { musicPlayer.pause(); musicPlayer = null; }
+      activeLevel.musicData = ''; renderAudioControls(); markDirty();
+    });
+    outlet.querySelector('.studio-sound-remove').addEventListener('click', () => {
+      if (soundPlayer) { soundPlayer.pause(); soundPlayer = null; soundPlayerData = ''; }
+      activeLevel.collectSoundData = ''; renderAudioControls(); markDirty();
+    });
+    renderAudioControls();
     const backgroundInput = outlet.querySelector('.studio-background-input');
     const backgroundButton = outlet.querySelector('.studio-background-button');
     function renderBackgroundControls() {
@@ -689,7 +815,7 @@ export function renderStudioScreen(outlet) {
       try {
         const data = await compressImageFile(file);
         if (!canStoreImage(project, data, activeLevel.backgroundImage)) {
-          alert('В проекте достигнут лимит изображений (примерно 3 МБ после сжатия). Удали ненужные картинки или уменьши их количество.');
+          alert('В проекте достигнут общий лимит ресурсов (около 3,2 МБ). Удали ненужные изображения или аудиофайлы.');
           event.target.value = '';
           return;
         }
@@ -711,6 +837,7 @@ export function renderStudioScreen(outlet) {
     outlet.querySelector('.studio-back-button').addEventListener('click', () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('keyup', onKeyUp);
+      stopLevelAudio();
       cancelAnimationFrame(frame);
       saveProject(false);
       renderList();
