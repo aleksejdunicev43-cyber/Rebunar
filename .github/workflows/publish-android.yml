@@ -6,6 +6,14 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/publish-android.yml"
+      - "frontend/features/studio/view.js"
+      - "frontend/features/studio/studio.css"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-android.yml"
+      - "frontend/features/studio/view.js"
+      - "frontend/features/studio/studio.css"
 
 permissions:
   contents: write
@@ -69,11 +77,20 @@ jobs:
       - name: Build release APK
         run: gradle -p android-rebunar :app:assembleDebug
 
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-android-godot-preview
+          path: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Publish APK release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.1
-          name: Rebunar Android 0.1.1
+          tag_name: v0.1.2
+          name: Rebunar Android 0.1.2
           target_commitish: main
           generate_release_notes: true
           make_latest: true
