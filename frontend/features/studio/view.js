@@ -28,7 +28,8 @@ function normalizeObjects(source) {
         x: Math.max(12, Math.min(SCENE_WIDTH - 12, Number(item.x) || 80 + index * 45)),
         y: Math.max(12, Math.min(SCENE_HEIGHT - 12, Number(item.y) || 100)),
         size: Math.max(8, Math.min(100, Number(item.size) || 24)),
-        color: /^#[0-9a-f]{6}$/i.test(item.color || '') ? item.color : (item.type === 'crystal' ? '#f5d66b' : item.type === 'wall' ? '#64747a' : DEFAULT_COLOR)
+        color: /^#[0-9a-f]{6}$/i.test(item.color || '') ? item.color : (item.type === 'crystal' ? '#f5d66b' : item.type === 'wall' ? '#64747a' : DEFAULT_COLOR),
+        imageData: typeof item.imageData === 'string' && item.imageData.startsWith('data:image/') ? item.imageData : ''
       }))
     : defaultObjects();
   if (!objects.some(item => item.type === 'player')) objects.unshift(defaultObjects()[0]);
@@ -39,7 +40,8 @@ function normalizeLevel(level, index) {
   return {
     id: String(level.id || makeId()),
     name: String(level.name || `Уровень ${index + 1}`),
-    objects: normalizeObjects(level.objects)
+    objects: normalizeObjects(level.objects),
+    backgroundImage: typeof level.backgroundImage === 'string' && level.backgroundImage.startsWith('data:image/') ? level.backgroundImage : ''
   };
 }
 
@@ -213,7 +215,7 @@ export function renderStudioScreen(outlet) {
             <p class="studio-tool-hint">Выбери объект в списке или коснись его на сцене, чтобы изменить.</p>
           </aside>
           <section class="studio-preview-panel">
-            <div class="studio-panel-toolbar"><div><span class="studio-kicker">СЦЕНА</span><strong class="studio-canvas-mode-label">Редактирование уровня</strong></div><span class="studio-resolution">640 × 360</span></div>
+            <div class="studio-panel-toolbar"><div><span class="studio-kicker">СЦЕНА</span><strong class="studio-canvas-mode-label">Редактирование уровня</strong></div><div class="studio-scene-toolbar"><span class="studio-resolution">640 × 360</span><button type="button" class="studio-background-button">▧ Фон уровня</button><input class="studio-background-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>
             <div class="studio-canvas-wrap"><canvas class="studio-game-canvas" width="640" height="360" tabindex="0" aria-label="Сцена игры"></canvas><div class="studio-game-overlay">REBUNAR STUDIO</div></div>
             <div class="studio-game-controls">
               <span class="studio-hint studio-edit-hint">Перетаскивай объекты пальцем или мышью</span>
@@ -237,6 +239,52 @@ export function renderStudioScreen(outlet) {
 
     const canvas = outlet.querySelector('.studio-game-canvas');
     const ctx = canvas.getContext('2d');
+    const assetImageCache = new Map();
+    function cacheImage(data) {
+      if (!data) return null;
+      if (!assetImageCache.has(data)) {
+        const image = new Image();
+        image.onload = () => draw();
+        image.src = data;
+        assetImageCache.set(data, image);
+      }
+      return assetImageCache.get(data);
+    }
+    function compressImageFile(file) {
+      return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) return reject(new Error('Выбери файл изображения.'));
+        if (file.size > 8 * 1024 * 1024) return reject(new Error('Исходный файл слишком большой. Максимум — 8 МБ.'));
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = () => reject(new Error('Файл изображения повреждён или не поддерживается.'));
+          image.onload = () => {
+            const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+            const width = Math.max(1, Math.round(image.naturalWidth * scale));
+            const height = Math.max(1, Math.round(image.naturalHeight * scale));
+            const bitmap = document.createElement('canvas');
+            bitmap.width = width; bitmap.height = height;
+            const bitmapContext = bitmap.getContext('2d');
+            bitmapContext.drawImage(image, 0, 0, width, height);
+            const data = bitmap.toDataURL('image/webp', 0.78);
+            if (data.length > 700000) return reject(new Error('После сжатия изображение всё ещё слишком большое. Выбери картинку попроще.'));
+            resolve(data);
+          };
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    function canStoreImage(targetProject, nextData, replacedData = '') {
+      let total = 0;
+      targetProject.levels.forEach(level => {
+        if (level.backgroundImage) total += level.backgroundImage.length;
+        level.objects.forEach(object => { if (object.imageData) total += object.imageData.length; });
+      });
+      total -= replacedData.length;
+      return total + nextData.length <= 3200000;
+    }
     const objectList = outlet.querySelector('.studio-object-list');
     const inspectorFields = outlet.querySelector('.studio-inspector-fields');
     const inspectorActions = outlet.querySelector('.studio-inspector-actions');
@@ -305,7 +353,14 @@ export function renderStudioScreen(outlet) {
           <label class="studio-field">Y<input class="studio-object-y" type="number" min="12" max="348" value="${Math.round(item.y)}"></label>
         </div>
         <label class="studio-field">Размер <output class="studio-size-value">${Math.round(item.size)}</output><input class="studio-object-size" type="range" min="8" max="80" step="1" value="${Math.round(item.size)}"></label>
-        <label class="studio-field">Цвет<input class="studio-object-color" type="color" value="${item.color}"></label>`;
+        <label class="studio-field">Цвет<input class="studio-object-color" type="color" value="${item.color}"></label>
+        <div class="studio-asset-controls">
+          <span class="studio-kicker">ИЗОБРАЖЕНИЕ ОБЪЕКТА</span>
+          <button type="button" class="studio-asset-upload">${item.imageData ? 'Заменить изображение' : '＋ Загрузить изображение'}</button>
+          <input class="studio-object-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          ${item.imageData ? '<button type="button" class="studio-asset-remove">Убрать изображение</button>' : ''}
+          <small>PNG, JPG или WebP. Картинка будет подогнана под размер объекта.</small>
+        </div>`;
       inspectorActions.innerHTML = `
         <button type="button" class="studio-secondary-action" data-duplicate>＋ Дублировать</button>
         <button type="button" class="studio-danger-action" data-delete ${item.type === 'player' ? 'disabled title="Игрок должен оставаться на сцене"' : ''}>Удалить объект</button>`;
@@ -327,6 +382,29 @@ export function renderStudioScreen(outlet) {
       bind('.studio-object-y', 'change', input => { item.y = clamp(Number(input.value) || 12, 12, 348); input.value = Math.round(item.y); });
       bind('.studio-object-size', 'input', input => { item.size = Number(input.value); inspectorFields.querySelector('.studio-size-value').textContent = input.value; });
       bind('.studio-object-color', 'input', input => { item.color = input.value; });
+      inspectorFields.querySelector('.studio-asset-upload').addEventListener('click', () => inspectorFields.querySelector('.studio-object-image-input').click());
+      inspectorFields.querySelector('.studio-object-image-input').addEventListener('change', async event => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const data = await compressImageFile(file);
+          if (!canStoreImage(project, data, item.imageData)) {
+            alert('В проекте достигнут лимит изображений (примерно 3 МБ после сжатия). Удали ненужные картинки или уменьши их количество.');
+            event.target.value = '';
+            return;
+          }
+          item.imageData = data;
+          cacheImage(data);
+          markDirty(); renderInspector(); draw();
+        } catch (error) {
+          alert(error.message || 'Не удалось загрузить изображение.');
+        }
+        event.target.value = '';
+      });
+      inspectorFields.querySelector('.studio-asset-remove')?.addEventListener('click', () => {
+        item.imageData = '';
+        renderInspector(); markDirty(); draw();
+      });
       inspectorActions.querySelector('[data-duplicate]')?.addEventListener('click', () => {
         const copy = { ...item, id: makeId(), name: item.name + ' копия', x: clamp(item.x + 36, 12, 628), y: clamp(item.y + 30, 12, 348) };
         activeLevel.objects.push(copy);
@@ -361,6 +439,15 @@ export function renderStudioScreen(outlet) {
       ctx.clearRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
       ctx.fillStyle = '#10191a';
       ctx.fillRect(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
+      if (activeLevel.backgroundImage) {
+        const background = cacheImage(activeLevel.backgroundImage);
+        if (background?.complete && background.naturalWidth) {
+          const scale = Math.max(SCENE_WIDTH / background.naturalWidth, SCENE_HEIGHT / background.naturalHeight);
+          const width = background.naturalWidth * scale;
+          const height = background.naturalHeight * scale;
+          ctx.drawImage(background, (SCENE_WIDTH - width) / 2, (SCENE_HEIGHT - height) / 2, width, height);
+        }
+      }
       if (mode === 'edit') {
         ctx.strokeStyle = 'rgba(93,190,154,.13)';
         ctx.lineWidth = 1;
@@ -370,7 +457,16 @@ export function renderStudioScreen(outlet) {
       const sceneObjects = mode === 'test' && runtimeObjects ? runtimeObjects : activeLevel.objects;
       sceneObjects.forEach(item => {
         const isSelected = mode === 'edit' && item.id === selectedId;
-        if (item.type === 'wall') {
+        const objectImage = item.imageData ? cacheImage(item.imageData) : null;
+        if (objectImage?.complete && objectImage.naturalWidth) {
+          ctx.save();
+          if (item.type === 'wall') {
+            ctx.drawImage(objectImage, item.x - item.size, item.y - item.size / 2, item.size * 2, item.size);
+          } else {
+            ctx.drawImage(objectImage, item.x - item.size / 2, item.y - item.size / 2, item.size, item.size);
+          }
+          ctx.restore();
+        } else if (item.type === 'wall') {
           ctx.fillStyle = item.color;
           ctx.fillRect(item.x - item.size, item.y - item.size / 2, item.size * 2, item.size);
           ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.strokeRect(item.x - item.size, item.y - item.size / 2, item.size * 2, item.size);
@@ -567,6 +663,26 @@ export function renderStudioScreen(outlet) {
       renderEditor();
     });
 
+    const backgroundInput = outlet.querySelector('.studio-background-input');
+    outlet.querySelector('.studio-background-button').addEventListener('click', () => backgroundInput.click());
+    backgroundInput.addEventListener('change', async event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const data = await compressImageFile(file);
+        if (!canStoreImage(project, data, activeLevel.backgroundImage)) {
+          alert('В проекте достигнут лимит изображений (примерно 3 МБ после сжатия). Удали ненужные картинки или уменьши их количество.');
+          event.target.value = '';
+          return;
+        }
+        activeLevel.backgroundImage = data;
+        cacheImage(data);
+        markDirty(); draw();
+      } catch (error) {
+        alert(error.message || 'Не удалось загрузить фон.');
+      }
+      event.target.value = '';
+    });
     outlet.querySelectorAll('[data-add]').forEach(button => button.addEventListener('click', () => addObject(button.dataset.add)));
     modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
     outlet.querySelector('.studio-reset-button').addEventListener('click', resetTest);
