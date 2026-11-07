@@ -7,6 +7,11 @@ android {
     namespace = "ru.rebunar.app"
     compileSdk = 35
 
+    // Keep Godot's project metadata directories when packaging Android assets.
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
     defaultConfig {
         applicationId = "ru.rebunar.app"
         minSdk = 23
@@ -33,4 +38,9 @@ android {
 
 dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // Godot 4.7.2 runtime embedded directly in the Rebunar Android application.
+    implementation("org.godotengine:godot:4.7.2.stable")
+    implementation("androidx.fragment:fragment:1.9.1")
+    implementation("androidx.core:core-splashscreen:1.2.0")
 }

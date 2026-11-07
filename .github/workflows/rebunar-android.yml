@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feature/rebunar-android-shell
+      - feature/android-bundled-frontend
     paths:
       - "android-rebunar/**"
       - ".github/workflows/rebunar-android.yml"

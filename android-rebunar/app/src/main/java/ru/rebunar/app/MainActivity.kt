@@ -127,6 +127,7 @@ class MainActivity : Activity() {
     private fun configureWebView() {
         webView.settings.apply {
             javaScriptEnabled = true
+            userAgentString = "$userAgentString RebunarAndroid/0.1"
             domStorageEnabled = true
             loadsImagesAutomatically = true
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
@@ -167,6 +168,13 @@ class MainActivity : Activity() {
                 request: WebResourceRequest?
             ): Boolean {
                 val uri = request?.url ?: return true
+
+                // Only this exact first-party deep link can open the native Godot workspace.
+                if (uri.scheme == "rebunar" && uri.host == "studio" && uri.path == "/godot") {
+                    startActivity(Intent(this@MainActivity, GodotStudioActivity::class.java))
+                    return true
+                }
+
                 if (uri.scheme == "https" && uri.host == APP_HOST) return false
 
                 if (uri.scheme == "https" || uri.scheme == "http") {
