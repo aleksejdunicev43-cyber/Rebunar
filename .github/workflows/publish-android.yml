@@ -114,6 +114,11 @@ jobs:
           unzip -l "$APK" | grep -q 'assets/project.godot'
           unzip -l "$APK" | grep -q 'assets/main.gd'
           unzip -l "$APK" | grep -q 'assets/build/index.html'
+          unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
+          if unzip -l "$APK" | grep -Eq 'lib/(x86|x86_64|armeabi-v7a)/libgodot_android.so'; then
+            echo "Unexpected non-ARM64 Godot engine binary found in APK"
+            exit 1
+          fi
 
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
