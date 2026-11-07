@@ -76,3 +76,19 @@
   .studio-level-controls button{width:100%;padding:0 6px;font-size:9px}
   .studio-level-controls .studio-level-add{grid-column:1/-1}
 }
+
+
+/* Studio image asset controls */
+.studio-scene-toolbar{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.studio-background-button,.studio-background-remove,.studio-asset-upload,.studio-asset-remove{min-height:32px;padding:0 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);font-size:10px;font-weight:750;cursor:pointer}
+.studio-background-button,.studio-asset-upload{border-color:color-mix(in srgb,var(--accent) 48%,var(--border));color:var(--accent)}
+.studio-background-remove,.studio-asset-remove{color:#ff929b}
+.studio-asset-controls{display:flex;flex-direction:column;align-items:stretch;gap:7px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-panel-2)}
+.studio-asset-controls small{color:var(--text-muted);font-size:9px;line-height:1.45}
+.studio-asset-controls .studio-kicker{margin-bottom:2px}
+.studio-asset-controls button{width:100%}
+@media(max-width:560px){
+  .studio-scene-toolbar{gap:5px}
+  .studio-background-button,.studio-background-remove{min-height:30px;padding:0 7px;font-size:9px}
+  .studio-panel-toolbar{align-items:flex-start;gap:8px}
+}
