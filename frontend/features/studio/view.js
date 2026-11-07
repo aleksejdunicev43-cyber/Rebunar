@@ -621,6 +621,7 @@ export function renderStudioScreen(outlet) {
       selectedId = activeLevel.objects.find(item => item.type === 'player')?.id || activeLevel.objects[0]?.id;
       runtimeObjects = null; runtimePlayer = null; score = 0;
       outlet.querySelector('.studio-object-count').textContent = activeLevel.objects.length;
+      renderBackgroundControls();
       renderObjectList(); renderInspector(); draw(); markDirty();
     });
     outlet.querySelector('.studio-level-add').addEventListener('click', () => {
@@ -665,8 +666,10 @@ export function renderStudioScreen(outlet) {
 
     const backgroundInput = outlet.querySelector('.studio-background-input');
     const backgroundButton = outlet.querySelector('.studio-background-button');
-    if (activeLevel.backgroundImage) {
-      backgroundButton.textContent = 'Заменить фон';
+    function renderBackgroundControls() {
+      outlet.querySelector('.studio-background-remove')?.remove();
+      backgroundButton.textContent = activeLevel.backgroundImage ? 'Заменить фон' : '▧ Фон уровня';
+      if (!activeLevel.backgroundImage) return;
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.className = 'studio-background-remove';
@@ -674,11 +677,11 @@ export function renderStudioScreen(outlet) {
       backgroundButton.after(remove);
       remove.addEventListener('click', () => {
         activeLevel.backgroundImage = '';
-        remove.remove();
-        backgroundButton.textContent = '▧ Фон уровня';
+        renderBackgroundControls();
         markDirty(); draw();
       });
     }
+    renderBackgroundControls();
     backgroundButton.addEventListener('click', () => backgroundInput.click());
     backgroundInput.addEventListener('change', async event => {
       const file = event.target.files?.[0];
@@ -693,21 +696,7 @@ export function renderStudioScreen(outlet) {
         activeLevel.backgroundImage = data;
         cacheImage(data);
         markDirty(); draw();
-        const oldButton = outlet.querySelector('.studio-background-button');
-        oldButton.textContent = 'Заменить фон';
-        if (!outlet.querySelector('.studio-background-remove')) {
-          const remove = document.createElement('button');
-          remove.type = 'button';
-          remove.className = 'studio-background-remove';
-          remove.textContent = 'Убрать фон';
-          oldButton.after(remove);
-          remove.addEventListener('click', () => {
-            activeLevel.backgroundImage = '';
-            remove.remove();
-            oldButton.textContent = '▧ Фон уровня';
-            markDirty(); draw();
-          });
-        }
+        renderBackgroundControls();
       } catch (error) {
         alert(error.message || 'Не удалось загрузить фон.');
       }
