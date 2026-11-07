@@ -61,7 +61,9 @@ jobs:
       - name: Verify Android shell has native Godot and bundled frontend support
         run: |
           grep -q 'serveBundledFrontend' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
-          grep -q 'rebunar://studio/godot' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'uri.scheme == "rebunar"' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'uri.host == "studio"' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'uri.path == "/godot"' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
           grep -q 'org.godotengine:godot:4.7.2.stable' android-rebunar/app/build.gradle.kts
           grep -q 'minSdk = 24' android-rebunar/app/build.gradle.kts
 
