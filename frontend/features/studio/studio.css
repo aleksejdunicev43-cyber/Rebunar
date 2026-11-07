@@ -298,3 +298,57 @@ body.rebunar-studio-active .studio-inspector-actions { flex:0 0 auto; }
   body.rebunar-studio-active .studio-object-panel,
   body.rebunar-studio-active .studio-inspector { display:none !important; }
 }
+
+
+/* Canvas-first layout: keep the level map large and remove audio from the first workspace. */
+body.rebunar-studio-active > .studio-editor-screen {
+  grid-template-rows: auto auto auto minmax(0,1fr) !important;
+}
+body.rebunar-studio-active .studio-audio-manager { display:none !important; }
+body.rebunar-studio-active .studio-visual-workspace {
+  grid-template-columns: minmax(112px, 15vw) minmax(0,1fr) minmax(145px, 18vw) !important;
+  min-height:0 !important;
+  height:100% !important;
+  align-items:stretch !important;
+}
+body.rebunar-studio-active .studio-preview-panel {
+  align-self:stretch !important;
+  display:flex !important;
+  flex-direction:column !important;
+  min-height:0 !important;
+  height:100% !important;
+  overflow:hidden !important;
+}
+body.rebunar-studio-active .studio-canvas-wrap {
+  flex:1 1 0 !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:100% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:hidden !important;
+}
+body.rebunar-studio-active .studio-game-canvas {
+  flex:0 1 auto !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:contain !important;
+  aspect-ratio:16 / 9 !important;
+}
+body.rebunar-studio-active .studio-game-controls {
+  flex:0 0 auto !important;
+  margin-top:4px !important;
+}
+body.rebunar-studio-active .studio-panel-toolbar {
+  flex:0 0 auto !important;
+  margin-bottom:5px !important;
+}
+@media (max-width:900px) and (orientation:landscape), (max-height:560px) and (orientation:landscape) {
+  body.rebunar-studio-active .studio-visual-workspace {
+    grid-template-columns: minmax(104px, 14vw) minmax(0,1fr) minmax(132px, 17vw) !important;
+  }
+}
