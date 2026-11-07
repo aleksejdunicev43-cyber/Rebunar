@@ -51,7 +51,8 @@ jobs:
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
-          unzip -l android-source/android-rebunar/app/src/main/assets/project.godot >/dev/null 2>&1 || true
+          test -s android-rebunar/app/src/main/assets/project.godot
+          test -s android-rebunar/app/src/main/assets/main.gd
 
 
       - name: Prepare application icon
