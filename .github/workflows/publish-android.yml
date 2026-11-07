@@ -8,12 +8,16 @@ on:
       - ".github/workflows/publish-android.yml"
       - "frontend/features/studio/view.js"
       - "frontend/features/studio/studio.css"
+      - "package.json"
+      - "package-lock.json"
   pull_request:
     branches: [main]
     paths:
       - ".github/workflows/publish-android.yml"
       - "frontend/features/studio/view.js"
       - "frontend/features/studio/studio.css"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
   contents: write
@@ -103,14 +107,6 @@ jobs:
           unzip -l "$APK" | grep -q 'assets/project.godot'
           unzip -l "$APK" | grep -q 'assets/main.gd'
           unzip -l "$APK" | grep -q 'assets/build/index.html'
-
-      - name: Upload APK build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rebunar-android-godot-preview
-          path: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 14
 
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
