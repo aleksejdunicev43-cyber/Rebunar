@@ -26,3 +26,16 @@ The GitHub Actions workflow builds a debug APK and uploads it as an artifact. In
 - The application requires an internet connection; this first version is not an offline client.
 - The WebView uses the server's existing session cookies. Server-side cookie and CSRF behavior must be tested on a real device.
 - The APK does not add Bluetooth Mesh functionality. That remains a separate prototype until integrated deliberately.
+
+
+## Embedded Godot runtime (prototype)
+
+- The APK embeds the official Godot Android runtime `org.godotengine:godot:4.7.2.stable` (MIT).
+- The native workspace is opened through the first-party deep link `rebunar://studio/godot`.
+- Godot runs in an AndroidX `GodotFragment` hosted by `GodotStudioActivity` in the same APK.
+- A small 2D scene under `app/src/main/assets/` verifies rendering and touch input.
+- This first step embeds the **runtime**, not the full Godot Editor. The Rebunar editor remains our own UI and will be connected to the engine incrementally.
+- The Godot workspace opens in landscape and handles orientation changes.
+- The APK will grow significantly because it now includes native game-engine libraries.
+
+Reference: https://docs.godotengine.org/en/stable/tutorials/platform/android/embedding_in_android_projects.html
