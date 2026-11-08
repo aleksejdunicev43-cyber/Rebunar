@@ -87,27 +87,10 @@ jobs:
           yes | sdkmanager --licenses >/dev/null
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.1.0" "ndk;29.0.14206865"
 
-      - name: Download Android Swappy dependency
-        working-directory: godot-src
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3 4 5; do
-            echo "Swappy download attempt ${attempt}/5"
-            if python misc/scripts/install_swappy_android.py; then
-              exit 0
-            fi
-            if [ "${attempt}" -lt 5 ]; then
-              sleep $((attempt * 15))
-            fi
-          done
-          echo "Swappy download failed after five attempts." >&2
-          exit 1
-
       - name: Build Godot editor native libraries
         working-directory: godot-src
         run: |
-          scons platform=android target=editor arch=arm64 production=yes dev_mode=yes module_text_server_fb_enabled=yes swappy=yes -j2
+          scons platform=android target=editor arch=arm64 production=yes dev_mode=yes module_text_server_fb_enabled=yes swappy=no -j2
 
       - name: Prepare Godot Editor as an internal Rebunar module
         run: |
