@@ -1,6 +1,6 @@
 # Rebunar Studio — Godot Editor integration plan
 
-Status: investigation / architecture phase. This document does not claim that the Godot editor has already been embedded.
+Status: isolated integration prototype / CI validation. The branch now contains an experimental single-APK module conversion and native launch bridge; it is not yet a verified working APK.
 
 ## Goal
 
