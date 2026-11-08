@@ -116,7 +116,10 @@ export function renderStudioScreen(outlet) {
             <h1>Rebunar Studio</h1>
             <p>Бесплатная среда для создания 2D-игр. Создай проект, расставляй объекты на сцене и проверяй игру.</p>
           </div>
-          <span class="studio-status"><i></i> РЕДАКТОР В РАЗРАБОТКЕ</span>
+          <div class="studio-header-actions">
+            <span class="studio-status"><i></i> РЕДАКТОР В РАЗРАБОТКЕ</span>
+            <a class="studio-open-godot-button" data-native-godot-editor href="rebunar://studio/editor" hidden>Открыть полный редактор <span>↗</span></a>
+          </div>
         </header>
         <section class="studio-start-panel">
           <div class="studio-panel-copy">
@@ -143,6 +146,11 @@ export function renderStudioScreen(outlet) {
         </div>
         <p class="studio-storage-note">Проекты пока хранятся в браузере на этом устройстве. Облачное хранение подключим отдельно. Для работы редактора не требуется платный ИИ или внешний API.</p>
       </section>`;
+
+    const nativeEditorLink = outlet.querySelector('[data-native-godot-editor]');
+    if (nativeEditorLink && navigator.userAgent.includes('RebunarAndroid')) {
+      nativeEditorLink.hidden = false;
+    }
 
     outlet.querySelector('.studio-create-form').addEventListener('submit', event => {
       event.preventDefault();
