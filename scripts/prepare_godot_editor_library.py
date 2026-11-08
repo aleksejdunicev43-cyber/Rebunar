@@ -33,7 +33,7 @@ def remove_gradle_block(text: str, marker: str, label: str) -> str:
         if quote:
             if escaped:
                 escaped = False
-            elif ch == "\\\\":
+            elif ch == "\\":
                 escaped = True
             elif ch == quote:
                 quote = None
@@ -46,7 +46,7 @@ def remove_gradle_block(text: str, marker: str, label: str) -> str:
             depth -= 1
             if depth == 0:
                 end = i + 1
-                while end < len(text) and text[end] in "\\r\\n":
+                while end < len(text) and text[end] in "\r\n":
                     end += 1
                 return text[:start] + text[end:]
     raise SystemExit(f"Unclosed Gradle block: {label}")
@@ -78,20 +78,20 @@ def patch_editor_gradle(path: Path) -> None:
 
 def patch_editor_manifest(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
-    text = re.sub(r"\\s*<supports-screens\\b[\\s\\S]*?/>", "", text, count=1)
-    text = re.sub(r"\\s*<activity-alias\\b[\\s\\S]*?</activity-alias>", "", text, count=1)
-    text = text.replace('    android:installLocation="auto"\\n', "")
+    text = re.sub(r"\s*<supports-screens\b[\s\S]*?/>", "", text, count=1)
+    text = re.sub(r"\s*<activity-alias\b[\s\S]*?</activity-alias>", "", text, count=1)
+    text = text.replace('    android:installLocation="auto"\n', "")
     for attr in (
-        '        android:allowBackup="false"\\n',
-        '        android:icon="@mipmap/themed_icon"\\n',
-        '        android:label="${editorAppName}${editorBuildSuffix}"\\n',
-        '        android:requestLegacyExternalStorage="true"\\n',
-        '        android:theme="@style/GodotEditorSplashScreenTheme"\\n',
+        '        android:allowBackup="false"\n',
+        '        android:icon="@mipmap/themed_icon"\n',
+        '        android:label="${editorAppName}${editorBuildSuffix}"\n',
+        '        android:requestLegacyExternalStorage="true"\n',
+        '        android:theme="@style/GodotEditorSplashScreenTheme"\n',
     ):
         if attr not in text:
             raise SystemExit(f"Missing expected editor manifest attribute: {attr.strip()}")
         text = text.replace(attr, "", 1)
-    activity = re.search(r'(<activity\\s+android:name="\\.GodotEditor"[^>]*)(>)', text)
+    activity = re.search(r'(<activity\s+android:name="\.GodotEditor"[^>]*)(>)', text)
     if not activity:
         raise SystemExit("Could not find the GodotEditor activity declaration")
     replacement = activity.group(1) + ' android:theme="@style/GodotEditorSplashScreenTheme"' + activity.group(2)
