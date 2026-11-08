@@ -98,11 +98,28 @@ jobs:
             --android-project android-shell/android-rebunar \
             --godot-root godot-src
 
-      - name: Build the single Rebunar APK using Godot's pinned Gradle toolchain
+      - name: Download pinned Gradle distribution with retries
+        run: |
+          set -euo pipefail
+          GRADLE_VERSION="8.11.1"
+          GRADLE_HOME="$RUNNER_TEMP/gradle-$GRADLE_VERSION"
+          if [ ! -x "$GRADLE_HOME/bin/gradle" ]; then
+            curl --fail --location \
+              --retry 10 --retry-all-errors --retry-delay 12 \
+              --connect-timeout 30 --max-time 900 \
+              "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" \
+              --output "$RUNNER_TEMP/gradle-$GRADLE_VERSION-bin.zip"
+            unzip -q "$RUNNER_TEMP/gradle-$GRADLE_VERSION-bin.zip" -d "$RUNNER_TEMP"
+          fi
+          test -x "$GRADLE_HOME/bin/gradle"
+          echo "GRADLE_HOME=$GRADLE_HOME" >> "$GITHUB_ENV"
+          echo "$GRADLE_HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Build the single Rebunar APK using the pinned Gradle toolchain
         working-directory: godot-src/platform/android/java
         env:
           REBUNAR_ANDROID_PROJECT: ${{ github.workspace }}/android-shell/android-rebunar
-        run: ./gradlew --no-daemon :rebunarApp:assembleDebug --stacktrace
+        run: gradle --no-daemon :rebunarApp:assembleDebug --stacktrace
 
       - name: Verify one APK contains Rebunar frontend and Godot Editor
         working-directory: android-shell/android-rebunar
