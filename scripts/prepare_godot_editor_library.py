@@ -99,7 +99,7 @@ def patch_editor_manifest(path: Path) -> None:
             raise SystemExit(f"Expected one {label}, found {count}")
 
     text, install_location_count = re.subn(
-        r'\\s+android:installLocation="auto"',
+        r'\s+android:installLocation="auto"',
         "",
         text,
         count=1,
