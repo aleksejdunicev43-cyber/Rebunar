@@ -89,20 +89,48 @@ def patch_editor_gradle(path: Path) -> None:
 
 def patch_editor_manifest(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
-    text = re.sub(r"\s*<queries\b[\s\S]*?</queries>", "", text, count=1)
-    text = re.sub(r"\s*<supports-screens\b[\s\S]*?/>", "", text, count=1)
-    text = re.sub(r"\s*<activity-alias\b[\s\S]*?</activity-alias>", "", text, count=1)
-    text = text.replace('    android:installLocation="auto"\n', "")
+    for pattern, label in (
+        (r"<queries\b[\s\S]*?</queries>", "editor package visibility queries"),
+        (r"<supports-screens\b[\s\S]*?/>", "editor supports-screens declaration"),
+        (r"<activity-alias\b[\s\S]*?</activity-alias>", "standalone editor launcher alias"),
+    ):
+        text, count = re.subn(r"\s*" + pattern, "", text, count=1)
+        if count != 1:
+            raise SystemExit(f"Expected one {label}, found {count}")
+
+    text = replace_once(
+        text,
+        '    android:installLocation="auto"\n',
+        "",
+        "editor installLocation",
+    )
     for attr in (
         '        android:allowBackup="false"\n',
         '        android:icon="@mipmap/themed_icon"\n',
-        '        android:label="${editorAppName}${editorBuildSuffix}"\n',
+        '        android:label="\${editorAppName}\${editorBuildSuffix}"\n',
         '        android:requestLegacyExternalStorage="true"\n',
         '        android:theme="@style/GodotEditorSplashScreenTheme"\n',
     ):
         if attr not in text:
             raise SystemExit(f"Missing expected editor manifest attribute: {attr.strip()}")
         text = text.replace(attr, "", 1)
+
+    # Rebunar owns the merged application theme. Keep Godot's editor theme on
+    # its internal Activity so the editor does not inherit the WebView theme.
+    activity_anchor = (
+        '        <activity\n'
+        '            android:name=".GodotEditor"\n'
+    )
+    activity_with_theme = (
+        activity_anchor
+        + '            android:theme="@style/GodotEditorSplashScreenTheme"\n'
+    )
+    text = replace_once(
+        text,
+        activity_anchor,
+        activity_with_theme,
+        "GodotEditor activity declaration",
+    )
     path.write_text(text, encoding="utf-8")
 
 
