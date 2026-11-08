@@ -14,6 +14,29 @@ Deliver one Rebunar Android application with a full game editor based on the ope
 - The Android app is currently WebView-only (the earlier Godot runtime prototype was removed in v0.1.6).
 - The Android release workflow builds the frontend, checks out `feature/android-bundled-frontend`, copies the Android shell, bundles frontend assets and assembles the APK.
 
+## Audit of the existing Rebunar Android shell (2026-11-08)
+
+The Android source branch `feature/android-bundled-frontend` was inspected directly:
+
+- `settings.gradle.kts` currently includes only `:app`.
+- Root Android Gradle plugins are Android Gradle Plugin 8.7.3 and Kotlin 2.0.21.
+- `:app` is a standard Android application module (namespace/applicationId `ru.rebunar.app`), compile/target SDK 35, min SDK 24, Java 17.
+- `MainActivity` is a native `Activity` hosting a WebView. It intercepts only bundled `/new/**` frontend assets while API calls continue over HTTPS.
+- The current app has no Godot dependency or native Godot Activity after the v0.1.6 rollback.
+
+### Consequence for one-APK integration
+
+The upstream Godot `:editor` module is an Android *application* module with its own application ID, launcher alias, manifest, resources, and dependency on Godot's `:lib` module. It cannot simply be added as `implementation(project(":editor"))` to Rebunar's application module. The editor module must be adapted into an embeddable Android library/feature (or its source and resources merged carefully), while retaining the native editor entry Activity and Godot's editor-specific assets/data paths. The Godot native `:lib` editor variant must be built with the matching tools libraries and ABI.
+
+The least risky next experiment is to produce a single debug APK from a dedicated integration branch by:
+1. adding the upstream Android Gradle project as a controlled included build/subproject;
+2. converting the editor packaging module into a library-compatible module, resolving application-only Gradle settings and manifest placeholders;
+3. adding an explicit Rebunar native Activity entry point that launches the editor Activity;
+4. resolving resource/manifest collisions and checking editor project storage permissions;
+5. verifying the APK contains the editor native library and launches without a second installed package.
+
+This is an engineering prototype, not a production merge. Keep the WebView as the primary Rebunar shell and do not change the release workflow until the prototype passes device tests.
+
 ## Technical findings
 
 - Initial upstream baseline: Godot **4.7.2-stable** (official latest stable release verified on 2026-11-08). Keep this version pinned until a deliberate upgrade is reviewed.
