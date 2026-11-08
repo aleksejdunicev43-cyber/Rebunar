@@ -16,6 +16,9 @@ Deliver one Rebunar Android application with a full game editor based on the ope
 
 ## Technical findings
 
+- Initial upstream baseline: Godot **4.7.2-stable** (official latest stable release verified on 2026-11-08). Keep this version pinned until a deliberate upgrade is reviewed.
+- The upstream Android editor application module is `platform/android/java/editor`; it depends on the native Android library module `:lib` and the shared `:app` Gradle configuration. It is not the same thing as the `godot-lib` runtime AAR.
+
 1. Godot's Android Editor is a native editor build, not the Godot Android runtime library. Official build instructions use SCons with `platform=android target=editor` for each architecture.
 2. The Android Editor is a large native application with project/file access, import pipeline, editor UI, rendering and export tooling. Copying files from its APK into Rebunar would not integrate these systems.
 3. The clean first engineering milestone is to build and run a branded standalone editor variant from Godot source in CI. This validates source version, Android toolchain, ABI support and packaging before attempting same-process integration.
