@@ -352,34 +352,3 @@ body.rebunar-studio-active .studio-panel-toolbar {
     grid-template-columns: minmax(104px, 14vw) minmax(0,1fr) minmax(132px, 17vw) !important;
   }
 }
-
-
-/* Native Godot runtime entry — shown only inside the Rebunar Android app. */
-.studio-native-engine-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:9px;
-  flex:none;
-  min-height:40px;
-  padding:0 14px;
-  border:1px solid color-mix(in srgb,var(--accent) 58%,var(--border));
-  border-radius:8px;
-  background:color-mix(in srgb,var(--accent) 13%,var(--bg-panel));
-  color:var(--text-main);
-  font-size:11px;
-  font-weight:850;
-  text-decoration:none;
-}
-.studio-native-engine-button span{color:var(--accent);font-size:16px}
-.studio-native-engine-button:active{background:color-mix(in srgb,var(--accent) 22%,var(--bg-panel))}
-@media(max-width:680px){
-  .studio-native-engine-button{width:100%;box-sizing:border-box}
-}
-
-
-/* Scene editing precision tools */
-.studio-snap-toggle,.studio-grid-step{min-height:32px;padding:0 9px;border:1px solid var(--border);border-radius:7px;background:var(--bg-panel);color:var(--text-main);font-size:10px;font-weight:750}
-.studio-snap-toggle[aria-pressed="true"]{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg-panel))}
-.studio-grid-step{min-width:72px}
-@media(max-width:680px){.studio-scene-toolbar{justify-content:flex-start}.studio-snap-toggle,.studio-grid-step,.studio-background-button{min-height:36px}}
