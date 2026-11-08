@@ -8,6 +8,10 @@ on:
     paths:
       - ".github/workflows/build-rebunar-studio-editor.yml"
       - "docs/REBUNAR_STUDIO_GODOT_INTEGRATION.md"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-rebunar-studio-editor.yml"
 
 permissions:
   contents: read
@@ -15,8 +19,8 @@ permissions:
 jobs:
   build-editor:
     name: Build Godot 4.7.2 Android Editor for Rebunar Studio
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
       - name: Checkout Rebunar integration branch
         uses: actions/checkout@v4
@@ -28,6 +32,7 @@ jobs:
           ref: 4.7.2-stable
           path: godot-src
           fetch-depth: 1
+          submodules: recursive
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -76,10 +81,18 @@ jobs:
           p.write_text(g.replace('editorAppName: "Godot Engine 4"', new_label, 1))
           PY
 
-      - name: Build native editor libraries and Android APKs
-        working-directory: godot-src/platform/android/java
+      - name: Download Android Swappy dependency
+        working-directory: godot-src
+        run: python misc/scripts/install_swappy_android.py
+
+      - name: Build native editor libraries
+        working-directory: godot-src
         run: |
-          ./gradlew --no-daemon generateGodotEditor -PgenerateNativeLibs --stacktrace
+          scons platform=android target=editor arch=arm64 production=yes dev_mode=yes module_text_server_fb_enabled=yes swappy=yes -j2
+
+      - name: Package Android Editor APK
+        working-directory: godot-src/platform/android/java
+        run: ./gradlew --no-daemon generateGodotEditor --stacktrace
 
       - name: Verify editor APKs and native libraries
         run: |
