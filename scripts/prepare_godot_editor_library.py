@@ -109,7 +109,7 @@ def patch_rebunar_project(android_project: Path, godot_root: Path) -> None:
         "    plugins {\n"
         '        id("com.android.application") version "8.7.3"\n'
         '        id("com.android.library") version "8.7.3"\n'
-        '        id("org.jetbrains.kotlin.android") version "2.1.21"\n'
+        '        id("org.jetbrains.kotlin.android") version "2.0.21"\n'
         '        id("io.github.gradle-nexus.publish-plugin") version "1.3.0"\n'
         "    }\n",
         "plugin management repositories",
