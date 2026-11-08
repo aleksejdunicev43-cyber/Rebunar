@@ -11,6 +11,15 @@ on:
       - "frontend/**"
       - "package.json"
       - "package-lock.json"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/prepare_godot_editor_library.py"
+      - ".github/workflows/build-rebunar-studio-integrated-preview.yml"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
   contents: read
