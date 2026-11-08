@@ -177,6 +177,20 @@ def patch_rebunar_project(android_project: Path, godot_root: Path) -> None:
         '    implementation(project(":editor"))',
         "Rebunar app dependencies",
     )
+    app_text = replace_once(
+        app_text,
+        "    }\n}\n\ndependencies {",
+        "    }\n\n"
+        "    // Godot OpenXR brings the loader through two Android artifacts.\n"
+        "    // Keep one ABI-compatible copy in the combined Rebunar APK.\n"
+        "    packaging {\n"
+        "        jniLibs {\n"
+        '            pickFirsts += setOf("**/libopenxr_loader.so")\n'
+        "        }\n"
+        "    }\n"
+        "}\n\ndependencies {",
+        "Rebunar native OpenXR loader packaging rule",
+    )
     app_gradle.write_text(app_text, encoding="utf-8")
 
     editor_gradle = godot_root / "platform/android/java/editor/build.gradle"
