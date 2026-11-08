@@ -40,7 +40,6 @@ jobs:
           npm ci
           npm run build
           test -s frontend/build/index.html
-          grep -R -q 'rebunar://studio/godot' frontend/build/assets
 
       - name: Checkout Android application source
         uses: actions/checkout@v4
@@ -55,16 +54,10 @@ jobs:
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
-          test -s android-rebunar/app/src/main/assets/project.godot
-          test -s android-rebunar/app/src/main/assets/main.gd
 
-      - name: Verify Android shell has native Godot and bundled frontend support
+      - name: Verify Android shell and bundled frontend support
         run: |
           grep -q 'serveBundledFrontend' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
-          grep -q 'uri.scheme == "rebunar"' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
-          grep -q 'uri.host == "studio"' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
-          grep -q 'uri.path == "/godot"' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
-          grep -q 'org.godotengine:godot:4.7.2.stable' android-rebunar/app/build.gradle.kts
           grep -q 'minSdk = 24' android-rebunar/app/build.gradle.kts
 
 
@@ -109,24 +102,16 @@ jobs:
       - name: Build release APK
         run: gradle -p android-rebunar :app:assembleDebug
 
-      - name: Verify embedded Godot and bundled frontend assets
+      - name: Verify bundled frontend assets
         run: |
           APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
-          unzip -l "$APK" | grep -q 'assets/project.godot'
-          unzip -l "$APK" | grep -q 'assets/main.gd'
           unzip -l "$APK" | grep -q 'assets/build/index.html'
-          unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
-          unzip -l "$APK" | grep -q 'lib/armeabi-v7a/libgodot_android.so'
-          if unzip -l "$APK" | grep -Eq 'lib/(x86|x86_64)/libgodot_android.so'; then
-            echo "Unexpected x86 Godot engine binary found in ARM-only APK"
-            exit 1
-          fi
 
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rebunar-android-arm32-arm64-preview
+          name: rebunar-android-preview
           path: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
@@ -135,8 +120,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.5
-          name: Rebunar Android 0.1.5
+          tag_name: v0.1.6
+          name: Rebunar Android 0.1.6
           target_commitish: main
           generate_release_notes: true
           make_latest: true
