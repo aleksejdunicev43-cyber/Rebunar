@@ -111,7 +111,7 @@ def patch_editor_manifest(path: Path) -> None:
     for attr in (
         '        android:allowBackup="false"\n',
         '        android:icon="@mipmap/themed_icon"\n',
-        r'        android:label="\${editorAppName}\${editorBuildSuffix}"\n',
+        '        android:label="${editorAppName}${editorBuildSuffix}"\n',
         '        android:requestLegacyExternalStorage="true"\n',
         '        android:theme="@style/GodotEditorSplashScreenTheme"\n',
     ):
