@@ -109,3 +109,20 @@ The official Godot documentation lists 3 GB RAM as the minimum for the native mo
 - The Rebunar app manifest remains authoritative for the installed app label, icon, launch activity and application theme. The editor activity will be started from a native bridge in Rebunar's existing MainActivity/WebView shell.
 - Godot already ships a Russian editor translation at `editor/translations/editor/ru.po`; this gives us a real localization baseline rather than translating every editor term from scratch. We will retain the upstream translation and then review Rebunar-specific labels.
 - The standalone build is ARM64 only at this point. ARMv7 packaging and 4 GB RAM device behavior remain separate validation tasks.
+
+
+## Integration build architecture update (2026-11-08)
+
+The first draft attempted to make Godot's editor project a library while relocating its Gradle root under the Rebunar Android shell. That approach replaced upstream Gradle configuration and risked losing Godot's version catalog, native-library paths and SCons task setup. It has been superseded.
+
+The integration workflow now keeps `godot-src/platform/android/java` as the Gradle root and includes the existing Rebunar `:app` as an additional project named `:rebunarApp`. This preserves the pinned upstream Godot SDK/plugin configuration and its expected native library layout.
+
+The editor packaging module is converted from an installable application to an Android library for this experiment:
+- remove application ID, app version/signing configuration and app-only build type settings;
+- retain the editor namespace, Android distribution flavor and dependency on Godot's `:lib` editor product;
+- remove the separate launcher alias and app-level icon/label/theme/backup attributes from the library manifest;
+- merge the editor activities and permissions into the Rebunar application manifest.
+
+The Rebunar app is configured to select Godot's `android` distribution and `editor` product flavors, then adds `:editor` as an implementation dependency. Its existing WebView remains the main app surface. A native URL bridge for `rebunar://studio/editor` launches the internal Godot editor Activity.
+
+The integrated CI workflow now also builds the Vite frontend and copies `frontend/build` into the Android APK assets before packaging. It verifies the Rebunar package ID, bundled frontend entry point, Godot ARM64 native library and merged Godot editor Activity. The output remains a debug preview artifact and must pass real-device checks before being treated as a usable release.
