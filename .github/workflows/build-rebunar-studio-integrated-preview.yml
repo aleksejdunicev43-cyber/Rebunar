@@ -103,6 +103,31 @@ jobs:
             --android-project android-shell/android-rebunar \
             --godot-root godot-src
 
+      - name: Ensure Godot Editor activity is registered in the Rebunar app
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          manifest = Path("android-shell/android-rebunar/app/src/main/AndroidManifest.xml")
+          source = manifest.read_text(encoding="utf-8")
+          activity_name = 'android:name="org.godotengine.editor.GodotEditor"'
+          if activity_name not in source:
+              declaration = """
+                  <activity
+                      android:name="org.godotengine.editor.GodotEditor"
+                      android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+                      android:exported="false"
+                      android:launchMode="singleInstancePerTask"
+                      android:screenOrientation="userLandscape"
+                      android:theme="@style/GodotEditorSplashScreenTheme" />
+              """
+              if source.count("</application>") != 1:
+                  raise SystemExit("Could not identify exactly one application manifest section")
+              source = source.replace("</application>", declaration + "\\n    </application>", 1)
+              manifest.write_text(source, encoding="utf-8")
+          print("Godot Editor activity is explicitly registered in the Rebunar manifest.")
+          PY
+
       - name: Download pinned Gradle distribution with retries
         run: |
           set -euo pipefail
