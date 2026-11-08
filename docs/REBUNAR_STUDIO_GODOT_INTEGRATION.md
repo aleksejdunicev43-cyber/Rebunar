@@ -99,3 +99,13 @@ The official Godot documentation lists 3 GB RAM as the minimum for the native mo
 - Android source build: https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_android.html
 - Godot source: https://github.com/godotengine/godot
 - License: https://github.com/godotengine/godot/blob/master/COPYRIGHT.txt
+
+## Follow-up audit — successful native editor build and embedding design (2026-11-08)
+
+- The first reproducible CI build completed successfully. It produced `android_editor-android-debug.apk` (about 172 MiB) with `lib/arm64-v8a/libgodot_android.so`. This is a standalone preview artifact only; it is not the Rebunar release APK and must not be presented as the final user download.
+- The editor entry activity is implemented in the Android source set at `editor/src/android/java/org/godotengine/editor/GodotEditor.kt`; its base class is `BaseGodotEditor`. The activity can be retained as an internal, non-exported activity when the editor module is embedded.
+- The editor module has Android distribution flavors (`android`, `horizonos`, `picoos`) and depends on the Godot `:lib` module's `editor` product flavor. Rebunar's app will need explicit flavor-dimension selection and the editor library must preserve its own namespace so its generated `R` and `BuildConfig` references remain valid.
+- The upstream editor Gradle module currently uses `com.android.application`, app-only application ID/version/signing settings and a launcher activity alias. The integration experiment will convert only this packaging module to `com.android.library`, remove app-only configuration and the launcher alias, and merge its internal activities, permissions, resources and assets into Rebunar's existing `:app`.
+- The Rebunar app manifest remains authoritative for the installed app label, icon, launch activity and application theme. The editor activity will be started from a native bridge in Rebunar's existing MainActivity/WebView shell.
+- Godot already ships a Russian editor translation at `editor/translations/editor/ru.po`; this gives us a real localization baseline rather than translating every editor term from scratch. We will retain the upstream translation and then review Rebunar-specific labels.
+- The standalone build is ARM64 only at this point. ARMv7 packaging and 4 GB RAM device behavior remain separate validation tasks.
