@@ -17,6 +17,7 @@ Deliver one Rebunar Android application with a full game editor based on the ope
 ## Technical findings
 
 - Initial upstream baseline: Godot **4.7.2-stable** (official latest stable release verified on 2026-11-08). Keep this version pinned until a deliberate upgrade is reviewed.
+- A first CI workflow now builds the official Android Editor from that pinned source, changes its Android package label to Rebunar Studio, and uploads a preview APK. This standalone build is an intermediate validation artifact, not yet the final one-APK integration.
 - The upstream Android editor application module is `platform/android/java/editor`; it depends on the native Android library module `:lib` and the shared `:app` Gradle configuration. It is not the same thing as the `godot-lib` runtime AAR.
 
 1. Godot's Android Editor is a native editor build, not the Godot Android runtime library. Official build instructions use SCons with `platform=android target=editor` for each architecture.
@@ -27,7 +28,7 @@ Deliver one Rebunar Android application with a full game editor based on the ope
 
 ## Device constraints
 
-The official Godot documentation lists 3 GB RAM as the minimum for the native mobile editor and 6 GB as recommended for a smooth simple 2D/3D workflow. Storage requirements are also materially larger than the current Rebunar shell because editor caches and export templates are additional. We must test on the target phone and provide a lightweight 2D-first profile; performance on 4 GB devices is not guaranteed.
+The official Godot documentation lists 3 GB RAM as the minimum for the native mobile editor and 6 GB as recommended for a smooth simple 2D/3D workflow. The editor's listed storage baseline is 200 MB, while export templates and caches add substantial storage (up to around 1.5 GB depending on targets). The target phone has 4 GB RAM, so it is near the minimum: a lightweight 2D-first profile may work, but performance and stability are not guaranteed. We must measure on the actual device before promising a usable experience.
 
 ## Phased implementation
 
