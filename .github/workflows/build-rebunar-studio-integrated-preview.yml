@@ -1,0 +1,100 @@
+name: Build Rebunar with embedded Godot Editor preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/rebunar-studio-godot-editor
+    paths:
+      - "scripts/prepare_godot_editor_library.py"
+      - ".github/workflows/build-rebunar-studio-integrated-preview.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-integrated-preview:
+    name: Build one Rebunar APK with embedded Godot Editor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout integration scripts
+        uses: actions/checkout@v4
+
+      - name: Checkout Rebunar Android shell
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-bundled-frontend
+          path: android-shell
+
+      - name: Checkout pinned Godot source
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: 4.7.2-stable
+          path: godot-src
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python and SCons
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install SCons
+        run: python -m pip install --upgrade scons
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+
+      - name: Install pinned Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.1.0" "ndk;29.0.14206865"
+
+      - name: Build Godot editor native libraries
+        working-directory: godot-src
+        run: |
+          scons platform=android target=editor arch=arm64 production=yes dev_mode=yes module_text_server_fb_enabled=yes swappy=yes -j2
+
+      - name: Prepare Godot Editor as an internal Rebunar module
+        env:
+          GODOT_SOURCE_DIR: ${{ github.workspace }}/godot-src
+        run: |
+          python scripts/prepare_godot_editor_library.py \
+            --android-project android-shell/android-rebunar \
+            --godot-root godot-src
+
+      - name: Build single Rebunar APK
+        working-directory: android-shell/android-rebunar
+        env:
+          GODOT_SOURCE_DIR: ${{ github.workspace }}/godot-src
+        run: ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Verify single APK contains Rebunar and Godot Editor
+        working-directory: android-shell/android-rebunar
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.1.0/aapt" dump badging "$APK" | grep -q "package: name='ru.rebunar.app'"
+          unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
+          unzip -l "$APK" | grep -q 'classes.*dex'
+          echo "Verified one Rebunar APK containing the Godot editor native library."
+
+      - name: Upload integrated Rebunar preview APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-integrated-studio-preview
+          path: android-shell/android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
