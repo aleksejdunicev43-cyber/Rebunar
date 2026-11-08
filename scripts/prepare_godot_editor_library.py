@@ -202,8 +202,8 @@ def patch_rebunar_project(android_project: Path, godot_root: Path) -> None:
     kotlin = replace_once(
         kotlin,
         "        }\n\n        CookieManager.getInstance().apply {",
-        "        }\n\n        if (!webView.settings.userAgentString.contains(\\"RebunarAndroid\\")) {\n"
-        "            webView.settings.userAgentString = \\"${webView.settings.userAgentString} RebunarAndroid\\"\n"
+        "        }\\n\\n        if (!webView.settings.userAgentString.contains(\"RebunarAndroid\")) {\\n"
+        "            webView.settings.userAgentString = webView.settings.userAgentString + \" RebunarAndroid\"\\n"
         "        }\n\n        CookieManager.getInstance().apply {",
         "Rebunar Android WebView identity",
     )
