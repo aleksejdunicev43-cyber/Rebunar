@@ -3,6 +3,7 @@ package ru.rebunar.app
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Process
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +28,7 @@ class GodotStudioActivity : FragmentActivity(), GodotHost {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         window.statusBarColor = Color.rgb(7, 12, 11)
         window.navigationBarColor = Color.rgb(7, 12, 11)
 
@@ -109,6 +110,17 @@ class GodotStudioActivity : FragmentActivity(), GodotHost {
     @Deprecated("Use the system back dispatcher")
     override fun onBackPressed() {
         finish()
+    }
+
+    override fun onDestroy() {
+        val shouldStopGodotProcess = isFinishing
+        super.onDestroy()
+        // Godot supports only one engine instance per Android process. This Activity
+        // runs in its own :godot process, so ending that process guarantees a clean
+        // engine instance the next time the user opens the workspace.
+        if (shouldStopGodotProcess) {
+            Process.killProcess(Process.myPid())
+        }
     }
 
     private fun dp(value: Int): Int =

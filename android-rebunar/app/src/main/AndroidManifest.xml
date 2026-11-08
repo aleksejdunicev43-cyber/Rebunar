@@ -13,7 +13,8 @@
         <activity
             android:name=".GodotStudioActivity"
             android:exported="false"
-            android:screenOrientation="sensorLandscape"
+            android:process=":godot"
+            android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize" />
         <activity
             android:name=".MainActivity"

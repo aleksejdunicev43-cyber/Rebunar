@@ -63,6 +63,6 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch and event.pressed:
 		touch_count += 1
 		queue_redraw()
-	elif event is InputEventMouseButton and event.pressed:
+	elif event is InputEventMouseButton and event.pressed and not DisplayServer.is_touchscreen_available():
 		touch_count += 1
 		queue_redraw()
