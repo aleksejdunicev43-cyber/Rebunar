@@ -135,8 +135,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.4
-          name: Rebunar Android 0.1.4
+          tag_name: v0.1.5
+          name: Rebunar Android 0.1.5
           target_commitish: main
           generate_release_notes: true
           make_latest: true
