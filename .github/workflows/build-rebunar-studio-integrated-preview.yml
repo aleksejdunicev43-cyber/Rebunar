@@ -161,10 +161,16 @@ jobs:
           unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
           unzip -l "$APK" | grep -q 'assets/build/index.html'
           MANIFEST="$("$ANDROID_HOME/build-tools/36.1.0/aapt" dump xmltree "$APK" AndroidManifest.xml)"
-          printf '%s\\n' "$MANIFEST" | grep -q 'GodotEditor'
+          echo "---- Merged APK manifest (Godot/editor entries) ----"
+          printf '%s\n' "$MANIFEST" | grep -i -C 4 -E 'godot|editor' || true
+          if ! printf '%s\n' "$MANIFEST" | grep -q 'GodotEditor'; then
+            echo "::error::APK was built, but GodotEditor activity was not found in the merged manifest."
+            exit 1
+          fi
           echo "Verified one Rebunar APK with bundled frontend and embedded Godot Editor."
 
       - name: Upload integrated Rebunar preview APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rebunar-integrated-studio-preview
