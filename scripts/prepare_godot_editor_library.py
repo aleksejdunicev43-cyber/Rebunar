@@ -133,16 +133,12 @@ def patch_rebunar_project(android_project: Path, godot_root: Path) -> None:
         root_build.unlink()
     groovy_build = android_project / "build.gradle"
     groovy_build.write_text(
-        """plugins {
-    id 'io.github.gradle-nexus.publish-plugin'
-}
-
-def godotSourceDir = new File(System.getenv('GODOT_SOURCE_DIR'))
+        """def godotSourceDir = new File(System.getenv('GODOT_SOURCE_DIR'))
 apply from: new File(godotSourceDir, 'platform/android/java/app/config.gradle')
-apply from: new File(godotSourceDir, 'platform/android/java/scripts/publish-root.gradle')
 
 ext {
-    PUBLISH_VERSION = getGodotPublishVersion()
+    PUBLISH_VERSION = "4.7.2-stable"
+    ossrhGroupId = "org.godotengine"
     supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
     supportedFlavors = ["editor", "template"]
     supportedAndroidDistributions = ["android"]
@@ -157,17 +153,11 @@ ext {
     binDir = new File(godotSourceDir, "bin").absolutePath + "/"
     androidEditorBuildsDir = new File(godotSourceDir, "bin/android_editor_builds").absolutePath + "/"
 }
+ext["signing.keyId"] = ""
+ext["signing.password"] = ""
+ext["signing.key"] = ""
 
 gradle.startParameter.excludedTaskNames += ":lib:compileGodotNativeLibsEditorDebugArm64"
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-}
 
 def getSconsTaskName(String flavor, String buildType, String abi) {
     return "compileGodotNativeLibs" + flavor.capitalize() + buildType.capitalize() + abi.capitalize()
