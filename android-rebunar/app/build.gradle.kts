@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "ru.rebunar.app"
-    compileSdk = 35    androidResources {
-        ignoreAssetsPattern = "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"
-    }
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "ru.rebunar.app"
