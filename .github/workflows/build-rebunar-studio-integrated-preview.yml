@@ -39,6 +39,11 @@ jobs:
           ref: feature/android-bundled-frontend
           path: android-shell
 
+      - name: Verify Android launcher resources
+        run: |
+          test -s android-shell/android-rebunar/app/src/main/res/drawable/rebunar_logo.xml
+          test -s android-shell/android-rebunar/app/src/main/res/drawable/rebunar_icon.xml
+
       - name: Checkout pinned Godot source
         uses: actions/checkout@v4
         with:
