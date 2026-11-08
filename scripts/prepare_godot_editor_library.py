@@ -98,16 +98,20 @@ def patch_editor_manifest(path: Path) -> None:
         if count != 1:
             raise SystemExit(f"Expected one {label}, found {count}")
 
-    text = replace_once(
-        text,
-        '    android:installLocation="auto"\n',
+    text, install_location_count = re.subn(
+        r'\\s+android:installLocation="auto"',
         "",
-        "editor installLocation",
+        text,
+        count=1,
     )
+    if install_location_count != 1:
+        raise SystemExit(
+            f"Expected one editor installLocation attribute, found {install_location_count}"
+        )
     for attr in (
         '        android:allowBackup="false"\n',
         '        android:icon="@mipmap/themed_icon"\n',
-        '        android:label="\${editorAppName}\${editorBuildSuffix}"\n',
+        r'        android:label="\${editorAppName}\${editorBuildSuffix}"\n',
         '        android:requestLegacyExternalStorage="true"\n',
         '        android:theme="@style/GodotEditorSplashScreenTheme"\n',
     ):
