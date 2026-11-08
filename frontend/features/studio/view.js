@@ -258,7 +258,7 @@ export function renderStudioScreen(outlet) {
             <p class="studio-tool-hint">Выбери объект в списке или коснись его на сцене, чтобы изменить.</p>
           </aside>
           <section class="studio-preview-panel">
-            <div class="studio-panel-toolbar"><div><span class="studio-kicker">СЦЕНА</span><strong class="studio-canvas-mode-label">Редактирование уровня</strong></div><div class="studio-scene-toolbar"><span class="studio-resolution">640 × 360</span><button type="button" class="studio-background-button">▧ Фон уровня</button><input class="studio-background-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>
+            <div class="studio-panel-toolbar"><div><span class="studio-kicker">СЦЕНА</span><strong class="studio-canvas-mode-label">Редактирование уровня</strong></div><div class="studio-scene-toolbar"><span class="studio-resolution">640 × 360</span><button type="button" class="studio-snap-toggle" aria-pressed="true">⌗ Сетка: ВКЛ</button><select class="studio-grid-step" aria-label="Шаг привязки к сетке"><option value="8">8 px</option><option value="16" selected>16 px</option><option value="32">32 px</option></select><button type="button" class="studio-background-button">▧ Фон уровня</button><input class="studio-background-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div></div>
             <div class="studio-canvas-wrap"><canvas class="studio-game-canvas" width="640" height="360" tabindex="0" aria-label="Сцена игры"></canvas><div class="studio-game-overlay">REBUNAR STUDIO</div></div>
             <div class="studio-game-controls">
               <span class="studio-hint studio-edit-hint">Перетаскивай объекты пальцем или мышью</span>
@@ -416,6 +416,20 @@ export function renderStudioScreen(outlet) {
     const inspectorActions = editorScreen.querySelector('.studio-inspector-actions');
     const saveStatus = editorScreen.querySelector('.studio-save-status');
     const modeButtons = editorScreen.querySelectorAll('[data-mode]');
+    const snapToggle = editorScreen.querySelector('.studio-snap-toggle');
+    const gridStepSelect = editorScreen.querySelector('.studio-grid-step');
+    let snapEnabled = true;
+    let snapStep = 16;
+    snapToggle.addEventListener('click', () => {
+      snapEnabled = !snapEnabled;
+      snapToggle.textContent = snapEnabled ? '⌗ Сетка: ВКЛ' : '⌗ Сетка: ВЫКЛ';
+      snapToggle.setAttribute('aria-pressed', String(snapEnabled));
+      draw();
+    });
+    gridStepSelect.addEventListener('change', () => {
+      snapStep = Number(gridStepSelect.value) || 16;
+      draw();
+    });
 
     function selectedObject() {
       return activeLevel.objects.find(item => item.id === selectedId) || null;
@@ -666,8 +680,9 @@ export function renderStudioScreen(outlet) {
       if (mode === 'edit') {
         ctx.strokeStyle = 'rgba(93,190,154,.13)';
         ctx.lineWidth = 1;
-        for (let x = 0; x <= SCENE_WIDTH; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SCENE_HEIGHT); ctx.stroke(); }
-        for (let y = 0; y <= SCENE_HEIGHT; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SCENE_WIDTH, y); ctx.stroke(); }
+        const visibleGridStep = snapEnabled ? snapStep : 32;
+        for (let x = 0; x <= SCENE_WIDTH; x += visibleGridStep) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, SCENE_HEIGHT); ctx.stroke(); }
+        for (let y = 0; y <= SCENE_HEIGHT; y += visibleGridStep) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(SCENE_WIDTH, y); ctx.stroke(); }
       }
       const sceneObjects = mode === 'test' && runtimeObjects ? runtimeObjects : activeLevel.objects;
       sceneObjects.forEach(item => {
@@ -763,8 +778,12 @@ export function renderStudioScreen(outlet) {
       const item = activeLevel.objects.find(object => object.id === drag.id);
       if (!item) return;
       const point = canvasPoint(event);
-      item.x = clamp(point.x - drag.dx, item.type === 'wall' ? item.size : item.size / 2, SCENE_WIDTH - (item.type === 'wall' ? item.size : item.size / 2));
-      item.y = clamp(point.y - drag.dy, item.size / 2, SCENE_HEIGHT - item.size / 2);
+      const rawX = point.x - drag.dx;
+      const rawY = point.y - drag.dy;
+      const nextX = snapEnabled ? Math.round(rawX / snapStep) * snapStep : rawX;
+      const nextY = snapEnabled ? Math.round(rawY / snapStep) * snapStep : rawY;
+      item.x = clamp(nextX, item.type === 'wall' ? item.size : item.size / 2, SCENE_WIDTH - (item.type === 'wall' ? item.size : item.size / 2));
+      item.y = clamp(nextY, item.size / 2, SCENE_HEIGHT - item.size / 2);
       const xInput = inspectorFields.querySelector('.studio-object-x');
       const yInput = inspectorFields.querySelector('.studio-object-y');
       if (xInput) xInput.value = Math.round(item.x);
