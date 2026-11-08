@@ -89,7 +89,20 @@ jobs:
 
       - name: Download Android Swappy dependency
         working-directory: godot-src
-        run: python misc/scripts/install_swappy_android.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            echo "Swappy download attempt ${attempt}/5"
+            if python misc/scripts/install_swappy_android.py; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 5 ]; then
+              sleep $((attempt * 15))
+            fi
+          done
+          echo "Swappy download failed after five attempts." >&2
+          exit 1
 
       - name: Build Godot editor native libraries
         working-directory: godot-src
