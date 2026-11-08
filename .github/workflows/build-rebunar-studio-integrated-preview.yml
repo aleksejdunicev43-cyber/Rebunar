@@ -61,6 +61,10 @@ jobs:
           yes | sdkmanager --licenses >/dev/null
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.1.0" "ndk;29.0.14206865"
 
+      - name: Download Android Swappy dependency
+        working-directory: godot-src
+        run: python misc/scripts/install_swappy_android.py
+
       - name: Build Godot editor native libraries
         working-directory: godot-src
         run: |
