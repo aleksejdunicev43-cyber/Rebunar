@@ -156,12 +156,17 @@ jobs:
         run: |
           set -euo pipefail
           echo "---- Locate the APK produced by :rebunarApp:assembleDebug ----"
-          find . -type f -path '*/build/outputs/apk/debug/*.apk' -print
-          APK="$(find . -type f -path '*/build/outputs/apk/debug/*.apk' -print -quit)"
+          echo "Workspace: $GITHUB_WORKSPACE"
+          echo "---- Search the complete workspace for APK outputs ----"
+          find "$GITHUB_WORKSPACE" -type f -name '*.apk' -print
+          APK="$(find "$GITHUB_WORKSPACE" -type f -path '*/build/outputs/apk/debug/*.apk' -print -quit)"
           if [ -z "$APK" ] || [ ! -s "$APK" ]; then
-            echo "::error::Gradle completed, but no debug APK was found."
+            echo "---- Gradle output directories ----"
+            find "$GITHUB_WORKSPACE" -type d -path '*/build/outputs/*' -print
+            echo "::error::Gradle completed, but no debug APK was found anywhere in the workspace."
             exit 1
           fi
+          echo "Found APK: $APK"
 
           cp "$APK" "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
           test -s "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
