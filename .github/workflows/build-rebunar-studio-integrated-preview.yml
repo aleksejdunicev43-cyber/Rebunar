@@ -152,15 +152,20 @@ jobs:
         run: gradle --no-daemon :rebunarApp:assembleDebug --stacktrace
 
       - name: Verify one APK contains Rebunar frontend and Godot Editor
-        working-directory: android-shell/android-rebunar
+        working-directory: godot-src/platform/android/java
         run: |
           set -euo pipefail
-          APK="app/build/outputs/apk/debug/app-debug.apk"
-          test -s "$APK"
+          echo "---- Locate the APK produced by :rebunarApp:assembleDebug ----"
+          find . -type f -path '*/build/outputs/apk/debug/*.apk' -print
+          APK="$(find . -type f -path '*/build/outputs/apk/debug/*.apk' -print -quit)"
+          if [ -z "$APK" ] || [ ! -s "$APK" ]; then
+            echo "::error::Gradle completed, but no debug APK was found."
+            exit 1
+          fi
 
-          # Preserve the APK at the workspace root before any optional diagnostic
-          # can fail, so the artifact uploader always has one stable path.
           cp "$APK" "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+          test -s "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+          ls -lh "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
 
           "$ANDROID_HOME/build-tools/36.1.0/aapt" dump badging "$APK" | grep -q "package: name='ru.rebunar.app'"
           unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
@@ -169,12 +174,10 @@ jobs:
           AAPT="$ANDROID_HOME/build-tools/36.1.0/aapt"
           echo "---- Merged APK manifest (activities) ----"
           "$AAPT" dump xmltree "$APK" AndroidManifest.xml | tee "$RUNNER_TEMP/rebunar-manifest.txt"
-          if ! grep -Fq 'GodotEditor' "$RUNNER_TEMP/rebunar-manifest.txt"; then
-            echo "::error::APK was built, but GodotEditor activity was not found in the binary manifest."
+          if ! grep -Fq 'org.godotengine.editor.GodotEditor' "$RUNNER_TEMP/rebunar-manifest.txt"; then
+            echo "::error::APK does not contain the registered GodotEditor activity."
             exit 1
           fi
-          test -s "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
-          ls -lh "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
           echo "Verified one Rebunar APK with bundled frontend and embedded Godot Editor."
 
       - name: Upload integrated Rebunar preview APK
