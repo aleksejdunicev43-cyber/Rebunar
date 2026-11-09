@@ -123,7 +123,7 @@ jobs:
               """
               if source.count("</application>") != 1:
                   raise SystemExit("Could not identify exactly one application manifest section")
-              source = source.replace("</application>", declaration + "\\n    </application>", 1)
+              source = source.replace("</application>", declaration + "\n    </application>", 1)
               manifest.write_text(source, encoding="utf-8")
           print("Godot Editor activity is explicitly registered in the Rebunar manifest.")
           PY
