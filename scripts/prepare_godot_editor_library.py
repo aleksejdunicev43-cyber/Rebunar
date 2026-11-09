@@ -200,32 +200,22 @@ def patch_rebunar_project(android_project: Path, godot_root: Path) -> None:
     patch_editor_manifest(editor_manifest)
     patch_godot_settings(settings)
 
+    # MainActivity already owns the deep-link bridge. Do not inject a second
+    # WebView handler here: doing so shadows openGodotEditor() and launches the
+    # editor without the required command_line_params extra.
     activity = android_project / "app/src/main/java/ru/rebunar/app/MainActivity.kt"
     kotlin = activity.read_text(encoding="utf-8")
-    kotlin = replace_once(
-        kotlin,
-        "import java.util.Locale",
-        "import java.util.Locale\nimport org.godotengine.editor.GodotEditor",
-        "Rebunar MainActivity imports",
+    required_bridge = (
+        'if (uri.scheme == "rebunar" && uri.host == "studio" && uri.path == "/editor")',
+        "openGodotEditor()",
+        'putExtra("command_line_params", arrayOf("--project-manager"))',
     )
-    anchor = "                val uri = request?.url ?: return true\n\n"
-    handler = (
-        "                val uri = request?.url ?: return true\n\n"
-        '                if (uri.scheme == "rebunar" && uri.host == "studio" && uri.path == "/editor") {\n'
-        "                    startActivity(Intent(this@MainActivity, GodotEditor::class.java))\n"
-        "                    return true\n"
-        "                }\n\n"
-    )
-    kotlin = replace_once(kotlin, anchor, handler, "Rebunar WebView URL dispatch")
-    kotlin = replace_once(
-        kotlin,
-        "        }\n\n        CookieManager.getInstance().apply {",
-        "        }\n\n        if (!webView.settings.userAgentString.contains(\"RebunarAndroid\")) {\n"
-        "            webView.settings.userAgentString = webView.settings.userAgentString + \" RebunarAndroid\"\n"
-        "        }\n\n        CookieManager.getInstance().apply {",
-        "Rebunar Android WebView identity",
-    )
-    activity.write_text(kotlin, encoding="utf-8")
+    for marker in required_bridge:
+        if marker not in kotlin:
+            raise SystemExit(f"Missing required Rebunar Godot launch bridge: {marker}")
+    if "startActivity(Intent(this@MainActivity, GodotEditor::class.java))" in kotlin:
+        raise SystemExit("Unsafe duplicate Godot launch handler detected in MainActivity")
+
 
 
 def main() -> None:
