@@ -157,13 +157,24 @@ jobs:
           set -euo pipefail
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
+
+          # Preserve the APK at the workspace root before any optional diagnostic
+          # can fail, so the artifact uploader always has one stable path.
+          cp "$APK" "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+
           "$ANDROID_HOME/build-tools/36.1.0/aapt" dump badging "$APK" | grep -q "package: name='ru.rebunar.app'"
           unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
           unzip -l "$APK" | grep -q 'assets/build/index.html'
-          MANIFEST="$("$ANDROID_HOME/build-tools/36.1.0/aapt" dump xmltree "$APK" AndroidManifest.xml)"
-          echo "---- Merged APK manifest (Godot/editor entries) ----"
-          printf '%s\n' "$MANIFEST" | grep -i -C 4 -E 'godot|editor' || true
-          if ! printf '%s\n' "$MANIFEST" | grep -q 'GodotEditor'; then
+
+          APKANALYZER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name apkanalyzer | head -n 1)"
+          if [ -z "$APKANALYZER" ]; then
+            echo "::error::apkanalyzer was not found in the installed Android SDK."
+            exit 1
+          fi
+          MANIFEST="$("$APKANALYZER" manifest print "$APK")"
+          echo "---- Merged APK manifest (activities) ----"
+          printf '%s\n' "$MANIFEST" | grep -E 'activity|GodotEditor|MainActivity' || true
+          if ! printf '%s\n' "$MANIFEST" | grep -Fq 'GodotEditor'; then
             echo "::error::APK was built, but GodotEditor activity was not found in the merged manifest."
             exit 1
           fi
@@ -174,6 +185,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rebunar-integrated-studio-preview
-          path: android-shell/android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          path: rebunar-integrated-studio-preview.apk
           if-no-files-found: error
           retention-days: 14
