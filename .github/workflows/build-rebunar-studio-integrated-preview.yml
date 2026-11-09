@@ -39,10 +39,14 @@ jobs:
           ref: feature/android-bundled-frontend
           path: android-shell
 
-      - name: Verify Android launcher resources
+      - name: Verify Android launcher resources and native editor bridge
         run: |
           test -s android-shell/android-rebunar/app/src/main/res/drawable/rebunar_logo.xml
           test -s android-shell/android-rebunar/app/src/main/res/drawable/rebunar_icon.xml
+          test -s android-shell/android-rebunar/app/src/main/res/mipmap/ic_launcher.xml
+          grep -q 'RebunarAndroid' android-shell/android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'command_line_params' android-shell/android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'rebunar://studio/editor' frontend/features/studio/view.js
 
       - name: Checkout pinned Godot source
         uses: actions/checkout@v4
