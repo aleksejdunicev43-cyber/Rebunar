@@ -166,18 +166,15 @@ jobs:
           unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
           unzip -l "$APK" | grep -q 'assets/build/index.html'
 
-          APKANALYZER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name apkanalyzer | head -n 1)"
-          if [ -z "$APKANALYZER" ]; then
-            echo "::error::apkanalyzer was not found in the installed Android SDK."
-            exit 1
-          fi
-          MANIFEST="$("$APKANALYZER" manifest print "$APK")"
+          AAPT="$ANDROID_HOME/build-tools/36.1.0/aapt"
           echo "---- Merged APK manifest (activities) ----"
-          printf '%s\n' "$MANIFEST" | grep -E 'activity|GodotEditor|MainActivity' || true
-          if ! printf '%s\n' "$MANIFEST" | grep -Fq 'GodotEditor'; then
-            echo "::error::APK was built, but GodotEditor activity was not found in the merged manifest."
+          "$AAPT" dump xmltree "$APK" AndroidManifest.xml | tee "$RUNNER_TEMP/rebunar-manifest.txt"
+          if ! grep -Fq 'GodotEditor' "$RUNNER_TEMP/rebunar-manifest.txt"; then
+            echo "::error::APK was built, but GodotEditor activity was not found in the binary manifest."
             exit 1
           fi
+          test -s "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+          ls -lh "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
           echo "Verified one Rebunar APK with bundled frontend and embedded Godot Editor."
 
       - name: Upload integrated Rebunar preview APK
@@ -185,6 +182,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rebunar-integrated-studio-preview
-          path: rebunar-integrated-studio-preview.apk
+          path: ${{ github.workspace }}/rebunar-integrated-studio-preview.apk
           if-no-files-found: error
           retention-days: 14
