@@ -128,6 +128,8 @@ class MainActivity : Activity() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
+            // Expose Android-only actions in the bundled frontend.
+            userAgentString = userAgentString + " RebunarAndroid"
             loadsImagesAutomatically = true
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             allowFileAccess = false
@@ -169,6 +171,11 @@ class MainActivity : Activity() {
                 val uri = request?.url ?: return true
 
                 if (uri.scheme == "https" && uri.host == APP_HOST) return false
+
+                if (uri.scheme == "rebunar" && uri.host == "studio" && uri.path == "/editor") {
+                    openGodotEditor()
+                    return true
+                }
 
                 if (uri.scheme == "https" || uri.scheme == "http") {
                     runCatching {
@@ -309,6 +316,31 @@ class MainActivity : Activity() {
             mapOf("Cache-Control" to "no-store"),
             ByteArrayInputStream("Bundled Rebunar asset not found".toByteArray(Charsets.UTF_8))
         )
+
+    /**
+     * Launch the Godot Android Editor packaged inside this APK.
+     * Godot reads command-line arguments only from an explicit, non-exported activity.
+     */
+    private fun openGodotEditor() {
+        val editorIntent = Intent().apply {
+            component = android.content.ComponentName(
+                this@MainActivity,
+                "org.godotengine.editor.GodotEditor"
+            )
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            putExtra("command_line_params", arrayOf("--project-manager"))
+        }
+
+        try {
+            startActivity(editorIntent)
+        } catch (error: Exception) {
+            android.widget.Toast.makeText(
+                this,
+                "Не удалось открыть Godot Editor: " + (error.localizedMessage ?: "ошибка запуска"),
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     private fun refreshPage() {
         errorPanel.visibility = View.GONE
