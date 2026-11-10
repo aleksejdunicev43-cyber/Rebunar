@@ -135,6 +135,16 @@ def patch_editor_manifest(path: Path) -> None:
         activity_with_theme,
         "GodotEditor activity declaration",
     )
+
+    # Android 11 (API 30) predates singleInstancePerTask (API 31).
+    # The editor only needs one dedicated task in this integrated app, so
+    # singleTask preserves the intended task isolation on Android 11 devices.
+    text = replace_once(
+        text,
+        '            android:launchMode="singleInstancePerTask"\\n',
+        '            android:launchMode="singleTask"\\n',
+        "Android 11-compatible GodotEditor launch mode",
+    )
     path.write_text(text, encoding="utf-8")
 
 
