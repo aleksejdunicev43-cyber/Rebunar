@@ -138,7 +138,7 @@ jobs:
                       android:name="org.godotengine.editor.GodotEditor"
                       android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
                       android:exported="false"
-                      android:launchMode="singleInstancePerTask"
+                      android:launchMode="singleTask"
                       android:screenOrientation="userLandscape"
                       android:theme="@style/GodotEditorSplashScreenTheme" />
               """
@@ -207,7 +207,7 @@ jobs:
           echo "Verified one Rebunar APK with bundled frontend and embedded Godot Editor."
 
       - name: Upload integrated Rebunar preview APK
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: rebunar-integrated-studio-preview
