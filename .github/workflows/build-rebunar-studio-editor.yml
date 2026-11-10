@@ -1,0 +1,116 @@
+name: Build Rebunar Studio native editor preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/rebunar-studio-godot-editor
+    paths:
+      - ".github/workflows/build-rebunar-studio-editor.yml"
+      - "docs/REBUNAR_STUDIO_GODOT_INTEGRATION.md"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-rebunar-studio-editor.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-editor:
+    name: Build Godot 4.7.2 Android Editor for Rebunar Studio
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout Rebunar integration branch
+        uses: actions/checkout@v4
+
+      - name: Checkout pinned Godot source
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: 4.7.2-stable
+          path: godot-src
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python and SCons
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install SCons
+        run: python -m pip install --upgrade scons
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # The legacy SDK package 'tools' is no longer published; install only platform-tools.
+          packages: 'platform-tools'
+
+      - name: Install pinned Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager             "platform-tools"             "platforms;android-36"             "build-tools;36.1.0"             "ndk;29.0.14206865"
+
+      - name: Brand editor package as Rebunar Studio
+        working-directory: godot-src/platform/android/java
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("editor/build.gradle")
+          s = p.read_text()
+          old_id = 'applicationId "org.godotengine.editor.v4"'
+          new_id = 'applicationId "ru.rebunar.studio"'
+          if old_id not in s:
+              raise SystemExit("Could not find the expected upstream editor applicationId")
+          p.write_text(s.replace(old_id, new_id, 1))
+          m = Path("editor/src/main/AndroidManifest.xml")
+          ms = m.read_text()
+          old_label = 'editorAppName: "Godot Engine 4"'
+          new_label = 'editorAppName: "Rebunar Studio"'
+          if old_label not in ms:
+              # The label placeholder is declared in Gradle, not necessarily in the manifest.
+              pass
+          g = p.read_text()
+          if 'editorAppName: "Godot Engine 4"' not in g:
+              raise SystemExit("Could not find the expected editor app label placeholder")
+          p.write_text(g.replace('editorAppName: "Godot Engine 4"', new_label, 1))
+          PY
+
+      - name: Download Android Swappy dependency
+        working-directory: godot-src
+        run: python misc/scripts/install_swappy_android.py
+
+      - name: Build native editor libraries
+        working-directory: godot-src
+        run: |
+          scons platform=android target=editor arch=arm64 production=yes dev_mode=yes module_text_server_fb_enabled=yes swappy=yes -j2
+
+      - name: Package Android Editor APK
+        working-directory: godot-src/platform/android/java
+        run: ./gradlew --no-daemon generateGodotEditor --stacktrace
+
+      - name: Verify editor APKs and native libraries
+        run: |
+          set -euo pipefail
+          find godot-src/bin/android_editor_builds -maxdepth 1 -type f -name '*.apk' -print
+          test -n "$(find godot-src/bin/android_editor_builds -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          for apk in godot-src/bin/android_editor_builds/*.apk; do
+            test -s "$apk"
+            unzip -l "$apk" | grep -q 'libgodot_android.so'
+          done
+
+      - name: Upload Rebunar Studio editor preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-studio-godot-4.7.2-editor-preview
+          path: godot-src/bin/android_editor_builds/*.apk
+          if-no-files-found: error
+          retention-days: 14

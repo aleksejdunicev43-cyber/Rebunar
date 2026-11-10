@@ -1,0 +1,216 @@
+name: Build Rebunar with embedded Godot Editor preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/rebunar-studio-godot-editor
+    paths:
+      - "scripts/prepare_godot_editor_library.py"
+      - ".github/workflows/build-rebunar-studio-integrated-preview.yml"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/prepare_godot_editor_library.py"
+      - ".github/workflows/build-rebunar-studio-integrated-preview.yml"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+jobs:
+  build-integrated-preview:
+    name: Build one Rebunar APK with embedded Godot Editor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - name: Checkout Rebunar source
+        uses: actions/checkout@v4
+
+      - name: Checkout Rebunar Android shell
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-bundled-frontend
+          path: android-shell
+
+      - name: Verify Android launcher resources and native editor bridge
+        run: |
+          test -s android-shell/android-rebunar/app/src/main/res/drawable/rebunar_logo.xml
+          test -s android-shell/android-rebunar/app/src/main/res/drawable/rebunar_icon.xml
+          test -s android-shell/android-rebunar/app/src/main/res/mipmap/ic_launcher.xml
+          grep -q 'RebunarAndroid' android-shell/android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'command_line_params' android-shell/android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+          grep -q 'rebunar://studio/editor' frontend/features/studio/view.js
+
+      - name: Apply the supplied Rebunar dragon emblem to Android launcher resources
+        working-directory: android-shell/android-rebunar/app/src/main/res
+        run: |
+          set -euo pipefail
+          mkdir -p drawable-nodpi mipmap-nodpi
+          printf '%s' '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' | base64 --decode > drawable-nodpi/rebunar_launcher_icon.jpg
+          cp drawable-nodpi/rebunar_launcher_icon.jpg mipmap-nodpi/ic_launcher.jpg
+          cat > mipmap-anydpi-v26/ic_launcher.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@drawable/rebunar_launcher_icon" />
+              <foreground android:drawable="@android:color/transparent" />
+          </adaptive-icon>
+          XML
+          test -s drawable-nodpi/rebunar_launcher_icon.jpg
+          test -s mipmap-nodpi/ic_launcher.jpg
+
+      - name: Checkout pinned Godot source
+        uses: actions/checkout@v4
+        with:
+          repository: godotengine/godot
+          ref: 4.7.2-stable
+          path: godot-src
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Build Rebunar frontend
+        run: |
+          npm ci
+          npm run build
+          test -s frontend/build/index.html
+          mkdir -p android-shell/android-rebunar/app/src/main/assets/build
+          cp -R frontend/build/. android-shell/android-rebunar/app/src/main/assets/build/
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python and SCons
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install SCons
+        run: python -m pip install --upgrade scons
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+
+      - name: Install pinned Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.1.0" "ndk;29.0.14206865"
+
+      - name: Build Godot editor native libraries
+        working-directory: godot-src
+        run: |
+          scons platform=android target=editor arch=arm64 production=yes dev_mode=yes module_text_server_fb_enabled=yes swappy=no -j2
+
+      - name: Prepare Godot Editor as an internal Rebunar module
+        run: |
+          python scripts/prepare_godot_editor_library.py \
+            --android-project android-shell/android-rebunar \
+            --godot-root godot-src
+
+      - name: Ensure Godot Editor activity is registered in the Rebunar app
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          manifest = Path("android-shell/android-rebunar/app/src/main/AndroidManifest.xml")
+          source = manifest.read_text(encoding="utf-8")
+          activity_name = 'android:name="org.godotengine.editor.GodotEditor"'
+          if activity_name not in source:
+              declaration = """
+                  <activity
+                      android:name="org.godotengine.editor.GodotEditor"
+                      android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+                      android:exported="false"
+                      android:launchMode="singleTask"
+                      android:screenOrientation="userLandscape"
+                      android:theme="@style/GodotEditorSplashScreenTheme" />
+              """
+              if source.count("</application>") != 1:
+                  raise SystemExit("Could not identify exactly one application manifest section")
+              source = source.replace("</application>", declaration + "\n    </application>", 1)
+              manifest.write_text(source, encoding="utf-8")
+          print("Godot Editor activity is explicitly registered in the Rebunar manifest.")
+          PY
+
+      - name: Download pinned Gradle distribution with retries
+        run: |
+          set -euo pipefail
+          GRADLE_VERSION="8.11.1"
+          GRADLE_HOME="$RUNNER_TEMP/gradle-$GRADLE_VERSION"
+          if [ ! -x "$GRADLE_HOME/bin/gradle" ]; then
+            curl --fail --location \
+              --retry 10 --retry-all-errors --retry-delay 12 \
+              --connect-timeout 30 --max-time 900 \
+              "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" \
+              --output "$RUNNER_TEMP/gradle-$GRADLE_VERSION-bin.zip"
+            unzip -q "$RUNNER_TEMP/gradle-$GRADLE_VERSION-bin.zip" -d "$RUNNER_TEMP"
+          fi
+          test -x "$GRADLE_HOME/bin/gradle"
+          echo "GRADLE_HOME=$GRADLE_HOME" >> "$GITHUB_ENV"
+          echo "$GRADLE_HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Build the single Rebunar APK using the pinned Gradle toolchain
+        working-directory: godot-src/platform/android/java
+        env:
+          REBUNAR_ANDROID_PROJECT: ${{ github.workspace }}/android-shell/android-rebunar
+        run: gradle --no-daemon :rebunarApp:assembleDebug --stacktrace
+
+      - name: Verify one APK contains Rebunar frontend and Godot Editor
+        working-directory: godot-src/platform/android/java
+        run: |
+          set -euo pipefail
+          echo "---- Locate the APK produced by :rebunarApp:assembleDebug ----"
+          echo "Workspace: $GITHUB_WORKSPACE"
+          echo "---- Search the complete workspace for APK outputs ----"
+          find "$GITHUB_WORKSPACE" -type f -name '*.apk' -print
+          APK="$(find "$GITHUB_WORKSPACE" -type f -path '*/build/outputs/apk/debug/*.apk' -print -quit)"
+          if [ -z "$APK" ] || [ ! -s "$APK" ]; then
+            echo "---- Gradle output directories ----"
+            find "$GITHUB_WORKSPACE" -type d -path '*/build/outputs/*' -print
+            echo "::error::Gradle completed, but no debug APK was found anywhere in the workspace."
+            exit 1
+          fi
+          echo "Found APK: $APK"
+
+          cp "$APK" "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+          test -s "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+          ls -lh "$GITHUB_WORKSPACE/rebunar-integrated-studio-preview.apk"
+
+          "$ANDROID_HOME/build-tools/36.1.0/aapt" dump badging "$APK" | grep -q "package: name='ru.rebunar.app'"
+          unzip -l "$APK" | grep -q 'lib/arm64-v8a/libgodot_android.so'
+          unzip -l "$APK" | grep -q 'assets/build/index.html'
+
+          AAPT="$ANDROID_HOME/build-tools/36.1.0/aapt"
+          echo "---- Merged APK manifest (activities) ----"
+          "$AAPT" dump xmltree "$APK" AndroidManifest.xml | tee "$RUNNER_TEMP/rebunar-manifest.txt"
+          if ! grep -Fq 'org.godotengine.editor.GodotEditor' "$RUNNER_TEMP/rebunar-manifest.txt"; then
+            echo "::error::APK does not contain the registered GodotEditor activity."
+            exit 1
+          fi
+          echo "Verified one Rebunar APK with bundled frontend and embedded Godot Editor."
+
+      - name: Upload integrated Rebunar preview APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-integrated-studio-preview
+          path: ${{ github.workspace }}/rebunar-integrated-studio-preview.apk
+          if-no-files-found: error
+          retention-days: 14

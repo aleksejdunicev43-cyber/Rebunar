@@ -352,3 +352,11 @@ body.rebunar-studio-active .studio-panel-toolbar {
     grid-template-columns: minmax(104px, 14vw) minmax(0,1fr) minmax(132px, 17vw) !important;
   }
 }
+
+/* Native Godot editor entry — shown only inside the Rebunar Android shell. */
+.studio-header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex:none}
+.studio-open-godot-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:38px;padding:0 13px;border:1px solid color-mix(in srgb,var(--accent) 65%,var(--border));border-radius:8px;background:color-mix(in srgb,var(--accent) 14%,var(--bg-panel));color:var(--accent-bright,var(--accent));font-size:11px;font-weight:850;text-decoration:none}
+.studio-open-godot-button span{font-size:16px}
+.studio-open-godot-button:active{transform:translateY(1px);background:color-mix(in srgb,var(--accent) 23%,var(--bg-panel))}
+.studio-open-godot-button[hidden]{display:none!important}
+@media(max-width:560px){.studio-header-actions{align-items:flex-start;width:100%}.studio-open-godot-button{width:100%;box-sizing:border-box}}
