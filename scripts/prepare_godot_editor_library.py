@@ -141,7 +141,7 @@ def patch_editor_manifest(path: Path) -> None:
     # singleTask preserves the intended task isolation on Android 11 devices.
     text = replace_once(
         text,
-        '            android:launchMode="singleInstancePerTask"\\n',
+        '            android:launchMode="singleInstancePerTask"\n',
         '            android:launchMode="singleTask"\\n',
         "Android 11-compatible GodotEditor launch mode",
     )
