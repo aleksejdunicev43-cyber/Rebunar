@@ -142,7 +142,7 @@ def patch_editor_manifest(path: Path) -> None:
     text = replace_once(
         text,
         '            android:launchMode="singleInstancePerTask"\n',
-        '            android:launchMode="singleTask"\\n',
+        '            android:launchMode="singleTask"\n',
         "Android 11-compatible GodotEditor launch mode",
     )
     path.write_text(text, encoding="utf-8")
