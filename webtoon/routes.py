@@ -103,12 +103,13 @@ def get_work(work_id):
         """, (work_id, _current_user_id())).fetchone()
         if not work:
             return jsonify({"error": "Работа не найдена"}), 404
+        is_owner = int(work["owner_id"]) == int(_current_user_id())
         chapters = con.execute("""
             SELECT id, position, title, publication_status, created_at, published_at
             FROM wt_chapters WHERE work_id=?
-              AND (publication_status='published' OR ?=owner_id)
+              AND (publication_status='published' OR ?=1)
             ORDER BY position ASC
-        """, (work_id, _current_user_id())).fetchall()
+        """, (work_id, 1 if is_owner else 0)).fetchall()
         genres = con.execute("""
             SELECT g.id,g.name FROM wt_genres g
             JOIN wt_work_genres wg ON wg.genre_id=g.id
