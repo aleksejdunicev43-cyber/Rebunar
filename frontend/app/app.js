@@ -12,6 +12,8 @@ import { renderProfileScreen } from '../features/profile/view.js?v=avatar-system
 import { enhanceProfileScreen } from '../features/profile/enhancements.js?v=avatar-system-20261104-6';
 import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
+import { renderWebtoonScreen } from '../features/webtoon/view.js';
+import '../features/webtoon/webtoon.css';
 import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-system-20261104-6';
 import { renderGamesScreen } from '../features/games/view.js';
 import { renderEcosystemScreen } from '../features/ecosystem/view.js';
@@ -104,7 +106,7 @@ async function finishBoot(user) {
   }, 300);
 }
 
-const screens = { home:'Главная', store:'Магазин', games:'Игровой центр', communities:'Сообщества', messages:'Чаты', favorites:'Избранное', studio:'Rebunar Studio', creators:'Творчество', profile:'Профиль', mail:'Почта Rebunar', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
+const screens = { home:'Главная', store:'Магазин', games:'Игровой центр', communities:'Сообщества', messages:'Чаты', favorites:'Избранное', webtoon:'Webtoon', studio:'Rebunar Studio', creators:'Творчество', profile:'Профиль', mail:'Почта Rebunar', search:'Поиск', notifications:'Уведомления', composer:'Создание публикации', settings:'Настройки', statistics:'Статистика', users:'Пользователи', 'user-profile':'Профиль пользователя' };
 
 for (const [path, title] of Object.entries(screens)) {
   registerRoute(path, (params = {}) => {
@@ -112,6 +114,7 @@ for (const [path, title] of Object.entries(screens)) {
     if (!outlet) return;
     if (path === 'home') return renderHomeScreen(outlet);
     if (path === 'favorites') return renderFavoritesScreen(outlet);
+    if (path === 'webtoon') return renderWebtoonScreen(outlet);
     if (path === 'messages') return renderMessagesScreen(outlet, params);
     if (path === 'games') return renderGamesScreen(outlet);
     if (path === 'studio') return renderStudioScreen(outlet);
