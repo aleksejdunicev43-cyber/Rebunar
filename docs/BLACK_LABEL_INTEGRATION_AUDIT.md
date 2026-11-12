@@ -52,7 +52,7 @@ GitHub Actions run 476 completed successfully: frontend build and migration test
 
 ## Remaining before the Webtoon section can be called complete
 
-- Chapter page/image upload and a real vertical reader are not implemented yet.
+- Reader and upload features still need visual and device testing in the installed Android APK and on the live PythonAnywhere app.
 - The production SQLite database has not been migrated; do not enable the Webtoon UI on production until a database backup is made and migrations 001–004 are applied.
 - The UI has not yet been visually exercised in the installed Android APK or on the live PythonAnywhere app.
 
