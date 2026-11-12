@@ -29,6 +29,17 @@ The ZIP's frontend is older than the current `main` branch. The current GitHub a
 - Add navigation and route integration without replacing existing screens.
 - Run frontend build, backend smoke tests, migration checks, and APK build before merging to `main`.
 
+
+## Work staged on the integration branch
+
+The first safe backend slice is now committed on `feature/black-label-webtoon-foundation` and proposed in draft PR #89:
+- The existing Flask server registers the Webtoon blueprint against the same `DB` path used by Rebunar.
+- The four additive migrations and a CLI (`python -m webtoon.migrate status|up`) are included.
+- Migrations remain manual and create a backup before applying changes.
+- CI now runs the frontend production build and Webtoon migration smoke tests.
+
+GitHub Actions run 476 completed successfully: frontend build and migration tests passed. Deployment and APK packaging were intentionally skipped because this is a pull request and no production frontend integration has been completed.
+
 ## Not yet done
 
 No production code from the ZIP has been merged into the app yet. No live database migrations have been run. No APK has been rebuilt. This report records the compatibility findings before implementation.
