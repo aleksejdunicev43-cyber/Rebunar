@@ -1,9 +1,11 @@
 import sqlite3
+from io import BytesIO
 import tempfile
 import unittest
 from pathlib import Path
 
 from flask import Flask
+from PIL import Image
 
 from webtoon import migrations, register_webtoon
 
@@ -49,6 +51,23 @@ class WebtoonApiTests(unittest.TestCase):
             "position": 1, "title": "Начало"
         })
         self.assertEqual(chapter.status_code, 201)
+        chapter_id = chapter.get_json()["chapter_id"]
+
+        image = Image.new("RGB", (80, 120), "white")
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        buffer.seek(0)
+        uploaded = self.client.post(
+            f"/api/webtoon/chapters/{chapter_id}/pages",
+            data={"page": (buffer, "page.png")},
+            content_type="multipart/form-data"
+        )
+        self.assertEqual(uploaded.status_code, 201)
+
+        chapter_detail = self.client.get(f"/api/webtoon/chapters/{chapter_id}")
+        self.assertEqual(chapter_detail.status_code, 200)
+        self.assertEqual(len(chapter_detail.get_json()["chapter"]["pages"]), 1)
+        self.assertEqual(self.client.post(f"/api/webtoon/chapters/{chapter_id}/publish").status_code, 200)
 
         detail = self.client.get(f"/api/webtoon/works/{work_id}")
         self.assertEqual(detail.status_code, 200)
@@ -57,6 +76,8 @@ class WebtoonApiTests(unittest.TestCase):
 
         published = self.client.post(f"/api/webtoon/works/{work_id}/publish", json={})
         self.assertEqual(published.status_code, 200)
+        page_id = chapter_detail.get_json()["chapter"]["pages"][0]["id"]
+        self.assertEqual(self.client.get(f"/api/webtoon/pages/{page_id}").status_code, 200)
 
         self.login(2)
         public_detail = self.client.get(f"/api/webtoon/works/{work_id}")
