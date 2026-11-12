@@ -73,7 +73,7 @@ async function openWork(container, workId) {
   try {
     const result = await getWebtoonWork(workId);
     const work = result.work;
-    const isOwner = Number(work.owner_id) === Number(window.REBUNAR_USER_ID);
+    const isOwner = Boolean(work.is_owner);
     container.querySelector('.wt-detail')?.remove();
     const detail = document.createElement('section');
     detail.className = 'wt-detail';
