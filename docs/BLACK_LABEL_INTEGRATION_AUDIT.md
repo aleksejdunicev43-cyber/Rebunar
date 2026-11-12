@@ -40,6 +40,22 @@ The first safe backend slice is now committed on `feature/black-label-webtoon-fo
 
 GitHub Actions run 476 completed successfully: frontend build and migration tests passed. Deployment and APK packaging were intentionally skipped because this is a pull request and no production frontend integration has been completed.
 
+
+## Webtoon catalog UI and author API (second implementation slice)
+
+- Added a real Rebunar router screen at `#webtoon` and a sidebar entry under the existing navigation.
+- The screen uses the existing same-origin authenticated API client and displays catalog items, search, genre choices, work details, chapter creation, and a publish action.
+- Added authenticated server endpoints for listing/creating works, reading work details, adding chapters, and publishing a series. Draft works and chapters are visible only to their author; non-owners cannot add chapters.
+- The author identity is determined by the Flask session on the server, not by a browser-supplied user ID.
+- Added Flask test-client coverage for authentication, owner permissions, chapter creation, and publication.
+- GitHub Actions run 485 passed: Vite production build, Python compilation, six migration/API tests, and artifact upload. Deployment and APK steps were skipped because this is still a draft PR.
+
+## Remaining before the Webtoon section can be called complete
+
+- Chapter page/image upload and a real vertical reader are not implemented yet.
+- The production SQLite database has not been migrated; do not enable the Webtoon UI on production until a database backup is made and migrations 001–004 are applied.
+- The UI has not yet been visually exercised in the installed Android APK or on the live PythonAnywhere app.
+
 ## Not yet done
 
 No production code from the ZIP has been merged into the app yet. No live database migrations have been run. No APK has been rebuilt. This report records the compatibility findings before implementation.
