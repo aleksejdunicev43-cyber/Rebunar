@@ -13,9 +13,9 @@ class WebtoonApiTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.db = Path(self.temp.name) / "rebunar-test.db"
         with sqlite3.connect(self.db) as con:
-            con.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE)")
-            con.execute("INSERT INTO users(username) VALUES ('author')")
-            con.execute("INSERT INTO users(username) VALUES ('reader')")
+            con.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, display_name TEXT)")
+            con.execute("INSERT INTO users(username,display_name) VALUES ('author','Author')")
+            con.execute("INSERT INTO users(username,display_name) VALUES ('reader','Reader')")
         migrations.up(self.db, make_backup=False)
         self.app = Flask(__name__)
         self.app.secret_key = "test-secret"
