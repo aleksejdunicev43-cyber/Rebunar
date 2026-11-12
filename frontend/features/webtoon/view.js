@@ -4,7 +4,10 @@ import {
   getWebtoonGenres,
   getWebtoonWork,
   getWebtoonWorks,
-  publishWebtoonWork
+  publishWebtoonWork,
+  getWebtoonChapter,
+  uploadWebtoonPage,
+  publishWebtoonChapter
 } from './api.js';
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -69,6 +72,24 @@ async function loadCatalog(container) {
   }
 }
 
+async function openChapter(detail, chapterId) {
+  const host = detail.querySelector('.wt-reader-host');
+  host.innerHTML = '<p class="wt-loading">Открываем главу…</p>';
+  try {
+    const result = await getWebtoonChapter(chapterId);
+    const chapter = result.chapter;
+    host.replaceChildren();
+    const reader = document.createElement('section'); reader.className = 'wt-reader';
+    const heading = document.createElement('div'); heading.className = 'wt-reader-heading';
+    const title = document.createElement('h3'); title.textContent = 'Глава ' + chapter.position + ' · ' + (chapter.title || 'Без названия');
+    const close = document.createElement('button'); close.type = 'button'; close.className = 'wt-reader-close'; close.textContent = 'Закрыть';
+    close.addEventListener('click', () => { host.replaceChildren(); });
+    heading.append(title, close); reader.append(heading);
+    if (!chapter.pages.length) { const empty = document.createElement('p'); empty.className = 'wt-empty'; empty.textContent = 'В этой главе пока нет страниц.'; reader.append(empty); }
+    chapter.pages.forEach(page => { const img = document.createElement('img'); img.className = 'wt-reader-page'; img.src = page.url; img.alt = 'Страница ' + page.position; img.loading = 'lazy'; reader.append(img); });
+    host.append(reader);
+  } catch (error) { host.textContent = error.message; }
+}
 async function openWork(container, workId) {
   try {
     const result = await getWebtoonWork(workId);
@@ -86,15 +107,24 @@ async function openWork(container, workId) {
         <small>Автор: ${escapeHTML(work.display_name || work.username || 'Автор')}</small>
       </div>
       <div class="wt-chapter-heading"><h3>Главы</h3>${isOwner ? '<button type="button" class="wt-add-chapter">Добавить главу</button>' : ''}</div>
-      <div class="wt-chapter-list">${(work.chapters || []).length ? work.chapters.map(chapter => `
-        <div class="wt-chapter-row"><span>Глава ${Number(chapter.position)} · ${escapeHTML(chapter.title || 'Без названия')}</span><span>${escapeHTML(statusNames[chapter.publication_status] || '')}</span></div>
-      `).join('') : '<p class="wt-muted">Глав пока нет.</p>'}</div>
+      <div class="wt-chapter-list">${(work.chapters || []).length ? work.chapters.map(chapter => '<div class="wt-chapter-row"><button type="button" class="wt-open-chapter" data-chapter-id="' + Number(chapter.id) + '">Глава ' + Number(chapter.position) + ' · ' + escapeHTML(chapter.title || 'Без названия') + '</button><span>' + escapeHTML(statusNames[chapter.publication_status] || '') + '</span>' + (isOwner ? '<label class="wt-page-upload">＋ Страница<input type="file" accept="image/jpeg,image/png,image/webp" data-upload-chapter="' + Number(chapter.id) + '" hidden></label>' : '') + (isOwner && chapter.publication_status !== 'published' ? '<button type="button" class="wt-publish-chapter" data-publish-chapter="' + Number(chapter.id) + '">Опубликовать главу</button>' : '') + '</div>').join('') : '<p class="wt-muted">Глав пока нет.</p>'}</div>
       ${isOwner && work.publication_status !== 'published' ? '<button type="button" class="wt-publish">Опубликовать серию</button>' : ''}
       <p class="wt-detail-message" aria-live="polite"></p>
     `;
     const outlet = container.querySelector('.wt-detail-host');
     outlet.replaceChildren(detail);
     detail.querySelector('.wt-back').addEventListener('click', () => detail.remove());
+    detail.querySelectorAll('.wt-open-chapter').forEach(button => button.addEventListener('click', () => openChapter(detail, Number(button.dataset.chapterId))));
+    detail.querySelectorAll('[data-upload-chapter]').forEach(input => input.addEventListener('change', async () => {
+      const file = input.files?.[0]; if (!file) return;
+      try { await uploadWebtoonPage(Number(input.dataset.uploadChapter), file); detail.querySelector('.wt-detail-message').textContent = 'Страница добавлена.'; }
+      catch (error) { detail.querySelector('.wt-detail-message').textContent = error.message; }
+      finally { input.value = ''; }
+    }));
+    detail.querySelectorAll('[data-publish-chapter]').forEach(button => button.addEventListener('click', async () => {
+      try { await publishWebtoonChapter(Number(button.dataset.publishChapter)); await openWork(container, workId); }
+      catch (error) { detail.querySelector('.wt-detail-message').textContent = error.message; }
+    }));
     detail.querySelector('.wt-add-chapter')?.addEventListener('click', async () => {
       const position = Number(prompt('Номер главы:'));
       if (!Number.isInteger(position) || position < 1) return;
