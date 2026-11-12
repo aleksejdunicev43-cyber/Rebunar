@@ -1325,6 +1325,10 @@ def rebunar_blood_css():
 def rebunar_home_js():
     return send_from_directory(BASE, "rebunar-home.js")
 
+# Attach Webtoon to the same Flask app and SQLite database as Rebunar accounts.
+from webtoon import register_webtoon
+register_webtoon(app, lambda: DB)
+
 if __name__ == "__main__":
     init_db()
     app.run(host="127.0.0.1", port=5002, debug=False)
