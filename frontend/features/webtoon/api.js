@@ -23,3 +23,17 @@ export function createWebtoonChapter(workId, data) {
 export function publishWebtoonWork(workId) {
   return api.post('/webtoon/works/' + Number(workId) + '/publish', {});
 }
+
+export function getWebtoonChapter(chapterId) {
+  return api.get('/webtoon/chapters/' + Number(chapterId));
+}
+
+export function uploadWebtoonPage(chapterId, file) {
+  const form = new FormData();
+  form.append('page', file);
+  return api.upload('/webtoon/chapters/' + Number(chapterId) + '/pages', form);
+}
+
+export function publishWebtoonChapter(chapterId) {
+  return api.post('/webtoon/chapters/' + Number(chapterId) + '/publish', {});
+}
