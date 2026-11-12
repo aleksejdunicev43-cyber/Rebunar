@@ -115,6 +115,7 @@ def get_work(work_id):
             WHERE wg.work_id=? ORDER BY g.name
         """, (work_id,)).fetchall()
     result = dict(work)
+    result["is_owner"] = int(work["owner_id"]) == int(_current_user_id())
     result["chapters"] = [dict(row) for row in chapters]
     result["genres"] = [dict(row) for row in genres]
     return jsonify({"work": result}), 200
