@@ -17,6 +17,7 @@ const navIcons = {
   messages: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-4.7A8.4 8.4 0 0 1 4 12.5 8.5 8.5 0 0 1 8.7 4.9 8.4 8.4 0 0 1 12.5 4h.5a8.5 8.5 0 0 1 7 7.5z"/></svg>',
   games: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12a4 4 0 0 1 3.8 5l-1.2 4a2.5 2.5 0 0 1-4.2 1L14 15h-4l-2.4 3a2.5 2.5 0 0 1-4.2-1l-1.2-4A4 4 0 0 1 6 8z"/><path d="M7 11v4m-2-2h4m7-1h.01M18 14h.01"/></svg>',
   favorites: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/></svg>',
+  webtoon: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
   creators: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.8 2.8 0 0 0-4-4l-10 10z"/><path d="m13 6 5 5M4 20h16"/></svg>'
 };
 
@@ -104,6 +105,7 @@ export function createShell(root) {
               ${navButton('games', 'Игровой центр')}
               ${favoritesButton()}
               ${navButton('creators', 'Творчество')}
+              ${navButton('webtoon', 'Webtoon')}
             </div>
           </nav>
         </aside>
