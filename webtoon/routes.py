@@ -1,4 +1,8 @@
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, send_file
+from pathlib import Path
+from uuid import uuid4
+from PIL import Image, UnidentifiedImageError
+from .config import BASE
 from . import migrations
 from .db import connect, db_path
 
@@ -145,6 +149,126 @@ def create_chapter(work_id):
         """, (work_id, position, title))
     return jsonify({"ok": True, "chapter_id": cur.lastrowid}), 201
 
+
+@bp.post("/chapters/<int:chapter_id>/pages")
+def upload_chapter_page(chapter_id):
+    upload = request.files.get("page")
+    if upload is None or not upload.filename:
+        return jsonify({"error": "Выбери изображение страницы"}), 400
+    try:
+        image = Image.open(upload.stream)
+        image.load()
+        if image.format not in ("JPEG", "PNG", "WEBP"):
+            return jsonify({"error": "Поддерживаются только JPG, PNG и WebP"}), 400
+        if image.width < 1 or image.height < 1 or image.width * image.height > 24000000:
+            return jsonify({"error": "Слишком большое разрешение изображения"}), 400
+        image = image.convert("RGB")
+        image.thumbnail((1800, 2600))
+    except (UnidentifiedImageError, OSError, ValueError):
+        return jsonify({"error": "Файл не является корректным изображением"}), 400
+
+    with connect() as con:
+        row = con.execute("""
+            SELECT c.id,c.work_id,w.owner_id
+            FROM wt_chapters c JOIN wt_works w ON w.id=c.work_id
+            WHERE c.id=?
+        """, (chapter_id,)).fetchone()
+        if not row:
+            return jsonify({"error": "Глава не найдена"}), 404
+        if int(row[2]) != int(_current_user_id()):
+            return jsonify({"error": "Добавлять страницы может только автор"}), 403
+        next_position = con.execute(
+            "SELECT COALESCE(MAX(position),0)+1 FROM wt_pages WHERE chapter_id=?",
+            (chapter_id,)
+        ).fetchone()[0]
+        if next_position > 100:
+            return jsonify({"error": "В одной главе может быть не более 100 страниц"}), 400
+        relative = Path("uploads") / "webtoon" / str(row[1]) / str(chapter_id)
+        target_dir = BASE / relative
+        target_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{uuid4().hex}.webp"
+        target = target_dir / filename
+        image.save(target, format="WEBP", quality=86, method=5)
+        con.execute("""
+            INSERT INTO wt_pages(chapter_id,position,path,width,height,bytes)
+            VALUES(?,?,?,?,?,?)
+        """, (chapter_id, next_position, str(relative / filename), image.width, image.height, target.stat().st_size))
+    return jsonify({"ok": True, "position": next_position}), 201
+
+@bp.get("/chapters/<int:chapter_id>")
+def get_chapter(chapter_id):
+    with connect() as con:
+        con.row_factory = __import__("sqlite3").Row
+        chapter = con.execute("""
+            SELECT c.*,w.id AS work_id,w.title AS work_title,w.owner_id,w.publication_status AS work_status
+            FROM wt_chapters c JOIN wt_works w ON w.id=c.work_id
+            WHERE c.id=? AND (
+                (c.publication_status='published' AND w.publication_status='published')
+                OR w.owner_id=?
+            )
+        """, (chapter_id, _current_user_id())).fetchone()
+        if not chapter:
+            return jsonify({"error": "Глава не найдена"}), 404
+        pages = con.execute("""
+            SELECT id,position,width,height FROM wt_pages
+            WHERE chapter_id=? ORDER BY position
+        """, (chapter_id,)).fetchall()
+    return jsonify({
+        "chapter": {
+            "id": chapter["id"],
+            "title": chapter["title"],
+            "position": chapter["position"],
+            "work_id": chapter["work_id"],
+            "work_title": chapter["work_title"],
+            "is_owner": int(chapter["owner_id"]) == int(_current_user_id()),
+            "pages": [
+                {"id": row["id"], "position": row["position"], "width": row["width"],
+                 "height": row["height"], "url": f"/api/webtoon/pages/{row['id']}"}
+                for row in pages
+            ]
+        }
+    }), 200
+
+@bp.post("/chapters/<int:chapter_id>/publish")
+def publish_chapter(chapter_id):
+    with connect() as con:
+        row = con.execute("""
+            SELECT c.work_id,w.owner_id FROM wt_chapters c
+            JOIN wt_works w ON w.id=c.work_id WHERE c.id=?
+        """, (chapter_id,)).fetchone()
+        if not row:
+            return jsonify({"error": "Глава не найдена"}), 404
+        if int(row[1]) != int(_current_user_id()):
+            return jsonify({"error": "Публиковать главу может только автор"}), 403
+        pages = con.execute("SELECT COUNT(*) FROM wt_pages WHERE chapter_id=?", (chapter_id,)).fetchone()[0]
+        if pages < 1:
+            return jsonify({"error": "Добавь хотя бы одну страницу перед публикацией"}), 400
+        con.execute("""
+            UPDATE wt_chapters SET publication_status='published',
+                published_at=COALESCE(published_at,CURRENT_TIMESTAMP)
+            WHERE id=?
+        """, (chapter_id,))
+    return jsonify({"ok": True}), 200
+
+@bp.get("/pages/<int:page_id>")
+def get_page_image(page_id):
+    with connect() as con:
+        row = con.execute("""
+            SELECT p.path,c.publication_status,w.publication_status,w.owner_id
+            FROM wt_pages p JOIN wt_chapters c ON c.id=p.chapter_id
+            JOIN wt_works w ON w.id=c.work_id WHERE p.id=?
+        """, (page_id,)).fetchone()
+    if not row or not (
+        (row[1] == "published" and row[2] == "published")
+        or int(row[3]) == int(_current_user_id())
+    ):
+        return jsonify({"error": "Страница не найдена"}), 404
+    target = (BASE / row[0]).resolve()
+    uploads_root = (BASE / "uploads" / "webtoon").resolve()
+    if uploads_root not in target.parents or not target.is_file():
+        return jsonify({"error": "Файл страницы недоступен"}), 404
+    return send_file(target, mimetype="image/webp", conditional=True)
+
 @bp.post("/works/<int:work_id>/publish")
 def publish_work(work_id):
     with connect() as con:
@@ -153,9 +277,9 @@ def publish_work(work_id):
             return jsonify({"error": "Работа не найдена"}), 404
         if work[0] != _current_user_id():
             return jsonify({"error": "Публиковать работу может только автор"}), 403
-        chapters = con.execute("SELECT COUNT(*) FROM wt_chapters WHERE work_id=?", (work_id,)).fetchone()[0]
+        chapters = con.execute("SELECT COUNT(*) FROM wt_chapters WHERE work_id=? AND publication_status='published'", (work_id,)).fetchone()[0]
         if chapters < 1:
-            return jsonify({"error": "Добавь хотя бы одну главу перед публикацией"}), 400
+            return jsonify({"error": "Сначала опубликуй хотя бы одну главу с изображениями"}), 400
         con.execute("""
             UPDATE wt_works SET publication_status='published',
                 published_at=COALESCE(published_at,CURRENT_TIMESTAMP),
