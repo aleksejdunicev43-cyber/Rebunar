@@ -56,6 +56,15 @@ GitHub Actions run 476 completed successfully: frontend build and migration test
 - The production SQLite database has not been migrated; do not enable the Webtoon UI on production until a database backup is made and migrations 001–004 are applied.
 - The UI has not yet been visually exercised in the installed Android APK or on the live PythonAnywhere app.
 
+
+## Chapter pages and vertical reader (third implementation slice)
+
+- Added authenticated page-image upload for chapter owners. Uploads are validated as JPG/PNG/WebP, decoded and re-encoded as WebP, dimension-limited, and stored under the ignored `uploads/webtoon/` directory.
+- Added chapter detail and page-image endpoints. Draft pages are available only to the author; published pages require both chapter and series to be published.
+- Added chapter publication rules: a chapter needs at least one page, and a series needs at least one published chapter.
+- Added the vertical reader UI and author controls for uploading pages and publishing chapters.
+- GitHub Actions run 492 passed: Vite build, Python compilation, and all six backend migration/API tests, including an image upload and reader-access test. Deployment and APK packaging remain skipped for this draft PR.
+
 ## Not yet done
 
 No production code from the ZIP has been merged into the app yet. No live database migrations have been run. No APK has been rebuilt. This report records the compatibility findings before implementation.
