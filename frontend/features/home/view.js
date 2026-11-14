@@ -18,7 +18,7 @@ export function renderHomeScreen(outlet) {
       <header class="home-intro">
         <span class="home-eyebrow">REBUNAR / ЛИЧНОЕ ПРОСТРАНСТВО</span>
         <h1>С возвращением, ${escapeHTML(name)}!</h1>
-        <p>Твоя точка входа в игры, творчество и общение. Здесь — быстрые действия и важные обновления, а не дублирующаяся лента.</p>
+        <p>Твоя точка входа в чтение, цифровые товары и общение. Здесь — быстрые действия и важные обновления, а не дублирующаяся лента.</p>
       </header>
 
       <section class="home-start-section" aria-labelledby="home-start-title">
@@ -29,20 +29,20 @@ export function renderHomeScreen(outlet) {
           </div>
         </div>
         <div class="home-action-grid">
-          <button type="button" class="home-action-card home-action-card--primary" data-route="studio">
+          <button type="button" class="home-action-card home-action-card--primary" data-route="reader">
             <span class="home-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m8 10 2 2-2 2m5 0h3"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 5.5v16.5M8 7h8M8 11h8"/></svg>
             </span>
-            <span class="home-action-title">Создать игру</span>
-            <span class="home-action-description">Начни проект в Rebunar Studio</span>
+            <span class="home-action-title">Открыть читалку</span>
+            <span class="home-action-description">Новеллы и вебтуны в одном месте</span>
             <span class="home-action-arrow" aria-hidden="true">→</span>
           </button>
           <button type="button" class="home-action-card" data-route="store">
             <span class="home-action-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M3 9h18l-1.5 12h-15z"/><path d="M5 9 7 3h10l2 6M9 9v3m6-3v3"/></svg>
             </span>
-            <span class="home-action-title">Найти игру</span>
-            <span class="home-action-description">Открой магазин и игровые проекты</span>
+            <span class="home-action-title">Открыть магазин</span>
+            <span class="home-action-description">Игры, программы и цифровые товары</span>
             <span class="home-action-arrow" aria-hidden="true">→</span>
           </button>
           <button type="button" class="home-action-card" data-route="communities">
@@ -84,7 +84,7 @@ export function renderHomeScreen(outlet) {
 
       <footer class="home-footer">
         <span>REBUNAR</span>
-        <p>Одна платформа — играть, создавать и находить своих.</p>
+        <p>Одна платформа — читать, покупать и общаться.</p>
       </footer>
     </section>
   `;
