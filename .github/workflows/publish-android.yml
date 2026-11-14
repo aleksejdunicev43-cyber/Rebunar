@@ -63,7 +63,7 @@ jobs:
 
       - name: Prepare application icon
         run: |
-          # Replace the fallback vector with the generated PNG; keeping both causes a duplicate drawable resource.
+          # Replace the fallback vector with the generated PNG so Android sees exactly one drawable resource.
           rm -f android-rebunar/app/src/main/res/drawable/rebunar_logo.xml
           python -m pip install Pillow numpy
           python - <<'PY'
