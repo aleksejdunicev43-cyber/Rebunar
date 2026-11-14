@@ -97,6 +97,7 @@
   box-shadow: 0 -8px 24px rgba(0,0,0,.16);
 }
 :root[data-theme="blackLabel"] .mobile-navigation .nav-item {
+  position: relative;
   min-height: 54px;
   gap: 4px;
   color: #747d86;
