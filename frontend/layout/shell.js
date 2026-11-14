@@ -12,7 +12,6 @@ import { avatarMarkup } from '../shared/avatar.js?v=avatar-system-20261104-1';
 const navIcons = {
   home: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>',
   store: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h18l-1.5 12h-15z"/><path d="M5 9 7 3h10l2 6M9 9v3m6-3v3"/></svg>',
-  studio: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m8 10 2 2-2 2m5 0h3"/></svg>',
   communities: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   messages: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-4.7A8.4 8.4 0 0 1 4 12.5 8.5 8.5 0 0 1 8.7 4.9 8.4 8.4 0 0 1 12.5 4h.5a8.5 8.5 0 0 1 7 7.5z"/></svg>',
   games: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12a4 4 0 0 1 3.8 5l-1.2 4a2.5 2.5 0 0 1-4.2 1L14 15h-4l-2.4 3a2.5 2.5 0 0 1-4.2-1l-1.2-4A4 4 0 0 1 6 8z"/><path d="M7 11v4m-2-2h4m7-1h.01M18 14h.01"/></svg>',
@@ -95,7 +94,6 @@ export function createShell(root) {
               <span class="nav-group-title">REBUNAR</span>
               ${navButton('home', 'Главная')}
               ${navButton('store', 'Магазин')}
-              ${navButton('studio', 'Студия')}
               ${navButton('communities', 'Сообщества')}
               ${navButton('messages', 'Чаты')}
             </div>
@@ -119,7 +117,7 @@ export function createShell(root) {
       <nav class="mobile-navigation" aria-label="Основная навигация">
         ${navButton('home', 'Главная')}
         ${navButton('store', 'Магазин')}
-        ${navButton('studio', 'Студия')}
+        ${navButton('games', 'Игры')}
         ${navButton('communities', 'Сообщества')}
         ${navButton('messages', 'Чаты')}
       </nav>

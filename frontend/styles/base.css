@@ -353,7 +353,3 @@ body,
   touch-action: manipulation;
 }
 
-#app .studio-touch-pad button {
-  touch-action: none;
-}
-

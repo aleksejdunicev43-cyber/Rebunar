@@ -1,6 +1,11 @@
-const THEME_STORAGE_PREFIX = 'rebunar.profile.theme.';
+const THEME_STORAGE_PREFIX = 'rebunar.profile.theme.v2.';
+const LEGACY_THEME_STORAGE_PREFIX = 'rebunar.profile.theme.';
 
 export const THEMES = {
+  blackLabel: {
+    name: 'Black Label',
+    description: 'Минималистичный тёмный интерфейс с изумрудными и фиолетовыми акцентами.'
+  },
   steel: {
     name: 'Steel & Blood',
     description: 'Стальной интерфейс с кроваво-красными акцентами.'
@@ -19,7 +24,7 @@ export const THEMES = {
   }
 };
 
-export const DEFAULT_THEME = 'steel';
+export const DEFAULT_THEME = 'blackLabel';
 
 function storageKey(userId) {
   return THEME_STORAGE_PREFIX + (userId ?? 'guest');
@@ -33,6 +38,12 @@ export function getTheme(userId = 'guest') {
   try {
     const saved = localStorage.getItem(storageKey(userId));
     if (Object.hasOwn(THEMES, saved)) return saved;
+    const legacy = localStorage.getItem(LEGACY_THEME_STORAGE_PREFIX + (userId ?? 'guest'));
+    if (Object.hasOwn(THEMES, legacy)) {
+      const migrated = legacy === 'steel' ? DEFAULT_THEME : legacy;
+      localStorage.setItem(storageKey(userId), migrated);
+      return migrated;
+    }
   } catch {}
   return DEFAULT_THEME;
 }

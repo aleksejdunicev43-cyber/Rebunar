@@ -1,0 +1,262 @@
+/* REBUNAR BLACK LABEL — visual layer adapted from the Claude prototype.
+   Keeps the existing app components and behavior; only presentation changes. */
+:root[data-theme="blackLabel"] {
+  color-scheme: dark;
+  --bg-main: #0a0b0d;
+  --bg-panel: #121316;
+  --bg-panel-2: #1c1e22;
+  --text-main: #e8ebee;
+  --text-muted: #8d96a0;
+  --border: #292d33;
+  --accent: #2bb583;
+  --accent-bright: #4be0a6;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+}
+:root[data-theme="blackLabel"] html,
+:root[data-theme="blackLabel"] body { background: var(--bg-main); color: var(--text-main); }
+:root[data-theme="blackLabel"] .app-header {
+  min-height: 60px;
+  background: #0a0b0d;
+  border-bottom: 1px solid #202328;
+  box-shadow: none;
+}
+:root[data-theme="blackLabel"] .app-logo-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0b0d;
+}
+:root[data-theme="blackLabel"] .app-logo-image { display: none; }
+:root[data-theme="blackLabel"] .app-logo-image-wrap::after {
+  content: "REBUNAR";
+  color: #e8ebee;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: .3em;
+  text-indent: .3em;
+}
+:root[data-theme="blackLabel"] .app-logo-image-wrap::before {
+  content: "BLACK LABEL";
+  position: absolute;
+  top: calc(50% + 11px);
+  color: var(--accent);
+  font-size: 7px;
+  font-weight: 650;
+  letter-spacing: .38em;
+}
+:root[data-theme="blackLabel"] .app-layout {
+  max-width: 1500px;
+  gap: 16px;
+  padding: 16px;
+}
+:root[data-theme="blackLabel"] .main-content {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 18px;
+}
+:root[data-theme="blackLabel"] .context-panel,
+:root[data-theme="blackLabel"] .profile-card,
+:root[data-theme="blackLabel"] .profile-status-card,
+:root[data-theme="blackLabel"] .profile-xp-card,
+:root[data-theme="blackLabel"] .profile-achievements-card,
+:root[data-theme="blackLabel"] .profile-customization-card,
+:root[data-theme="blackLabel"] .profile-theme-option,
+:root[data-theme="blackLabel"] .profile-locked-option,
+:root[data-theme="blackLabel"] .settings-item,
+:root[data-theme="blackLabel"] .community-card,
+:root[data-theme="blackLabel"] .community-group-card,
+:root[data-theme="blackLabel"] .creator-post,
+:root[data-theme="blackLabel"] .post-card,
+:root[data-theme="blackLabel"] .game-card,
+:root[data-theme="blackLabel"] .games-economy-card,
+:root[data-theme="blackLabel"] .message-card,
+:root[data-theme="blackLabel"] .profile-users-button {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  border-radius: 9px;
+  box-shadow: none;
+}
+:root[data-theme="blackLabel"] .main-navigation button,
+:root[data-theme="blackLabel"] .mobile-navigation button {
+  border-radius: 6px;
+  letter-spacing: .035em;
+  transition: color .15s ease, background .15s ease, border-color .15s ease;
+}
+:root[data-theme="blackLabel"] .main-navigation button.is-active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-panel));
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+}
+:root[data-theme="blackLabel"] .mobile-navigation {
+  background: #0a0b0d;
+  border-top: 1px solid #202328;
+  padding-top: 5px;
+  box-shadow: 0 -8px 24px rgba(0,0,0,.16);
+}
+:root[data-theme="blackLabel"] .mobile-navigation .nav-item {
+  position: relative;
+  min-height: 54px;
+  gap: 4px;
+  color: #747d86;
+  background: transparent;
+  border: 0;
+  font-size: 10px;
+}
+:root[data-theme="blackLabel"] .mobile-navigation .nav-item.is-active {
+  color: var(--accent);
+  background: transparent;
+}
+:root[data-theme="blackLabel"] .mobile-navigation .nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  background: var(--accent);
+}
+:root[data-theme="blackLabel"] .nav-item .nav-icon {
+  stroke-width: 1.7;
+}
+:root[data-theme="blackLabel"] .header-actions .header-icon-button {
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+}
+:root[data-theme="blackLabel"] .header-actions .header-icon-button:hover {
+  background: var(--bg-panel-2);
+  color: var(--text-main);
+}
+:root[data-theme="blackLabel"] .header-profile-button {
+  border: 1px solid #394149;
+  border-radius: 10px;
+  background: var(--bg-panel);
+  box-shadow: none;
+}
+:root[data-theme="blackLabel"] .screen h1 {
+  font-weight: 650;
+  letter-spacing: -.025em;
+}
+:root[data-theme="blackLabel"] .screen h2,
+:root[data-theme="blackLabel"] .settings-section-title {
+  letter-spacing: .08em;
+}
+:root[data-theme="blackLabel"] #screen-outlet button {
+  border-radius: 6px;
+}
+:root[data-theme="blackLabel"] #screen-outlet button:focus-visible,
+:root[data-theme="blackLabel"] #screen-outlet a:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+:root[data-theme="blackLabel"] .profile-edit,
+:root[data-theme="blackLabel"] .profile-settings-button,
+:root[data-theme="blackLabel"] .settings-item,
+:root[data-theme="blackLabel"] .community-tab,
+:root[data-theme="blackLabel"] .community-create-button,
+:root[data-theme="blackLabel"] .community-compose-actions button,
+:root[data-theme="blackLabel"] .community-group-card button,
+:root[data-theme="blackLabel"] .community-empty button,
+:root[data-theme="blackLabel"] .community-detail-head button,
+:root[data-theme="blackLabel"] .messages-compose button,
+:root[data-theme="blackLabel"] .messages-tabs button,
+:root[data-theme="blackLabel"] .messages-note-form button,
+:root[data-theme="blackLabel"] .game-primary-button,
+:root[data-theme="blackLabel"] .favorites-action-button {
+  border-radius: 6px;
+  box-shadow: none;
+}
+:root[data-theme="blackLabel"] .community-create-button,
+:root[data-theme="blackLabel"] .community-compose-actions button,
+:root[data-theme="blackLabel"] .community-tab.is-active,
+:root[data-theme="blackLabel"] .messages-compose button,
+:root[data-theme="blackLabel"] .messages-tabs button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06140e;
+}
+:root[data-theme="blackLabel"] .communities-hero {
+  border-color: var(--border);
+  border-radius: 10px;
+  background: linear-gradient(120deg, #171c20, #101316);
+}
+:root[data-theme="blackLabel"] .communities-compose,
+:root[data-theme="blackLabel"] .communities-compose input,
+:root[data-theme="blackLabel"] .communities-compose textarea,
+:root[data-theme="blackLabel"] .communities-compose select {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+:root[data-theme="blackLabel"] .community-tab,
+:root[data-theme="blackLabel"] .community-create-button,
+:root[data-theme="blackLabel"] .community-compose-actions button,
+:root[data-theme="blackLabel"] .community-group-card button,
+:root[data-theme="blackLabel"] .community-empty button,
+:root[data-theme="blackLabel"] .community-detail-head button {
+  background: var(--bg-panel-2);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+:root[data-theme="blackLabel"] .community-create-button,
+:root[data-theme="blackLabel"] .community-compose-actions button,
+:root[data-theme="blackLabel"] .community-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06140e;
+}
+:root[data-theme="blackLabel"] .messages-compose button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06140e;
+}
+:root[data-theme="blackLabel"] .messages-tabs button.is-active {
+  background: var(--accent);
+  color: #06140e;
+}
+:root[data-theme="blackLabel"] .messages-compose input,
+:root[data-theme="blackLabel"] .messages-compose textarea,
+:root[data-theme="blackLabel"] .messages-search input {
+  background: var(--bg-panel);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+:root[data-theme="blackLabel"] .message-bubble,
+:root[data-theme="blackLabel"] .message-item,
+:root[data-theme="blackLabel"] .messages-dialog,
+:root[data-theme="blackLabel"] .messages-chat-item {
+  border-color: var(--border);
+}
+:root[data-theme="blackLabel"] .game-card-art {
+  background: radial-gradient(circle at center, rgba(43,181,131,.18), transparent 68%);
+}
+:root[data-theme="blackLabel"] .game-primary-button {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--accent-bright);
+}
+:root[data-theme="blackLabel"] input,
+:root[data-theme="blackLabel"] textarea,
+:root[data-theme="blackLabel"] select {
+  accent-color: var(--accent);
+}
+:root[data-theme="blackLabel"] .rebunar-boot {
+  background: radial-gradient(ellipse at 50% 42%, rgba(43,181,131,.14), transparent 48%), #0a0b0d;
+}
+:root[data-theme="blackLabel"] .rebunar-boot-line { background: #1c1e22; }
+:root[data-theme="blackLabel"] .rebunar-boot-line::after {
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+@media (max-width: 760px) {
+  :root[data-theme="blackLabel"] .app-layout { padding: 8px 8px 0; }
+  :root[data-theme="blackLabel"] .main-content { padding: 12px 12px 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="blackLabel"] *,
+  :root[data-theme="blackLabel"] *::before,
+  :root[data-theme="blackLabel"] *::after { transition-duration: .01ms !important; }
+}
