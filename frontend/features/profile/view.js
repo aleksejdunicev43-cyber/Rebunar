@@ -124,9 +124,29 @@ export function renderProfileScreen(container, user, onLogout) {
 
 function renderProfileQuickActions(items) {
   const soon = new Set(['recent','bookmarks','drafts','notifications','saved','stats','achievements','privacy','help']);
-  return items.map(([action, label, icon]) => {
+  const icons = {
+    creator: '<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    recent: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    bookmarks: '<path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-4-6 4V4.8Z"/>',
+    myworks: '<path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    drafts: '<path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5Z"/><path d="m13.8 6.7 3.5 3.5"/>',
+    notifications: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/>',
+    saved: '<path d="M5 4h14v16l-7-4-7 4V4Z"/><path d="m9 9 2 2 4-4"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+    edit: '<path d="M12 20h9"/><path d="m16.5 3.5 4 4L9 19l-5 1 1-5 11.5-11.5Z"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-1.8l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.5-.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 1.8Z"/>',
+    avatar: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+    stats: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    achievements: '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/>',
+    privacy: '<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 4.2 1.8c-1.1 1-1.8 1.3-1.8 2.7M12 17h.01"/>'
+  };
+  return items.map(([action, label]) => {
     const isSoon = soon.has(action);
-    return `<button class="profile-quick-action${isSoon ? ' is-coming' : ''}" type="button" data-profile-action="${action}" ${isSoon ? 'disabled aria-disabled="true" title="Скоро"' : ''}><span class="profile-quick-icon" aria-hidden="true">${icon}</span><span>${label}</span></button>`;
+    const icon = icons[action] || '<circle cx="12" cy="12" r="8"/>';
+    const image = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg>';
+    return `<button class="profile-quick-action${isSoon ? ' is-coming' : ''}" type="button" data-profile-action="${action}" ${isSoon ? 'disabled aria-disabled="true" title="Скоро"' : ''}><span class="profile-quick-icon">${image}</span><span>${label}</span></button>`;
   }).join('');
 }
 
