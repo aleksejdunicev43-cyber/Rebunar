@@ -451,3 +451,57 @@
     font-size: 26px !important;
   }
 }
+
+
+/* Creator Studio: chapter actions stay readable on narrow screens. */
+.reader-studio-chapter-actions {
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.reader-publish-chapter-button {
+  min-height:32px;
+  padding:7px 10px;
+  font-size:10px;
+}
+@media(max-width:600px) {
+  .reader-studio-chapter {
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .reader-studio-chapter-info {
+    flex:1 1 100%;
+  }
+  .reader-studio-chapter-actions {
+    width:100%;
+    justify-content:flex-start;
+  }
+}
+
+/* Leave enough scrollable room after the final line of a chapter.
+   The toolbar is fixed to the screen, so the reader needs extra scroll space. */
+.reader-screen.reader-reading-mode > .reader-category-panel {
+  padding-bottom:220px !important;
+}
+.reader-screen.reader-reading-mode .reader-prose {
+  padding-bottom:72px !important;
+  scroll-margin-bottom:220px;
+}
+.reader-screen.reader-reading-mode .reader-webtoon-pages {
+  padding-bottom:72px !important;
+}
+@media(max-width:760px) {
+  .reader-screen.reader-reading-mode > .reader-category-panel {
+    padding-bottom:240px !important;
+  }
+  .reader-screen.reader-reading-mode .reader-prose {
+    padding-bottom:88px !important;
+    scroll-margin-bottom:240px;
+  }
+  .reader-screen.reader-reading-mode .reader-webtoon-pages {
+    padding-bottom:88px !important;
+  }
+}
