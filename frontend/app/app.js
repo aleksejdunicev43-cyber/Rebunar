@@ -14,7 +14,7 @@ import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-system-20261104-6';
 import { renderEcosystemScreen } from '../features/ecosystem/view.js';
-import { renderReaderScreen } from '../features/reader/view.js?v=reader-fullscreen-20261115-3';
+import { renderReaderScreen } from '../features/reader/view.js?v=reader-bottom-controls-20261115-1';
 import '../features/reader/reader.css?v=reader-fullscreen-20261115-3';
 import '../features/ecosystem/ecosystem.css';
 import { renderCommunitiesScreen } from '../features/communities/view.js?v=avatar-system-20261104-6';
