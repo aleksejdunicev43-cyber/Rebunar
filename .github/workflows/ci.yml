@@ -101,7 +101,7 @@ jobs:
                   f"{assets_response.text[:500]}"
               )
           existing_assets = assets_response.json()
-          hashed_asset = re.compile(r".+-[A-Za-z0-9_-]{8,}\\.(?:js|css|wasm|woff2?|ttf|otf|svg|png|webp|jpe?g)$")
+          hashed_asset = re.compile(r".+-[A-Za-z0-9_-]{8,}\.(?:js|css|wasm|woff2?|ttf|otf|svg|png|webp|jpe?g)$")
           removed_assets = 0
           for name, metadata in existing_assets.items():
               if (
