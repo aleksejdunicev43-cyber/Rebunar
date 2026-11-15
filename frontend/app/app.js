@@ -3,7 +3,7 @@
  */
 
 import { registerRoute, navigate, initRouter, subscribeToRoute } from './router.js';
-import { createShell } from '../layout/shell.js?v=responsive-navigation-20261116-1';
+import { createShell } from '../layout/shell.js?v=wordmark-header-20261116-1';
 import { initNavigation } from '../layout/navigation.js?v=responsive-navigation-20261116-1';
 import { initializeAuth, getUser, clearUser } from '../features/auth/session.js';
 import { renderAuthScreen } from '../features/auth/view.js';
