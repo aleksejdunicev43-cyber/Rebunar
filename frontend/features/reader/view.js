@@ -3,7 +3,6 @@
  * Каталог новелл и вебтунов + открытая студия автора.
  */
 import { api } from '../../shared/api/client.js';
-import { navigate } from '../../app/router.js';
 
 const categories = {
   novels: { title: 'Новеллы', description: 'Текстовые истории, которые читают глава за главой.', type: 'novel' },
@@ -154,14 +153,19 @@ async function renderStudio(panel, refreshLanding) {
   form.append(type,title,description,coverLabel,feedback,submit);
   form.addEventListener('submit', async event => {
     event.preventDefault(); submit.disabled = true; message(feedback,'Создаём произведение…');
+    let createdId = null;
     try {
       const created = await api.post('/reader/works',{category:type.value,title:title.value,description:description.value});
+      createdId = created.id;
       const data = new FormData(); data.append('image',cover.files[0]);
       await api.upload('/reader/works/' + created.id + '/cover',data);
       message(feedback,'Черновик создан. Теперь добавь первую главу.');
       title.value=''; description.value=''; cover.value='';
       await loadStudioWorks(worksList, panel, refreshLanding);
-    } catch(error) { message(feedback,error.message,true); }
+    } catch(error) {
+      message(feedback,error.message,true);
+      if (createdId) await loadStudioWorks(worksList, panel, refreshLanding);
+    }
     finally { submit.disabled=false; }
   });
   panel.append(form);
@@ -184,9 +188,19 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       item.append(title);
       item.append(node('p','reader-muted',work.category === 'novel' ? 'Новелла' : 'Вебтун'));
       const actions = node('div','reader-studio-actions');
+      if (work.status === 'draft') actions.append(button('Загрузить обложку','reader-secondary-button',() => {
+        const input=node('input','reader-field'); input.type='file'; input.accept='image/jpeg,image/png,image/webp';
+        input.addEventListener('change',async()=>{
+          if(!input.files[0])return;
+          const data=new FormData(); data.append('image',input.files[0]);
+          try { await api.upload('/reader/works/'+work.id+'/cover',data); await loadStudioWorks(list,panel,refreshLanding); }
+          catch(error) { window.alert(error.message); }
+        });
+        input.click();
+      }));
       actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding)));
       if (work.status === 'draft') actions.append(button('Опубликовать произведение','reader-primary-button',async () => {
-        try { await api.post('/reader/works/'+work.id+'/publish',{}); await loadStudioWorks(list,panel,refreshLanding); }
+        try { await api.post('/reader/works/'+work.id+'/publish',{}); const cta=document.querySelector('#reader-author-open'); if(cta) cta.textContent='Моя студия'; await loadStudioWorks(list,panel,refreshLanding); }
         catch(error) { window.alert(error.message); }
       }));
       item.append(actions); list.append(item);
@@ -272,7 +286,7 @@ export function renderReaderScreen(outlet, params = {}) {
     loadCatalog(catalog,key,id=>showPublicWork(panel,id,()=>activateCategory(key)));
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
-  const refreshLanding=()=>{outlet.querySelector('.reader-author-cta')?.scrollIntoView({behavior:'smooth',block:'start'});activateCategory(active);};
+  const refreshLanding=()=>{outlet.querySelector('.reader-studio-panel')?.remove();outlet.querySelector('.reader-author-cta')?.scrollIntoView({behavior:'smooth',block:'start'});activateCategory(active);};
   outlet.querySelector('#reader-author-open').addEventListener('click',async()=>{
     const existingStudio=outlet.querySelector('.reader-studio-panel');
     if(existingStudio){existingStudio.scrollIntoView({behavior:'smooth',block:'start'});return;}
