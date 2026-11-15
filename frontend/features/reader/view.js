@@ -135,13 +135,13 @@ async function showChapter(panel, chapterId, back) {
     });
     toolbar.append(listButton);
     toolbar.append(button('← Произведение', 'reader-toolbar-button', back));
-    const previousButton = button('← Назад', 'reader-toolbar-button reader-toolbar-arrow', () => {
+    const previousButton = button('← Пред.', 'reader-toolbar-button reader-toolbar-arrow', () => {
       if (index > 0) showChapter(panel, chapters[index - 1].id, back);
     });
     previousButton.disabled = index <= 0;
     previousButton.setAttribute('aria-label', 'Предыдущая глава');
     toolbar.append(previousButton);
-    const nextButton = button('Вперёд →', 'reader-toolbar-button reader-toolbar-arrow', () => {
+    const nextButton = button('След. →', 'reader-toolbar-button reader-toolbar-arrow', () => {
       if (index >= 0 && index < chapters.length - 1) showChapter(panel, chapters[index + 1].id, back);
     });
     nextButton.disabled = index < 0 || index >= chapters.length - 1;
