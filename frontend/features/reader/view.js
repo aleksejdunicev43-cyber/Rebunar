@@ -304,6 +304,26 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       if (
         work.category === 'novel' &&
         work.title.trim().toLocaleLowerCase() === 'когда тьма пробуждается' &&
+        studioChapters.some(chapter => chapter.chapter_number === 2)
+      ) {
+        actions.append(button('Обновить текст главы 2','reader-secondary-button',async event => {
+          const confirmed = window.confirm('Заменить текст главы 2 расширенной версией из проекта? Текущее содержимое главы будет перезаписано. Статус публикации и прогресс чтения сохранятся.');
+          if (!confirmed) return;
+          const syncButton = event?.currentTarget;
+          if (syncButton) syncButton.disabled = true;
+          try {
+            const updated = await api.post('/reader/works/'+work.id+'/sync-project-chapter',{});
+            window.alert('Текст главы 2 обновлён. Статус публикации сохранён.');
+            await loadStudioWorks(list,panel,refreshLanding);
+          } catch(error) {
+            window.alert(error.message);
+            if (syncButton) syncButton.disabled = false;
+          }
+        }));
+      }
+      if (
+        work.category === 'novel' &&
+        work.title.trim().toLocaleLowerCase() === 'когда тьма пробуждается' &&
         !studioChapters.some(chapter => chapter.chapter_number === 2)
       ) {
         actions.append(button('Импортировать главу 2 из проекта','reader-secondary-button',async event => {
