@@ -569,7 +569,7 @@ def reader_publish_work(work_id):
         """, (work_id, session["user_id"])).fetchone()
         if not work:
             return jsonify({"error": "Черновик не найден"}), 404
-        if not work["cover_path"]:
+        if not work[1]:
             return jsonify({"error": "Сначала добавь обложку произведения"}), 400
         chapters = con.execute("""
             SELECT COUNT(*) FROM reader_chapters
