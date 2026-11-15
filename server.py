@@ -642,6 +642,69 @@ def reader_create_chapter(work_id):
         chapter_id = cur.lastrowid
     return jsonify({"ok": True, "id": chapter_id, "chapter_number": number}), 201
 
+@app.post("/api/reader/works/<int:work_id>/sync-project-chapter")
+def reader_sync_project_chapter(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    chapter_number = 2
+    filename = "chapter-02.md"
+
+    with connect() as con:
+        work = con.execute(
+            "SELECT title, category FROM reader_works WHERE id = ? AND author_id = ?",
+            (work_id, session["user_id"])
+        ).fetchone()
+        if not work:
+            return jsonify({"error": "Произведение не найдено"}), 404
+        if work[1] != "novel" or (work[0] or "").strip().casefold() != "когда тьма пробуждается":
+            return jsonify({"error": "Обновление доступно только для новеллы «Когда тьма пробуждается»"}), 403
+        chapter = con.execute(
+            "SELECT id FROM reader_chapters WHERE work_id = ? AND chapter_number = ?",
+            (work_id, chapter_number)
+        ).fetchone()
+        if not chapter:
+            return jsonify({"error": "Глава 2 ещё не импортирована"}), 404
+
+        source_url = (
+            "https://raw.githubusercontent.com/aleksejdunicev43-cyber/Rebunar/main/"
+            "novels/when-darkness-awakens/" + filename
+        )
+        try:
+            source_request = Request(source_url, headers={"User-Agent": "Rebunar-Project-Importer/1.0"})
+            with urlopen(source_request, timeout=20) as response:
+                raw_content = response.read(200001)
+            if len(raw_content) > 200000:
+                return jsonify({"error": "Файл главы превышает допустимый размер"}), 413
+            markdown = raw_content.decode("utf-8-sig")
+        except (HTTPError, URLError, TimeoutError, UnicodeDecodeError, OSError) as error:
+            app.logger.warning("Project chapter sync failed: %s", error)
+            return jsonify({"error": "Не удалось получить обновлённый текст главы. Попробуй позже."}), 502
+
+        lines = markdown.splitlines()
+        expected_prefix = "# Глава 2. "
+        if not lines or not lines[0].startswith(expected_prefix):
+            return jsonify({"error": "Заголовок файла главы не прошёл проверку"}), 422
+        title = lines[0][len(expected_prefix):].strip()[:160]
+        content = "\n".join(lines[1:]).strip()
+        if not title or not content:
+            return jsonify({"error": "В файле главы отсутствует название или текст"}), 422
+
+        con.execute("""
+            UPDATE reader_chapters
+            SET title = ?, content = ?
+            WHERE id = ? AND work_id = ? AND chapter_number = ?
+        """, (title, content, chapter[0], work_id, chapter_number))
+
+    return jsonify({
+        "ok": True,
+        "id": chapter[0],
+        "chapter_number": chapter_number,
+        "title": title,
+        "preserved_status": True
+    })
+
+
 @app.post("/api/reader/works/<int:work_id>/import-project-chapter")
 def reader_import_project_chapter(work_id):
     auth = reader_user_required()
