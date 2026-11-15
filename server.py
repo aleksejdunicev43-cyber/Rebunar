@@ -302,6 +302,27 @@ def reader_work_dict(row):
         "author_id": row["author_id"], "created_at": row["created_at"]
     }
 
+
+def remove_reader_media(paths):
+    root = READER_STORAGE.resolve()
+    for stored_path in paths:
+        if not stored_path:
+            continue
+        relative = str(stored_path)
+        if relative.startswith("/reader-media/"):
+            relative = relative[len("/reader-media/"):]
+        target = (root / relative).resolve()
+        try:
+            target.relative_to(root)
+        except ValueError:
+            continue
+        try:
+            if target.is_file():
+                target.unlink()
+        except OSError:
+            # A stale media file must not prevent the database deletion.
+            pass
+
 @app.get("/reader-media/<path:filename>")
 def reader_media(filename):
     # send_from_directory prevents path traversal outside the persistent media folder.
@@ -395,6 +416,85 @@ def reader_studio_works():
             WHERE w.author_id = ? ORDER BY w.updated_at DESC, w.id DESC
         """, (session["user_id"],)).fetchall()
     return jsonify([reader_work_dict(row) for row in rows])
+
+
+
+@app.get("/api/reader/studio/works/<int:work_id>/chapters")
+def reader_studio_chapters(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    with connect() as con:
+        work = con.execute(
+            "SELECT id FROM reader_works WHERE id = ? AND author_id = ?",
+            (work_id, session["user_id"])
+        ).fetchone()
+        if not work:
+            return jsonify({"error": "Произведение не найдено"}), 404
+        con.row_factory = sqlite3.Row
+        rows = con.execute("""
+            SELECT id, chapter_number, title, status
+            FROM reader_chapters
+            WHERE work_id = ?
+            ORDER BY chapter_number ASC
+        """, (work_id,)).fetchall()
+    return jsonify([dict(row) for row in rows])
+
+
+@app.delete("/api/reader/chapters/<int:chapter_id>")
+def reader_delete_chapter(chapter_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    with connect() as con:
+        chapter = con.execute("""
+            SELECT c.id
+            FROM reader_chapters c
+            JOIN reader_works w ON w.id = c.work_id
+            WHERE c.id = ? AND w.author_id = ?
+        """, (chapter_id, session["user_id"])).fetchone()
+        if not chapter:
+            return jsonify({"error": "Глава не найдена"}), 404
+        media = [row[0] for row in con.execute(
+            "SELECT image_path FROM reader_pages WHERE chapter_id = ?",
+            (chapter_id,)
+        ).fetchall()]
+        con.execute("DELETE FROM reader_pages WHERE chapter_id = ?", (chapter_id,))
+        con.execute("DELETE FROM reader_chapters WHERE id = ?", (chapter_id,))
+    remove_reader_media(media)
+    return jsonify({"ok": True})
+
+
+@app.delete("/api/reader/works/<int:work_id>")
+def reader_delete_work(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    with connect() as con:
+        work = con.execute("""
+            SELECT cover_path FROM reader_works
+            WHERE id = ? AND author_id = ?
+        """, (work_id, session["user_id"])).fetchone()
+        if not work:
+            return jsonify({"error": "Произведение не найдено"}), 404
+        media = [work[0]] if work[0] else []
+        media.extend(row[0] for row in con.execute("""
+            SELECT p.image_path
+            FROM reader_pages p
+            JOIN reader_chapters c ON c.id = p.chapter_id
+            WHERE c.work_id = ?
+        """, (work_id,)).fetchall())
+        con.execute("""
+            DELETE FROM reader_pages
+            WHERE chapter_id IN (
+                SELECT id FROM reader_chapters WHERE work_id = ?
+            )
+        """, (work_id,))
+        con.execute("DELETE FROM reader_chapters WHERE work_id = ?", (work_id,))
+        con.execute("DELETE FROM reader_works WHERE id = ? AND author_id = ?",
+                    (work_id, session["user_id"]))
+    remove_reader_media(media)
+    return jsonify({"ok": True})
 
 @app.post("/api/reader/works")
 def reader_create_work():
