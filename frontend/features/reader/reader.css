@@ -154,3 +154,58 @@
   width:100%;
   max-width:none;
 }
+
+
+/* READER FULL-BLEED: remove the app content frame while a chapter is open. */
+@media (max-width: 760px) {
+  .app-layout:has(.reader-screen.reader-reading-mode) {
+    padding:0!important;
+    gap:0!important;
+  }
+  .main-content:has(.reader-screen.reader-reading-mode) {
+    min-height:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    overflow:hidden!important;
+  }
+  .main-content:has(.reader-screen.reader-reading-mode) #screen-outlet {
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    padding:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  .reader-screen.reader-reading-mode {
+    display:flex!important;
+    width:100%!important;
+    max-width:none!important;
+    height:100%!important;
+    min-height:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .reader-screen.reader-reading-mode>.reader-hero,
+  .reader-screen.reader-reading-mode>.reader-tabs {
+    display:none!important;
+  }
+  .reader-screen.reader-reading-mode>.reader-category-panel {
+    flex:1 0 auto!important;
+    width:100%!important;
+    min-height:100%!important;
+    margin:0!important;
+    padding:14px 16px 24px!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  .reader-screen.reader-reading-mode .reader-prose {
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    font-size:17px!important;
+    line-height:1.9!important;
+  }
+}
