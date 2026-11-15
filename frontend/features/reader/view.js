@@ -133,6 +133,7 @@ async function showChapter(panel, chapterId, back) {
       toolbar.after(drawer);
     });
     toolbar.append(listButton);
+    toolbar.append(button('← Произведение', 'reader-toolbar-button', back));
     toolbar.append(button('←', 'reader-toolbar-button reader-toolbar-arrow', () => {
       if (index > 0) showChapter(panel, chapters[index - 1].id, back);
     }));
@@ -158,6 +159,11 @@ async function showChapter(panel, chapterId, back) {
     });
     toolbar.append(readButton);
     panel.append(toolbar);
+    panel.addEventListener('click', event => {
+      if (event.target.closest('.reader-prose, .reader-webtoon-pages, .reader-reading-title')) {
+        screen?.classList.toggle('reader-controls-collapsed');
+      }
+    });
 
     if (chapter.category === 'novel') {
       const text = node('article', 'reader-prose');
