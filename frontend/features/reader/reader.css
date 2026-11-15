@@ -246,3 +246,6 @@
  .reader-reading-toolbar{justify-content:space-around;gap:5px;margin-left:-16px;margin-right:-16px}
  .reader-toolbar-button{padding:8px 9px;font-size:10px}
 }
+
+.reader-screen.reader-reading-mode.reader-controls-collapsed .reader-reading-toolbar{transform:translateY(115%);opacity:0;pointer-events:none}
+.reader-screen.reader-reading-mode .reader-reading-toolbar{transition:transform .2s ease,opacity .2s ease}
