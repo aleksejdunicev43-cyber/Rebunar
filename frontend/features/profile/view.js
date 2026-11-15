@@ -121,7 +121,7 @@ export function renderProfileScreen(container, user, onLogout) {
 
 
 function renderProfileQuickActions(items) {
-  const soon = new Set(['recent','bookmarks','drafts','notifications','saved','stats','achievements','privacy','help']);
+  const soon = new Set(['recent','bookmarks','notifications','saved','stats','achievements','privacy','help']);
   const icons = {
     creator: '<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
