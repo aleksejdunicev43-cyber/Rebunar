@@ -5,6 +5,7 @@
 import { uploadAvatar, updateProfile } from './api.js';
 import { getUser, setUser } from '../auth/session.js';
 import { avatarMarkup } from '../../shared/avatar.js?v=avatar-outline-20261105-1';
+import { navigate } from '../../app/router.js';
 
 export function renderProfileScreen(container, user, onLogout) {
   const avatar = avatarMarkup(user, { size: 'profile', label: 'Аватар профиля' });
@@ -59,6 +60,14 @@ export function renderProfileScreen(container, user, onLogout) {
           <p class="profile-username">@${escapeHTML(username)}</p>
         </div>
 
+        <div class="profile-side-actions">
+          <button class="profile-side-action profile-creator-open" type="button">
+            <span class="profile-side-action-icon" aria-hidden="true">✦</span>
+            <span class="profile-side-action-copy"><strong>Стать автором или разработчиком</strong><small>Публикуй истории, игры и проекты</small></span>
+            <span class="profile-side-action-arrow" aria-hidden="true">›</span>
+          </button>
+        </div>
+
         <div class="profile-details">
           <div class="profile-bio">
             <span>О себе</span>
@@ -89,6 +98,9 @@ export function renderProfileScreen(container, user, onLogout) {
     </section>
   `;
 
+  container.querySelector('.profile-creator-open')
+    .addEventListener('click', () => openCreatorChoice(container));
+
   container.querySelector('.profile-edit')
     .addEventListener('click', () => {
       openProfileEditor(container, user, onLogout);
@@ -118,6 +130,24 @@ export function renderProfileScreen(container, user, onLogout) {
     if (file) openAvatarEditor(container, file, user, onLogout);
     fileInput.value = '';
   });
+}
+
+
+function openCreatorChoice(container) {
+  const overlay=document.createElement('div');
+  overlay.className='profile-creator-overlay';
+  overlay.innerHTML=[
+    '<section class="profile-creator-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-creator-title">',
+    '<div class="profile-creator-heading"><div><span class="profile-creator-kicker">REBUNAR / CREATOR</span><h2 id="profile-creator-title">Кем хочешь стать?</h2></div><button class="profile-creator-close" type="button" aria-label="Закрыть">×</button></div>',
+    '<button class="profile-creator-option" type="button" data-creator-role="author"><span class="profile-creator-option-icon" aria-hidden="true">✍</span><span><strong>Автор</strong><small>Новеллы, вебтуны и другие истории</small></span><span class="profile-creator-arrow" aria-hidden="true">›</span></button>',
+    '<div class="profile-creator-option is-coming"><span class="profile-creator-option-icon" aria-hidden="true">⌘</span><span><strong>Разработчик</strong><small>Игры, приложения и цифровые проекты</small></span><span class="profile-creator-soon">СКОРО</span></div>',
+    '</section>'
+  ].join('');
+  container.appendChild(overlay);
+  const close=()=>overlay.remove();
+  overlay.querySelector('.profile-creator-close').addEventListener('click',close);
+  overlay.addEventListener('click',event=>{if(event.target===overlay)close();});
+  overlay.querySelector('[data-creator-role="author"]').addEventListener('click',()=>{close();navigate('reader',{mode:'studio'});});
 }
 
 

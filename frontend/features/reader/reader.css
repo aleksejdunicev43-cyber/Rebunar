@@ -78,3 +78,25 @@
 .reader-chapter-editor h4{margin:0;font-size:14px}
 .reader-studio-work .reader-muted{margin:7px 0 0}
 @media(max-width:600px){.reader-author-cta{align-items:flex-start;flex-direction:column}.reader-author-button{width:100%}.reader-work-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.reader-work-cover{height:190px}.reader-detail-heading{gap:13px}.reader-detail-cover{width:95px;max-height:145px}.reader-studio-heading{flex-direction:column}.reader-studio-heading>.reader-back-button{width:100%}.reader-studio-actions>*{flex:1}.reader-prose{font-size:15px;line-height:1.85}}
+
+
+/* REBUNAR READER — compact chooser, full scrollable work feed */
+.reader-screen{padding-top:clamp(10px,2vw,18px)}
+.reader-hero{padding:17px 20px;border-radius:15px}
+.reader-hero h1{margin:5px 0 0;font-size:clamp(23px,4vw,31px);letter-spacing:-.035em}
+.reader-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;padding:0;border:0;background:transparent}
+.reader-tab{justify-content:flex-start;min-height:68px;gap:12px;padding:11px 14px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:linear-gradient(145deg,#171f1c,#111716);text-align:left}
+.reader-tab-icon{display:grid;flex:0 0 40px;width:40px;height:40px;place-items:center;border:1px solid rgba(75,211,157,.2);border-radius:11px;background:rgba(43,181,131,.09);color:#69d9aa;font-size:19px;font-weight:900}
+.reader-tab-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.reader-tab-copy strong{color:inherit;font-size:13px}
+.reader-tab-copy small{color:#8f9d96;font-size:10px;font-weight:500}
+.reader-tab.is-active{border-color:rgba(65,205,151,.52);background:linear-gradient(135deg,rgba(35,133,98,.3),rgba(21,66,53,.24))}
+.reader-tab.is-active .reader-tab-icon{border-color:rgba(75,211,157,.5);background:rgba(43,181,131,.18)}
+.reader-category-panel{min-height:220px;padding:17px;border-radius:15px}
+.reader-category-heading{padding-bottom:12px}
+.reader-category-heading h2{margin:0;font-size:20px}
+.reader-work-grid{margin-top:14px}
+.reader-empty-state{min-height:145px}
+.reader-empty-state h3{margin:10px 0 5px}
+.reader-empty-icon{width:42px;height:42px;font-size:20px}
+@media(max-width:420px){.reader-tabs{gap:7px}.reader-tab{min-height:64px;gap:8px;padding:9px}.reader-tab-icon{flex-basis:34px;width:34px;height:34px}.reader-tab-copy strong{font-size:12px}.reader-tab-copy small{font-size:9px}.reader-category-panel{padding:13px}}
