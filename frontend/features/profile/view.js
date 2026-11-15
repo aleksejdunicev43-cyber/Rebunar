@@ -36,38 +36,35 @@ export function renderProfileScreen(container, user, onLogout) {
       </div>
 
       <div class="profile-card">
-        <button class="profile-avatar profile-avatar-button"
-          type="button" aria-label="Аватар профиля">
-          ${avatar}
-        </button>
-        <input class="profile-avatar-input" type="file"
-          accept="image/jpeg,image/png,image/webp" hidden>
-
-        <div class="profile-account-id">
-          <span>ID: ${escapeHTML(userId)}</span>
-          <button class="profile-copy-id" type="button"
-            aria-label="Скопировать ID" title="Скопировать ID"
-            ${hasUserId ? '' : 'disabled'}>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="8" y="8" width="12" height="12" rx="2"></rect>
-              <path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path>
-            </svg>
-          </button>
+        <div class="profile-quick-layout">
+          <div class="profile-quick-grid profile-quick-grid-left" aria-label="Быстрые действия профиля">
+            ${renderProfileQuickActions([
+              ["creator","Автор / разработчик","✦"], ["mail","Почта","✉"],
+              ["recent","Последнее чтение","◷"], ["bookmarks","Закладки","☆"],
+              ["myworks","Мои истории","▤"], ["drafts","Черновики","✎"],
+              ["notifications","Уведомления","♢"], ["saved","Сохранённое","▣"]
+            ])}
+          </div>
+          <div class="profile-quick-center">
+            <button class="profile-avatar profile-avatar-button" type="button" aria-label="Аватар профиля">${avatar}</button>
+            <input class="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <div class="profile-account-id">
+              <span>ID: ${escapeHTML(userId)}</span>
+              <button class="profile-copy-id" type="button" aria-label="Скопировать ID" title="Скопировать ID" ${hasUserId ? "" : "disabled"}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>
+              </button>
+            </div>
+            <div class="profile-identity"><h2>${escapeHTML(displayName)}</h2><p class="profile-username">@${escapeHTML(username)}</p></div>
+          </div>
+          <div class="profile-quick-grid profile-quick-grid-right" aria-label="Разделы аккаунта">
+            ${renderProfileQuickActions([
+              ["users","Все пользователи","♙"], ["edit","Изменить профиль","⚙"],
+              ["settings","Настройки","⚙"], ["avatar","Сменить аватар","◉"],
+              ["stats","Статистика","▥"], ["achievements","Достижения","✧"],
+              ["privacy","Приватность","◇"], ["help","Помощь","?"]
+            ])}
+          </div>
         </div>
-
-        <div class="profile-identity">
-          <h2>${escapeHTML(displayName)}</h2>
-          <p class="profile-username">@${escapeHTML(username)}</p>
-        </div>
-
-        <div class="profile-side-actions">
-          <button class="profile-side-action profile-creator-open" type="button">
-            <span class="profile-side-action-icon" aria-hidden="true">✦</span>
-            <span class="profile-side-action-copy"><strong>Стать автором или разработчиком</strong><small>Публикуй истории, игры и проекты</small></span>
-            <span class="profile-side-action-arrow" aria-hidden="true">›</span>
-          </button>
-        </div>
-
         <div class="profile-details">
           <div class="profile-bio">
             <span>О себе</span>
@@ -75,21 +72,6 @@ export function renderProfileScreen(container, user, onLogout) {
           </div>
         </div>
 
-        <button class="profile-edit" type="button">
-          Редактировать профиль
-        </button>
-
-        <button class="profile-users-button" type="button" data-route="users">
-          <span aria-hidden="true">♙</span>
-          Все пользователи
-          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
-        </button>
-
-        <button class="profile-users-button profile-mail-button" type="button" data-route="mail">
-          <span aria-hidden="true">✉</span>
-          Почта Rebunar
-          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
-        </button>
 
         <button class="profile-logout" type="button">
           Выйти из аккаунта
@@ -98,14 +80,21 @@ export function renderProfileScreen(container, user, onLogout) {
     </section>
   `;
 
-  container.querySelector('.profile-creator-open')
-    .addEventListener('click', () => openCreatorChoice(container));
-
-  container.querySelector('.profile-edit')
-    .addEventListener('click', () => {
-      openProfileEditor(container, user, onLogout);
+  const quickActions = container.querySelectorAll('[data-profile-action]');
+  quickActions.forEach(button => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.profileAction;
+      if (button.disabled) return;
+      if (action === 'creator') openCreatorChoice(container);
+      else if (action === 'mail') navigate('mail');
+      else if (action === 'users') navigate('users');
+      else if (action === 'recent' || action === 'bookmarks') navigate('reader');
+      else if (action === 'myworks' || action === 'drafts') navigate('reader', { mode: 'studio' });
+      else if (action === 'edit') openProfileEditor(container, user, onLogout);
+      else if (action === 'settings') navigate('settings');
+      else if (action === 'avatar') fileInput.click();
     });
-
+  });
   container.querySelector('.profile-logout')
     .addEventListener('click', onLogout);
 
@@ -132,6 +121,14 @@ export function renderProfileScreen(container, user, onLogout) {
   });
 }
 
+
+function renderProfileQuickActions(items) {
+  const soon = new Set(['recent','bookmarks','drafts','notifications','saved','stats','achievements','privacy','help']);
+  return items.map(([action, label, icon]) => {
+    const isSoon = soon.has(action);
+    return `<button class="profile-quick-action${isSoon ? ' is-coming' : ''}" type="button" data-profile-action="${action}" ${isSoon ? 'disabled aria-disabled="true" title="Скоро"' : ''}><span class="profile-quick-icon" aria-hidden="true">${icon}</span><span>${label}</span></button>`;
+  }).join('');
+}
 
 function openCreatorChoice(container) {
   const overlay=document.createElement('div');
