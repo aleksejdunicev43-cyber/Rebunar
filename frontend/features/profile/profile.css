@@ -1095,3 +1095,33 @@
 .profile-creator-soon{color:var(--accent);font-size:9px;font-weight:900;letter-spacing:.1em}
 .profile-side-actions{margin:0 0 16px}
 @media(max-width:480px){.profile-creator-dialog{padding:18px}.profile-creator-heading h2{font-size:20px}}
+
+/* REBUNAR — PROFILE QUICK ACCESS GRID */
+.profile-quick-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.72fr) minmax(0,1fr);align-items:center;gap:clamp(10px,2vw,24px);width:100%;margin:8px auto 24px}
+.profile-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(4,minmax(66px,auto));gap:9px;min-width:0}
+.profile-quick-center{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
+.profile-quick-center .profile-avatar-button{width:clamp(112px,15vw,176px);height:clamp(112px,15vw,176px)}
+.profile-quick-center .profile-account-id{margin:0}
+.profile-quick-center .profile-identity{max-width:100%;overflow-wrap:anywhere}
+.profile-quick-action{display:flex;min-width:0;min-height:66px;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 5px;border:1px solid color-mix(in srgb,var(--accent) 34%,var(--border));border-radius:12px;color:var(--text-main);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 11%,var(--bg-panel)),var(--bg-panel-2));font:inherit;font-size:clamp(9px,1vw,12px);font-weight:750;line-height:1.2;text-align:center;overflow-wrap:anywhere;cursor:pointer;transition:transform .18s,border-color .18s,background .18s,box-shadow .18s}
+.profile-quick-action:hover:not(:disabled){transform:translateY(-2px);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--bg-panel));box-shadow:0 5px 18px color-mix(in srgb,var(--accent) 13%,transparent)}
+.profile-quick-action:active:not(:disabled){transform:scale(.97)}
+.profile-quick-action:disabled{opacity:.48;cursor:default}
+.profile-quick-icon{display:grid;width:31px;height:31px;place-items:center;border-radius:9px;color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,transparent);font-size:21px;line-height:1}
+@media(max-width:760px){
+.profile-quick-layout{grid-template-columns:minmax(0,1fr) minmax(92px,.68fr) minmax(0,1fr);gap:7px;margin:4px auto 20px}
+.profile-quick-grid{gap:6px;grid-template-rows:repeat(4,minmax(58px,auto))}
+.profile-quick-action{min-height:58px;padding:6px 3px;border-radius:9px;font-size:9px;gap:4px}
+.profile-quick-icon{width:26px;height:26px;font-size:18px;border-radius:7px}
+.profile-quick-center .profile-avatar-button{width:clamp(76px,21vw,116px);height:clamp(76px,21vw,116px)}
+.profile-quick-center .profile-account-id{font-size:10px}
+.profile-quick-center .profile-identity h2{font-size:clamp(13px,3.4vw,18px)}
+.profile-quick-center .profile-username{font-size:10px}
+}
+@media(max-width:380px){
+.profile-quick-layout{grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr);gap:5px}
+.profile-quick-grid{gap:5px;grid-template-rows:repeat(4,minmax(54px,auto))}
+.profile-quick-action{font-size:8px;min-height:54px}
+.profile-quick-icon{width:23px;height:23px;font-size:16px}
+.profile-quick-center .profile-avatar-button{width:72px;height:72px}
+}
