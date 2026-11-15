@@ -179,7 +179,8 @@ async function showChapter(panel, chapterId, back) {
       panel.append(pages);
     }
     panel.append(toolbar);
-    panel.scrollTop = 0;
+    const scrollArea = panel.closest('#screen-outlet');
+    if (scrollArea) scrollArea.scrollTop = 0;
   } catch (error) {
     panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
   }
