@@ -277,10 +277,14 @@ export function renderReaderScreen(outlet, params = {}) {
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
   const refreshLanding=()=>{
     outlet.querySelector('.reader-studio-panel')?.remove();
+    outlet.querySelector('.reader-hero h1').textContent='Что почитаем?';
+    outlet.querySelector('.reader-tabs').hidden=false;
     activateCategory(active);
     outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
   };
   if(params.mode==='studio'){
+    outlet.querySelector('.reader-hero h1').textContent='Студия автора';
+    outlet.querySelector('.reader-tabs').hidden=true;
     const studio=node('section','reader-studio-panel');
     panel.append(studio);
     renderStudio(studio,refreshLanding);
