@@ -377,3 +377,77 @@
     font-weight: 850 !important;
   }
 }
+
+
+/* Reader toolbar: six icon-only controls in one compact row. */
+.reader-screen.reader-reading-mode > .reader-category-panel {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+}
+.reader-screen.reader-reading-mode .reader-reading-toolbar {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 5px !important;
+  padding: 8px 7px calc(8px + env(safe-area-inset-bottom)) !important;
+}
+.reader-screen.reader-reading-mode .reader-toolbar-button {
+  display: grid !important;
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 46px !important;
+  padding: 4px 2px !important;
+  place-items: center !important;
+  font-size: 21px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.reader-screen.reader-reading-mode .reader-toolbar-arrow {
+  min-width: 0 !important;
+  font-size: 27px !important;
+}
+.reader-screen.reader-reading-mode .reader-chapter-drawer {
+  position: fixed !important;
+  z-index: 80 !important;
+  right: 12px !important;
+  bottom: calc(66px + env(safe-area-inset-bottom)) !important;
+  left: 12px !important;
+  display: grid !important;
+  gap: 7px !important;
+  max-height: min(42dvh, 360px) !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  border: 1px solid rgba(110,210,170,.3) !important;
+  border-radius: 15px !important;
+  background: rgba(15,24,21,.98) !important;
+  box-shadow: 0 -10px 32px rgba(0,0,0,.48) !important;
+  backdrop-filter: blur(16px);
+}
+.reader-screen.reader-reading-mode .reader-drawer-chapter {
+  min-height: 42px;
+  text-align: left;
+}
+@media (max-width: 760px) {
+  .reader-screen.reader-reading-mode > .reader-category-panel {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  }
+  .reader-screen.reader-reading-mode .reader-reading-toolbar {
+    gap: 4px !important;
+    padding-right: 5px !important;
+    padding-left: 5px !important;
+  }
+  .reader-screen.reader-reading-mode .reader-toolbar-button {
+    min-height: 46px !important;
+    font-size: 20px !important;
+  }
+  .reader-screen.reader-reading-mode .reader-toolbar-arrow {
+    font-size: 26px !important;
+  }
+}
