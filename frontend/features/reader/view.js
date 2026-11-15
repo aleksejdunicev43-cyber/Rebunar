@@ -120,7 +120,6 @@ async function showChapter(panel, chapterId, back) {
     panel.replaceChildren();
 
     const top = node('div', 'reader-detail-top reader-reading-top');
-    top.append(button('← Произведение', 'reader-back-button reader-reading-back', back));
     top.append(node('span', 'reader-eyebrow', chapter.work_title));
     panel.append(top);
     panel.append(node('h2', 'reader-reading-title', chapterDisplayTitle(chapter)));
@@ -150,6 +149,11 @@ async function showChapter(panel, chapterId, back) {
     listButton.title = 'Главы';
     listButton.setAttribute('aria-expanded', 'false');
     toolbar.append(listButton);
+
+    const returnButton = button('↩', 'reader-toolbar-button reader-toolbar-icon', back);
+    returnButton.setAttribute('aria-label', 'Вернуться к произведению');
+    returnButton.title = 'К произведению';
+    toolbar.append(returnButton);
 
     const previousButton = button('‹', 'reader-toolbar-button reader-toolbar-icon reader-toolbar-arrow', () => {
       if (index > 0) showChapter(panel, chapters[index - 1].id, back);
