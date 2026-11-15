@@ -40,6 +40,9 @@ export function initNavigation(root, navigate, subscribeToRoute) {
       button.classList.toggle('is-active', isActive);
       button.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
+    const moreToggle = root.querySelector('.mobile-more-toggle');
+    const hasSecondaryActive = ['favorites', 'creators'].includes(route.path);
+    moreToggle?.classList.toggle('is-active', hasSecondaryActive);
   }
 
   const unsubscribe = subscribeToRoute(updateActiveRoute);
