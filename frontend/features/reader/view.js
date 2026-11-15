@@ -315,7 +315,7 @@ export function renderReaderScreen(outlet, params = {}) {
     outlet.querySelector('.reader-hero h1').textContent='Что почитаем?';
     outlet.querySelector('.reader-hero').hidden=false;
     outlet.querySelector('.reader-tabs').hidden=false;
-    outlet.classList.remove('reader-reading-mode');
+    outlet.querySelector('.reader-screen')?.classList.remove('reader-reading-mode');
     activateCategory(active);
     outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
   };
