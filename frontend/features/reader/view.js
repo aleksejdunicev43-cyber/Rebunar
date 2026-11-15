@@ -267,11 +267,15 @@ export function renderReaderScreen(outlet, params = {}) {
     heading.firstChild.append(node('h2','',categories[key].title));
     heading.firstChild.append(node('p','',categories[key].description));
     panel.append(heading);
-    loadCatalog(panel,key,id=>showPublicWork(panel,id,()=>activateCategory(key)));
+    const catalog = node('div','reader-catalog-list');
+    panel.append(catalog);
+    loadCatalog(catalog,key,id=>showPublicWork(panel,id,()=>activateCategory(key)));
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
   const refreshLanding=()=>{outlet.querySelector('.reader-author-cta')?.scrollIntoView({behavior:'smooth',block:'start'});activateCategory(active);};
   outlet.querySelector('#reader-author-open').addEventListener('click',async()=>{
+    const existingStudio=outlet.querySelector('.reader-studio-panel');
+    if(existingStudio){existingStudio.scrollIntoView({behavior:'smooth',block:'start'});return;}
     try {
       const works=await api.get('/reader/studio/works');
       const cta=outlet.querySelector('.reader-author-cta');
