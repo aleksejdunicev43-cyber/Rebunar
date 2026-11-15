@@ -100,3 +100,15 @@
 .reader-empty-state h3{margin:10px 0 5px}
 .reader-empty-icon{width:42px;height:42px;font-size:20px}
 @media(max-width:420px){.reader-tabs{gap:7px}.reader-tab{min-height:64px;gap:8px;padding:9px}.reader-tab-icon{flex-basis:34px;width:34px;height:34px}.reader-tab-copy strong{font-size:12px}.reader-tab-copy small{font-size:9px}.reader-category-panel{padding:13px}}
+
+
+.reader-studio-chapters{display:grid;gap:8px;margin-top:15px;padding-top:13px;border-top:1px solid rgba(255,255,255,.07)}
+.reader-studio-chapters h4{margin:0 0 3px;color:#cbd8d1;font-size:12px}
+.reader-studio-chapter{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 11px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(0,0,0,.12)}
+.reader-studio-chapter-info{display:grid;gap:4px;min-width:0}
+.reader-studio-chapter-info strong{overflow-wrap:anywhere;color:#dce8e1;font-size:11px}
+.reader-studio-chapter-info small{color:#84958c;font-size:10px}
+.reader-danger-button{min-height:36px;padding:8px 11px;border:1px solid rgba(235,102,102,.28);border-radius:9px;background:rgba(139,42,42,.13);color:#ffaaaa;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.reader-danger-button:hover{border-color:rgba(255,125,125,.55);background:rgba(139,42,42,.23)}
+.reader-danger-button-small{flex:0 0 auto;min-height:31px;padding:6px 9px;font-size:10px}
+@media(max-width:600px){.reader-studio-chapter{align-items:flex-start}.reader-studio-chapter-info{flex:1}.reader-danger-button-small{align-self:center}}
