@@ -5,8 +5,8 @@
 .app-header { position: sticky; top: 0; z-index: 20; min-height: 66px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; padding: 0 24px; overflow: hidden; background: #09090b; border-bottom: 1px solid rgba(150, 25, 25, .55); box-shadow: 0 4px 22px rgba(0, 0, 0, .45), 0 1px 12px rgba(150, 25, 25, .14); }
 
 /* Image is oversized inside the strip so its built-in black borders cannot remain visible. */
-.app-logo-image-wrap { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
-.app-logo-image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; transform: scale(1.55); transform-origin: center center; filter: drop-shadow(0 0 8px rgba(170, 20, 20, .32)); }
+.app-logo-image-wrap { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.app-logo-image { display: block; width: min(72%, 760px); height: calc(100% - 8px); object-fit: contain; object-position: center; transform: none; filter: drop-shadow(0 0 8px rgba(170, 20, 20, .32)); }
 
 .header-brand, .header-actions { position: relative; z-index: 2; }
 .header-brand { position: relative; justify-self: start; min-width: 0; display: flex; align-items: center; gap: 6px; }
@@ -143,4 +143,20 @@
   .home-action-arrow { top: 50%; right: 14px; transform: translateY(-50%); }
   .home-action-description { padding-right: 18px; }
   .home-section-heading h2 { font-size: 17px; }
+}
+
+
+/* Mobile overflow navigation: keep the five primary destinations uncluttered. */
+.mobile-navigation { position: relative; }
+.mobile-more-toggle { display: none; }
+.mobile-more-menu { position: absolute; right: 8px; bottom: calc(100% + 8px); z-index: 40; min-width: 190px; padding: 7px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-panel); box-shadow: 0 12px 32px rgba(0,0,0,.38); }
+.mobile-more-menu:not([hidden]) { display: flex; flex-direction: column; gap: 4px; }
+.mobile-more-menu .nav-item { display: flex; width: 100%; min-height: 44px; flex-direction: row; justify-content: flex-start; gap: 10px; padding: 9px 12px; font-size: 13px; text-align: left; }
+.mobile-more-menu .nav-item .nav-icon { flex: 0 0 21px; width: 21px; height: 21px; }
+.mobile-more-toggle[aria-expanded="true"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--bg-panel-2)); }
+@media (max-width: 760px) {
+  .mobile-more-toggle { display: flex; }
+  .mobile-navigation { gap: 1px; }
+  .mobile-navigation .nav-item { flex: 1 1 0; }
+  .mobile-more-menu { right: 8px; }
 }
