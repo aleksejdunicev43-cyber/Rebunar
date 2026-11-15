@@ -122,48 +122,76 @@ async function showChapter(panel, chapterId, back) {
     panel.append(node('h2', 'reader-reading-title', chapter.title));
 
     const toolbar = node('div', 'reader-reading-toolbar');
-    const listButton = button('☷ Главы', 'reader-toolbar-button', () => {
+    const listButton = button('☷', 'reader-toolbar-button reader-toolbar-icon', () => {
       const existing = panel.querySelector('.reader-chapter-drawer');
-      if (existing) { existing.remove(); return; }
+      if (existing) {
+        existing.remove();
+        listButton.setAttribute('aria-expanded', 'false');
+        return;
+      }
       const drawer = node('div', 'reader-chapter-drawer');
+      drawer.setAttribute('role', 'dialog');
+      drawer.setAttribute('aria-label', 'Список глав');
       chapters.forEach(item => {
         const itemProgress = progress.find(p => p.chapter_id === item.id);
         const label = (itemProgress?.is_read ? '✓ ' : '') + 'Глава ' + item.chapter_number + ' · ' + item.title + (itemProgress?.is_favorite ? '  ♥' : '');
         drawer.append(button(label, 'reader-drawer-chapter' + (item.id === chapterId ? ' is-current' : ''), () => showChapter(panel, item.id, back)));
       });
       panel.append(drawer);
+      listButton.setAttribute('aria-expanded', 'true');
     });
+    listButton.setAttribute('aria-label', 'Открыть список глав');
+    listButton.title = 'Главы';
+    listButton.setAttribute('aria-expanded', 'false');
     toolbar.append(listButton);
-    toolbar.append(button('← Произведение', 'reader-toolbar-button', back));
-    const previousButton = button('← Пред.', 'reader-toolbar-button reader-toolbar-arrow', () => {
+
+    const returnButton = button('↩', 'reader-toolbar-button reader-toolbar-icon', back);
+    returnButton.setAttribute('aria-label', 'Вернуться к произведению');
+    returnButton.title = 'К произведению';
+    toolbar.append(returnButton);
+
+    const previousButton = button('‹', 'reader-toolbar-button reader-toolbar-icon reader-toolbar-arrow', () => {
       if (index > 0) showChapter(panel, chapters[index - 1].id, back);
     });
     previousButton.disabled = index <= 0;
     previousButton.setAttribute('aria-label', 'Предыдущая глава');
+    previousButton.title = 'Предыдущая глава';
     toolbar.append(previousButton);
-    const nextButton = button('След. →', 'reader-toolbar-button reader-toolbar-arrow', () => {
+
+    const nextButton = button('›', 'reader-toolbar-button reader-toolbar-icon reader-toolbar-arrow', () => {
       if (index >= 0 && index < chapters.length - 1) showChapter(panel, chapters[index + 1].id, back);
     });
     nextButton.disabled = index < 0 || index >= chapters.length - 1;
     nextButton.setAttribute('aria-label', 'Следующая глава');
+    nextButton.title = 'Следующая глава';
     toolbar.append(nextButton);
-    const favoriteButton = button(state.is_favorite ? '♥ Понравилось' : '♡ Нравится', 'reader-toolbar-button reader-favorite-button' + (state.is_favorite ? ' is-active' : ''), async () => {
+
+    const favoriteButton = button(state.is_favorite ? '♥' : '♡', 'reader-toolbar-button reader-toolbar-icon reader-favorite-button' + (state.is_favorite ? ' is-active' : ''), async () => {
       try {
         const updated = await api.post('/reader/chapters/' + chapterId + '/progress', { is_favorite: !state.is_favorite });
         state.is_favorite = updated.is_favorite;
-        favoriteButton.textContent = state.is_favorite ? '♥ Понравилось' : '♡ Нравится';
+        favoriteButton.textContent = state.is_favorite ? '♥' : '♡';
+        favoriteButton.setAttribute('aria-label', state.is_favorite ? 'Убрать из избранного' : 'Добавить в избранное');
+        favoriteButton.title = state.is_favorite ? 'Убрать из избранного' : 'В избранное';
         favoriteButton.classList.toggle('is-active', state.is_favorite);
       } catch (error) { window.alert(error.message); }
     });
+    favoriteButton.setAttribute('aria-label', state.is_favorite ? 'Убрать из избранного' : 'Добавить в избранное');
+    favoriteButton.title = state.is_favorite ? 'Убрать из избранного' : 'В избранное';
     toolbar.append(favoriteButton);
-    const readButton = button(state.is_read ? '✓ Прочитано' : '○ Прочитано', 'reader-toolbar-button reader-read-button' + (state.is_read ? ' is-active' : ''), async () => {
+
+    const readButton = button(state.is_read ? '✓' : '○', 'reader-toolbar-button reader-toolbar-icon reader-read-button' + (state.is_read ? ' is-active' : ''), async () => {
       try {
         const updated = await api.post('/reader/chapters/' + chapterId + '/progress', { is_read: !state.is_read });
         state.is_read = updated.is_read;
-        readButton.textContent = state.is_read ? '✓ Прочитано' : '○ Прочитано';
+        readButton.textContent = state.is_read ? '✓' : '○';
+        readButton.setAttribute('aria-label', state.is_read ? 'Отметить непрочитанной' : 'Отметить прочитанной');
+        readButton.title = state.is_read ? 'Отметить непрочитанной' : 'Отметить прочитанной';
         readButton.classList.toggle('is-active', state.is_read);
       } catch (error) { window.alert(error.message); }
     });
+    readButton.setAttribute('aria-label', state.is_read ? 'Отметить непрочитанной' : 'Отметить прочитанной');
+    readButton.title = state.is_read ? 'Отметить непрочитанной' : 'Отметить прочитанной';
     toolbar.append(readButton);
     if (chapter.category === 'novel') {
       const text = node('article', 'reader-prose');
