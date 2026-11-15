@@ -642,6 +642,89 @@ def reader_create_chapter(work_id):
         chapter_id = cur.lastrowid
     return jsonify({"ok": True, "id": chapter_id, "chapter_number": number}), 201
 
+@app.post("/api/reader/works/<int:work_id>/import-project-chapter")
+def reader_import_project_chapter(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    data = request.get_json(silent=True) or {}
+    try:
+        chapter_number = int(data.get("chapter_number", 0))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Неверный номер главы"}), 400
+
+    # Only chapters explicitly stored in the Rebunar novel repository can be imported.
+    project_chapters = {
+        2: "chapter-02.md",
+        3: "chapter-03.md",
+        4: "chapter-04.md",
+    }
+    filename = project_chapters.get(chapter_number)
+    if not filename:
+        return jsonify({"error": "Эта глава пока не доступна для импорта"}), 400
+
+    with connect() as con:
+        work = con.execute(
+            "SELECT title, category FROM reader_works WHERE id = ? AND author_id = ?",
+            (work_id, session["user_id"])
+        ).fetchone()
+        if not work:
+            return jsonify({"error": "Произведение не найдено"}), 404
+        if work[1] != "novel" or (work[0] or "").strip().casefold() != "когда тьма пробуждается":
+            return jsonify({"error": "Импорт доступен только для новеллы «Когда тьма пробуждается»"}), 403
+        existing = con.execute(
+            "SELECT id, title FROM reader_chapters WHERE work_id = ? AND chapter_number = ?",
+            (work_id, chapter_number)
+        ).fetchone()
+        if existing:
+            return jsonify({
+                "error": "Глава с таким номером уже существует. Импорт отменён, данные не изменены.",
+                "existing_title": existing[1]
+            }), 409
+
+        source_url = (
+            "https://raw.githubusercontent.com/aleksejdunicev43-cyber/Rebunar/main/"
+            "novels/when-darkness-awakens/" + filename
+        )
+        try:
+            source_request = Request(source_url, headers={"User-Agent": "Rebunar-Project-Importer/1.0"})
+            with urlopen(source_request, timeout=20) as response:
+                raw_content = response.read(200001)
+            if len(raw_content) > 200000:
+                return jsonify({"error": "Файл главы превышает допустимый размер"}), 413
+            markdown = raw_content.decode("utf-8-sig")
+        except (HTTPError, URLError, TimeoutError, UnicodeDecodeError, OSError) as error:
+            app.logger.warning("Project chapter import failed: %s", error)
+            return jsonify({"error": "Не удалось получить файл главы из проекта. Попробуй позже."}), 502
+
+        lines = markdown.splitlines()
+        expected_prefix = "# Глава " + str(chapter_number) + ". "
+        if not lines or not lines[0].startswith(expected_prefix):
+            return jsonify({"error": "Заголовок файла главы не прошёл проверку"}), 422
+        title = lines[0][len(expected_prefix):].strip()[:160]
+        content = "\n".join(lines[1:]).strip()
+        if not title or not content:
+            return jsonify({"error": "В файле главы отсутствует название или текст"}), 422
+
+        try:
+            cursor = con.execute("""
+                INSERT INTO reader_chapters (work_id, chapter_number, title, content, status)
+                VALUES (?, ?, ?, ?, 'draft')
+            """, (work_id, chapter_number, title, content))
+        except sqlite3.IntegrityError:
+            return jsonify({"error": "Глава с таким номером уже существует. Дубликат не создан."}), 409
+
+        chapter_id = cursor.lastrowid
+
+    return jsonify({
+        "ok": True,
+        "id": chapter_id,
+        "chapter_number": chapter_number,
+        "title": title,
+        "status": "draft"
+    }), 201
+
+
 @app.post("/api/reader/chapters/<int:chapter_id>/pages")
 def reader_upload_page(chapter_id):
     auth = reader_user_required()
