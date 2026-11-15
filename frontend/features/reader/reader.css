@@ -209,3 +209,40 @@
     line-height:1.9!important;
   }
 }
+
+
+/* Reader controls and chapter progress */
+.reader-screen.reader-reading-mode .reader-reading-top{margin:0 0 5px}
+.reader-screen.reader-reading-mode .reader-reading-title{margin:4px 0 16px}
+.reader-reading-toolbar{
+  position:sticky;bottom:0;z-index:20;
+  display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;
+  margin:18px -16px 0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  border-top:1px solid rgba(110,210,170,.2);
+  background:rgba(15,22,21,.96);backdrop-filter:blur(14px);
+}
+.reader-toolbar-button{
+  min-height:38px;padding:8px 11px;border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;background:#1a2522;color:#e5f2eb;
+  font:inherit;font-size:11px;font-weight:750;cursor:pointer;
+}
+.reader-toolbar-button:disabled{opacity:.35;cursor:not-allowed}
+.reader-toolbar-arrow{min-width:38px;font-size:17px}
+.reader-toolbar-button.is-active{border-color:rgba(79,220,157,.42);background:rgba(30,128,91,.24);color:#79e6b7}
+.reader-favorite-button.is-active{color:#ff9ab4;border-color:rgba(255,120,160,.4);background:rgba(130,35,65,.2)}
+.reader-chapter-drawer{
+  position:sticky;bottom:64px;z-index:19;display:grid;gap:6px;
+  max-height:42vh;overflow:auto;margin:8px 0;padding:10px;
+  border:1px solid rgba(110,210,170,.2);border-radius:13px;
+  background:#111a18;box-shadow:0 -8px 24px rgba(0,0,0,.24)
+}
+.reader-drawer-chapter{
+  width:100%;padding:10px;border:1px solid rgba(255,255,255,.08);
+  border-radius:9px;background:#18211e;color:#dcebe3;text-align:left;
+  font:inherit;font-size:11px;cursor:pointer
+}
+.reader-drawer-chapter.is-current{border-color:rgba(78,215,157,.45);color:#77e2b3}
+@media(max-width:600px){
+ .reader-reading-toolbar{justify-content:space-around;gap:5px;margin-left:-16px;margin-right:-16px}
+ .reader-toolbar-button{padding:8px 9px;font-size:10px}
+}
