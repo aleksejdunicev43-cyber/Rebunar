@@ -66,6 +66,7 @@ async function loadCatalog(panel, key, openWork) {
 }
 
 async function showPublicWork(panel, workId, back) {
+  panel.closest('.reader-screen')?.classList.remove('reader-reading-mode');
   panel.replaceChildren(node('p', 'reader-loading', 'Открываем произведение…'));
   try {
     const [work, chapters] = await Promise.all([
@@ -104,6 +105,7 @@ async function showChapter(panel, chapterId, back) {
   panel.replaceChildren(node('p', 'reader-loading', 'Загружаем главу…'));
   try {
     const chapter = await api.get('/reader/chapters/' + chapterId);
+    panel.closest('.reader-screen')?.classList.add('reader-reading-mode');
     panel.replaceChildren(button('← Назад к произведению', 'reader-back-button', back));
     panel.append(node('span', 'reader-eyebrow', chapter.work_title));
     panel.append(node('h2', 'reader-reading-title', chapter.title));
@@ -311,7 +313,9 @@ export function renderReaderScreen(outlet, params = {}) {
   const refreshLanding=()=>{
     outlet.querySelector('.reader-studio-panel')?.remove();
     outlet.querySelector('.reader-hero h1').textContent='Что почитаем?';
+    outlet.querySelector('.reader-hero').hidden=false;
     outlet.querySelector('.reader-tabs').hidden=false;
+    outlet.classList.remove('reader-reading-mode');
     activateCategory(active);
     outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
   };
