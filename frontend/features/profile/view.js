@@ -25,7 +25,6 @@ export function renderProfileScreen(container, user, onLogout) {
         </button>
         <div class="profile-heading-main">
           <h1>Профиль</h1>
-          <span class="profile-status">Публичный профиль</span>
         </div>
 
         <button class="profile-settings-button" type="button"
@@ -59,7 +58,6 @@ export function renderProfileScreen(container, user, onLogout) {
           <div class="profile-quick-grid profile-quick-grid-right" aria-label="Разделы аккаунта">
             ${renderProfileQuickActions([
               ["users","Все пользователи","♙"], ["edit","Изменить профиль","⚙"],
-              ["settings","Настройки","⚙"], ["avatar","Сменить аватар","◉"],
               ["stats","Статистика","▥"], ["achievements","Достижения","✧"],
               ["privacy","Приватность","◇"], ["help","Помощь","?"]
             ])}
