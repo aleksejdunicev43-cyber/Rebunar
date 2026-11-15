@@ -468,7 +468,7 @@ def reader_create_chapter(work_id):
         return jsonify({"error": "Текст главы слишком большой (максимум 200 000 символов)"}), 413
     with connect() as con:
         work = con.execute(
-            "SELECT category FROM reader_works WHERE id = ? AND author_id = ? AND status = 'draft'",
+            "SELECT category FROM reader_works WHERE id = ? AND author_id = ? AND status IN ('draft', 'published')",
             (work_id, session["user_id"])
         ).fetchone()
         if not work:
@@ -565,7 +565,7 @@ def reader_publish_work(work_id):
     with connect() as con:
         work = con.execute("""
             SELECT category, cover_path FROM reader_works
-            WHERE id = ? AND author_id = ? AND status IN ('draft', 'published')
+            WHERE id = ? AND author_id = ? AND status = 'draft'
         """, (work_id, session["user_id"])).fetchone()
         if not work:
             return jsonify({"error": "Черновик не найден"}), 404
