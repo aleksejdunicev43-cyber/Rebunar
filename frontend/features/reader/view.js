@@ -278,6 +278,13 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       title.append(node('span','reader-status-tag',work.status === 'published' ? 'Опубликовано' : 'Черновик'));
       item.append(title);
       item.append(node('p','reader-muted',work.category === 'novel' ? 'Новелла' : 'Вебтун'));
+      let studioChapters = [];
+      let studioChaptersError = null;
+      try {
+        studioChapters = await api.get('/reader/studio/works/'+work.id+'/chapters');
+      } catch (error) {
+        studioChaptersError = error;
+      }
       const actions = node('div','reader-studio-actions');
       if (work.status === 'draft') actions.append(button('Загрузить обложку','reader-secondary-button',() => {
         const input=node('input','reader-field'); input.type='file'; input.accept='image/jpeg,image/png,image/webp';
@@ -290,6 +297,24 @@ async function loadStudioWorks(list,panel,refreshLanding) {
         input.click();
       }));
       actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding)));
+      if (
+        work.category === 'novel' &&
+        work.title.trim().toLocaleLowerCase() === 'когда тьма пробуждается' &&
+        !studioChapters.some(chapter => chapter.chapter_number === 2)
+      ) {
+        actions.append(button('Импортировать главу 2 из проекта','reader-secondary-button',async event => {
+          const importButton = event?.currentTarget;
+          if (importButton) importButton.disabled = true;
+          try {
+            const imported = await api.post('/reader/works/'+work.id+'/import-project-chapter',{chapter_number:2});
+            window.alert('Глава '+imported.chapter_number+' «'+imported.title+'» импортирована как черновик. Проверь текст перед публикацией.');
+            await loadStudioWorks(list,panel,refreshLanding);
+          } catch(error) {
+            window.alert(error.message);
+            if (importButton) importButton.disabled = false;
+          }
+        }));
+      }
       if (work.status === 'draft') actions.append(button('Опубликовать произведение','reader-primary-button',async () => {
         try { await api.post('/reader/works/'+work.id+'/publish',{}); await loadStudioWorks(list,panel,refreshLanding); }
         catch(error) { window.alert(error.message); }
@@ -307,7 +332,8 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       const chaptersBox = node('div','reader-studio-chapters');
       chaptersBox.append(node('h4','','Главы'));
       try {
-        const chapters = await api.get('/reader/studio/works/'+work.id+'/chapters');
+        if (studioChaptersError) throw studioChaptersError;
+        const chapters = studioChapters;
         if (!chapters.length) chaptersBox.append(node('p','reader-muted','Глав пока нет.'));
         chapters.forEach(chapter => {
           const row = node('div','reader-studio-chapter');
