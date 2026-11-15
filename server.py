@@ -510,11 +510,12 @@ def reader_upload_page(chapter_id):
     except (UnidentifiedImageError, OSError, ValueError):
         return jsonify({"error": "Файл не является корректным изображением"}), 400
     with connect() as con:
+        con.row_factory = sqlite3.Row
         chapter = con.execute("""
             SELECT c.work_id, w.category
             FROM reader_chapters c JOIN reader_works w ON w.id = c.work_id
             WHERE c.id = ? AND c.status = 'draft'
-              AND w.author_id = ? AND w.status = 'draft'
+              AND w.author_id = ?
         """, (chapter_id, session["user_id"])).fetchone()
         if not chapter or chapter["category"] != "webtoon":
             (folder / filename).unlink(missing_ok=True)
@@ -540,7 +541,7 @@ def reader_publish_chapter(chapter_id):
         chapter = con.execute("""
             SELECT c.*, w.category, w.id AS work_id
             FROM reader_chapters c JOIN reader_works w ON w.id = c.work_id
-            WHERE c.id = ? AND w.author_id = ? AND w.status = 'draft'
+            WHERE c.id = ? AND w.author_id = ?
         """, (chapter_id, session["user_id"])).fetchone()
         if not chapter:
             return jsonify({"error": "Глава не найдена"}), 404
@@ -564,7 +565,7 @@ def reader_publish_work(work_id):
     with connect() as con:
         work = con.execute("""
             SELECT category, cover_path FROM reader_works
-            WHERE id = ? AND author_id = ? AND status = 'draft'
+            WHERE id = ? AND author_id = ? AND status IN ('draft', 'published')
         """, (work_id, session["user_id"])).fetchone()
         if not work:
             return jsonify({"error": "Черновик не найден"}), 404
