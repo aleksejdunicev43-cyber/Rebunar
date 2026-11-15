@@ -1129,3 +1129,40 @@
 .profile-quick-icon svg{display:block;width:22px;height:22px}
 @media(max-width:760px){.profile-quick-icon svg{width:19px;height:19px}}
 @media(max-width:380px){.profile-quick-icon svg{width:17px;height:17px}}
+
+
+/* PROFILE POLISH — remove redundant cover and make room for avatar frames */
+.profile-cover { display: none !important; }
+.profile-quick-grid-right {
+  grid-template-rows: repeat(3, minmax(58px, auto));
+  align-content: center;
+}
+.profile-quick-center .profile-avatar-button {
+  overflow: visible !important;
+  z-index: 2;
+}
+.profile-quick-center {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .profile-quick-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(108px, .82fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .profile-quick-center .profile-avatar-button {
+    width: clamp(88px, 23vw, 124px);
+    height: clamp(88px, 23vw, 124px);
+  }
+}
+@media (max-width: 380px) {
+  .profile-quick-layout {
+    grid-template-columns: minmax(0, 1fr) 88px minmax(0, 1fr);
+    gap: 5px;
+  }
+  .profile-quick-center .profile-avatar-button {
+    width: 84px;
+    height: 84px;
+  }
+}
