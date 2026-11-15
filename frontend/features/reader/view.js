@@ -134,7 +134,9 @@ async function showChapter(panel, chapterId, back) {
       drawer.setAttribute('aria-label', 'Список глав');
       chapters.forEach(item => {
         const itemProgress = progress.find(p => p.chapter_id === item.id);
-        const label = (itemProgress?.is_read ? '✓ ' : '') + 'Глава ' + item.chapter_number + ' · ' + item.title + (itemProgress?.is_favorite ? '  ♥' : '');
+        const readMark = itemProgress?.is_read ? '✓ Прочитана' : '○ Не прочитана';
+        const favoriteMark = itemProgress?.is_favorite ? '♥ В избранном' : '♡ Не в избранном';
+        const label = 'Глава ' + item.chapter_number + ' · ' + item.title + '   ' + readMark + '   ' + favoriteMark;
         drawer.append(button(label, 'reader-drawer-chapter' + (item.id === chapterId ? ' is-current' : ''), () => showChapter(panel, item.id, back)));
       });
       panel.append(drawer);
