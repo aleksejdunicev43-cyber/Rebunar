@@ -239,6 +239,351 @@ def new_frontend_file(filename):
         return send_from_directory(build_dir, filename)
     return send_from_directory(BASE / "frontend", filename)
 
+
+# Reader content lives outside the application source directory. Deploying code
+# must never overwrite uploaded stories, covers, or webtoon pages.
+READER_STORAGE = BASE.parent / "reader_uploads"
+READER_MAX_IMAGE = 8 * 1024 * 1024
+
+def ensure_reader_tables():
+    with connect() as con:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS reader_works (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                author_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL DEFAULT '',
+                category TEXT NOT NULL CHECK(category IN ('novel', 'webtoon')),
+                cover_path TEXT,
+                status TEXT NOT NULL DEFAULT 'draft'
+                    CHECK(status IN ('draft', 'published', 'hidden')),
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                published_at TEXT
+            )
+        """)
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS reader_chapters (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                work_id INTEGER NOT NULL,
+                chapter_number INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'draft'
+                    CHECK(status IN ('draft', 'published')),
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                published_at TEXT,
+                UNIQUE(work_id, chapter_number)
+            )
+        """)
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS reader_pages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chapter_id INTEGER NOT NULL,
+                page_number INTEGER NOT NULL,
+                image_path TEXT NOT NULL,
+                UNIQUE(chapter_id, page_number)
+            )
+        """)
+        con.execute("CREATE INDEX IF NOT EXISTS idx_reader_works_public ON reader_works(status, category, published_at)")
+        con.execute("CREATE INDEX IF NOT EXISTS idx_reader_chapters_work ON reader_chapters(work_id, chapter_number)")
+
+def reader_user_required():
+    if not session.get("user_id"):
+        return jsonify({"error": "Войди в аккаунт, чтобы пользоваться студией автора"}), 401
+    return None
+
+def reader_work_dict(row):
+    return {
+        "id": row["id"], "title": row["title"],
+        "description": row["description"] or "",
+        "category": row["category"], "cover_url": row["cover_path"] or "",
+        "status": row["status"], "author": row["author_name"],
+        "author_id": row["author_id"], "created_at": row["created_at"]
+    }
+
+@app.get("/reader-media/<path:filename>")
+def reader_media(filename):
+    # send_from_directory prevents path traversal outside the persistent media folder.
+    return send_from_directory(READER_STORAGE, filename)
+
+@app.get("/api/reader/works")
+def reader_public_works():
+    ensure_reader_tables()
+    category = request.args.get("category", "").strip()
+    if category and category not in ("novel", "webtoon"):
+        return jsonify({"error": "Неизвестная категория"}), 400
+    sql = """
+        SELECT w.*, COALESCE(u.display_name, u.username) AS author_name
+        FROM reader_works w JOIN users u ON u.id = w.author_id
+        WHERE w.status = 'published'
+    """
+    params = []
+    if category:
+        sql += " AND w.category = ?"
+        params.append(category)
+    sql += " ORDER BY COALESCE(w.published_at, w.created_at) DESC LIMIT 100"
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        rows = con.execute(sql, params).fetchall()
+    return jsonify([reader_work_dict(row) for row in rows])
+
+@app.get("/api/reader/works/<int:work_id>")
+def reader_public_work(work_id):
+    ensure_reader_tables()
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        row = con.execute("""
+            SELECT w.*, COALESCE(u.display_name, u.username) AS author_name
+            FROM reader_works w JOIN users u ON u.id = w.author_id
+            WHERE w.id = ? AND w.status = 'published'
+        """, (work_id,)).fetchone()
+    if not row:
+        return jsonify({"error": "Произведение не найдено"}), 404
+    return jsonify(reader_work_dict(row))
+
+@app.get("/api/reader/works/<int:work_id>/chapters")
+def reader_public_chapters(work_id):
+    ensure_reader_tables()
+    with connect() as con:
+        work = con.execute("SELECT id FROM reader_works WHERE id = ? AND status = 'published'", (work_id,)).fetchone()
+        if not work:
+            return jsonify({"error": "Произведение не найдено"}), 404
+        con.row_factory = sqlite3.Row
+        rows = con.execute("""
+            SELECT id, chapter_number, title, published_at
+            FROM reader_chapters
+            WHERE work_id = ? AND status = 'published'
+            ORDER BY chapter_number ASC
+        """, (work_id,)).fetchall()
+    return jsonify([dict(row) for row in rows])
+
+@app.get("/api/reader/chapters/<int:chapter_id>")
+def reader_public_chapter(chapter_id):
+    ensure_reader_tables()
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        chapter = con.execute("""
+            SELECT c.*, w.category, w.title AS work_title, w.id AS work_id
+            FROM reader_chapters c JOIN reader_works w ON w.id = c.work_id
+            WHERE c.id = ? AND c.status = 'published' AND w.status = 'published'
+        """, (chapter_id,)).fetchone()
+        if not chapter:
+            return jsonify({"error": "Глава не найдена"}), 404
+        pages = con.execute(
+            "SELECT image_path FROM reader_pages WHERE chapter_id = ? ORDER BY page_number",
+            (chapter_id,)
+        ).fetchall()
+    return jsonify({
+        "id": chapter["id"], "work_id": chapter["work_id"],
+        "work_title": chapter["work_title"], "category": chapter["category"],
+        "chapter_number": chapter["chapter_number"], "title": chapter["title"],
+        "content": chapter["content"],
+        "pages": ["/reader-media/" + row["image_path"] for row in pages]
+    })
+
+@app.get("/api/reader/studio/works")
+def reader_studio_works():
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        rows = con.execute("""
+            SELECT w.*, COALESCE(u.display_name, u.username) AS author_name
+            FROM reader_works w JOIN users u ON u.id = w.author_id
+            WHERE w.author_id = ? ORDER BY w.updated_at DESC, w.id DESC
+        """, (session["user_id"],)).fetchall()
+    return jsonify([reader_work_dict(row) for row in rows])
+
+@app.post("/api/reader/works")
+def reader_create_work():
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    data = request.get_json(silent=True) or {}
+    title = str(data.get("title", "")).strip()[:160]
+    description = str(data.get("description", "")).strip()[:3000]
+    category = str(data.get("category", "")).strip()
+    if len(title) < 2:
+        return jsonify({"error": "Название должно содержать минимум 2 символа"}), 400
+    if category not in ("novel", "webtoon"):
+        return jsonify({"error": "Выбери тип произведения"}), 400
+    with connect() as con:
+        cur = con.execute("""
+            INSERT INTO reader_works (author_id, title, description, category)
+            VALUES (?, ?, ?, ?)
+        """, (session["user_id"], title, description, category))
+        work_id = cur.lastrowid
+    return jsonify({"ok": True, "id": work_id}), 201
+
+@app.post("/api/reader/works/<int:work_id>/cover")
+def reader_upload_cover(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    file = request.files.get("image")
+    if not file:
+        return jsonify({"error": "Выбери изображение обложки"}), 400
+    raw = file.read(READER_MAX_IMAGE + 1)
+    if len(raw) > READER_MAX_IMAGE:
+        return jsonify({"error": "Обложка должна быть не больше 8 МБ"}), 413
+    try:
+        image = Image.open(BytesIO(raw))
+        image = ImageOps.exif_transpose(image)
+        image.load()
+        if image.width * image.height > 40000000:
+            return jsonify({"error": "Слишком большое разрешение изображения"}), 400
+        image.thumbnail((1800, 2400))
+        if image.mode not in ("RGB", "RGBA"):
+            image = image.convert("RGB")
+        folder = READER_STORAGE / "covers"
+        folder.mkdir(parents=True, exist_ok=True)
+        filename = uuid.uuid4().hex + ".webp"
+        image.save(folder / filename, "WEBP", quality=86, method=6)
+    except (UnidentifiedImageError, OSError, ValueError):
+        return jsonify({"error": "Файл не является корректным изображением"}), 400
+    relative = "covers/" + filename
+    with connect() as con:
+        cur = con.execute("""
+            UPDATE reader_works SET cover_path = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND author_id = ? AND status = 'draft'
+        """, ("/reader-media/" + relative, work_id, session["user_id"]))
+        if not cur.rowcount:
+            (folder / filename).unlink(missing_ok=True)
+            return jsonify({"error": "Черновик не найден или уже опубликован"}), 404
+    return jsonify({"ok": True, "cover_url": "/reader-media/" + relative})
+
+@app.post("/api/reader/works/<int:work_id>/chapters")
+def reader_create_chapter(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    data = request.get_json(silent=True) or {}
+    title = str(data.get("title", "")).strip()[:160]
+    content = str(data.get("content", "")).strip()
+    if not title:
+        return jsonify({"error": "Укажи название главы"}), 400
+    if len(content) > 200000:
+        return jsonify({"error": "Текст главы слишком большой (максимум 200 000 символов)"}), 413
+    with connect() as con:
+        work = con.execute(
+            "SELECT category FROM reader_works WHERE id = ? AND author_id = ? AND status IN ('draft', 'published')",
+            (work_id, session["user_id"])
+        ).fetchone()
+        if not work:
+            return jsonify({"error": "Черновик произведения не найден"}), 404
+        number = con.execute(
+            "SELECT COALESCE(MAX(chapter_number), 0) + 1 FROM reader_chapters WHERE work_id = ?",
+            (work_id,)
+        ).fetchone()[0]
+        cur = con.execute("""
+            INSERT INTO reader_chapters (work_id, chapter_number, title, content)
+            VALUES (?, ?, ?, ?)
+        """, (work_id, number, title, content))
+        chapter_id = cur.lastrowid
+    return jsonify({"ok": True, "id": chapter_id, "chapter_number": number}), 201
+
+@app.post("/api/reader/chapters/<int:chapter_id>/pages")
+def reader_upload_page(chapter_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    file = request.files.get("image")
+    if not file:
+        return jsonify({"error": "Выбери страницу вебтуна"}), 400
+    raw = file.read(READER_MAX_IMAGE + 1)
+    if len(raw) > READER_MAX_IMAGE:
+        return jsonify({"error": "Одна страница должна быть не больше 8 МБ"}), 413
+    try:
+        image = Image.open(BytesIO(raw))
+        image = ImageOps.exif_transpose(image)
+        image.load()
+        if image.width * image.height > 40000000:
+            return jsonify({"error": "Слишком большое разрешение изображения"}), 400
+        image.thumbnail((2400, 12000))
+        image = image.convert("RGB")
+        folder = READER_STORAGE / "webtoons"
+        folder.mkdir(parents=True, exist_ok=True)
+        filename = uuid.uuid4().hex + ".webp"
+        image.save(folder / filename, "WEBP", quality=88, method=6)
+    except (UnidentifiedImageError, OSError, ValueError):
+        return jsonify({"error": "Файл не является корректным изображением"}), 400
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        chapter = con.execute("""
+            SELECT c.work_id, w.category
+            FROM reader_chapters c JOIN reader_works w ON w.id = c.work_id
+            WHERE c.id = ? AND c.status = 'draft'
+              AND w.author_id = ?
+        """, (chapter_id, session["user_id"])).fetchone()
+        if not chapter or chapter["category"] != "webtoon":
+            (folder / filename).unlink(missing_ok=True)
+            return jsonify({"error": "Черновик вебтуна не найден"}), 404
+        number = con.execute(
+            "SELECT COALESCE(MAX(page_number), 0) + 1 FROM reader_pages WHERE chapter_id = ?",
+            (chapter_id,)
+        ).fetchone()[0]
+        relative = "webtoons/" + filename
+        con.execute(
+            "INSERT INTO reader_pages (chapter_id, page_number, image_path) VALUES (?, ?, ?)",
+            (chapter_id, number, relative)
+        )
+    return jsonify({"ok": True, "page_number": number, "image_url": "/reader-media/" + relative})
+
+@app.post("/api/reader/chapters/<int:chapter_id>/publish")
+def reader_publish_chapter(chapter_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    with connect() as con:
+        con.row_factory = sqlite3.Row
+        chapter = con.execute("""
+            SELECT c.*, w.category, w.id AS work_id
+            FROM reader_chapters c JOIN reader_works w ON w.id = c.work_id
+            WHERE c.id = ? AND w.author_id = ?
+        """, (chapter_id, session["user_id"])).fetchone()
+        if not chapter:
+            return jsonify({"error": "Глава не найдена"}), 404
+        if chapter["category"] == "novel" and not chapter["content"].strip():
+            return jsonify({"error": "Добавь текст главы перед публикацией"}), 400
+        if chapter["category"] == "webtoon":
+            pages = con.execute("SELECT COUNT(*) FROM reader_pages WHERE chapter_id = ?", (chapter_id,)).fetchone()[0]
+            if not pages:
+                return jsonify({"error": "Добавь хотя бы одну страницу вебтуна"}), 400
+        con.execute("""
+            UPDATE reader_chapters SET status = 'published', published_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (chapter_id,))
+    return jsonify({"ok": True})
+
+@app.post("/api/reader/works/<int:work_id>/publish")
+def reader_publish_work(work_id):
+    auth = reader_user_required()
+    if auth: return auth
+    ensure_reader_tables()
+    with connect() as con:
+        work = con.execute("""
+            SELECT category, cover_path FROM reader_works
+            WHERE id = ? AND author_id = ? AND status = 'draft'
+        """, (work_id, session["user_id"])).fetchone()
+        if not work:
+            return jsonify({"error": "Черновик не найден"}), 404
+        if not work[1]:
+            return jsonify({"error": "Сначала добавь обложку произведения"}), 400
+        chapters = con.execute("""
+            SELECT COUNT(*) FROM reader_chapters
+            WHERE work_id = ? AND status = 'published'
+        """, (work_id,)).fetchone()[0]
+        if not chapters:
+            return jsonify({"error": "Сначала опубликуй хотя бы одну главу"}), 400
+        con.execute("""
+            UPDATE reader_works SET status = 'published',
+                published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """, (work_id,))
+    return jsonify({"ok": True})
+
 @app.get("/api/statistics/summary")
 def statistics_summary():
     with connect() as con:

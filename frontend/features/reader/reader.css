@@ -24,3 +24,57 @@
 .reader-footer p{margin:0;color:#7f8c86;font-size:11px;letter-spacing:0}
 @media(max-width:600px){.reader-tabs{gap:5px}.reader-tab{gap:7px;padding:9px 6px;font-size:12px}.reader-category-heading{align-items:flex-start}.reader-category-mark{flex-basis:54px;width:54px;height:54px;border-radius:14px;font-size:21px}.reader-category-panel{min-height:350px}.reader-footer{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.reader-tab{transition:none}}
+
+
+.reader-author-cta{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:18px 0;padding:22px clamp(18px,3vw,28px);border:1px solid rgba(74,210,159,.22);border-radius:18px;background:linear-gradient(115deg,rgba(27,100,75,.26),rgba(17,24,23,.96))}
+.reader-author-cta h2{margin:7px 0 5px;font-size:clamp(18px,3vw,24px);letter-spacing:-.025em}
+.reader-author-cta p{margin:0;color:#a5b0ac;font-size:12px;line-height:1.65}
+.reader-author-button,.reader-primary-button{min-height:43px;padding:11px 18px;border:1px solid rgba(91,224,170,.42);border-radius:11px;background:linear-gradient(135deg,#218b67,#176347);color:#f1fff8;font:inherit;font-size:12px;font-weight:850;cursor:pointer}
+.reader-author-button{flex:0 0 auto}
+.reader-primary-button:disabled{opacity:.55;cursor:wait}
+.reader-category-panel{min-height:260px}
+.reader-work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px;margin-top:22px}
+.reader-work-card{display:flex;min-width:0;flex-direction:column;overflow:hidden;padding:0;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:#151c1b;color:#eaf4ef;text-align:left;cursor:pointer;transition:border-color .16s,transform .16s}
+.reader-work-card:hover{transform:translateY(-2px);border-color:rgba(77,211,157,.42)}
+.reader-work-cover{display:block;width:100%;height:220px;object-fit:cover;background:#202a26}
+.reader-work-cover-empty{display:grid;place-items:center;color:#6f9b87;font-size:13px;font-weight:900;letter-spacing:.18em}
+.reader-work-info{display:flex;flex-direction:column;gap:6px;padding:12px}
+.reader-work-info strong{font-size:14px;line-height:1.35}
+.reader-work-info small,.reader-muted{color:#899991;font-size:11px}
+.reader-work-description{display:-webkit-box;overflow:hidden;color:#a5b0ac;font-size:11px;line-height:1.5;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.reader-loading,.reader-feedback{padding:14px 0;color:#a5b0ac;font-size:13px}
+.reader-feedback.is-error{color:#ff9c9c}
+.reader-detail-top{margin-bottom:20px}
+.reader-back-button,.reader-secondary-button{min-height:38px;padding:9px 13px;border:1px solid rgba(255,255,255,.13);border-radius:10px;background:rgba(255,255,255,.035);color:#dce8e2;font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.reader-detail-heading{display:flex;gap:20px;align-items:flex-start;margin-bottom:24px}
+.reader-detail-cover{width:130px;max-height:185px;object-fit:cover;border-radius:12px}
+.reader-detail-info h2{margin:7px 0;font-size:clamp(22px,4vw,30px)}
+.reader-detail-info p{color:#aab5b0;font-size:13px;line-height:1.65}
+.reader-detail-info small{color:#7f9188}
+.reader-chapters-title{margin:22px 0 12px}
+.reader-chapter-link{display:block;width:100%;margin:8px 0;padding:14px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:#151c1b;color:#e7f2ec;text-align:left;font:inherit;font-size:13px;cursor:pointer}
+.reader-reading-title{margin:12px 0 24px;font-size:clamp(23px,4vw,32px)}
+.reader-prose{max-width:760px;margin:0 auto;color:#e1e9e4;font-size:16px;line-height:1.95;white-space:pre-wrap;overflow-wrap:anywhere}
+.reader-webtoon-pages{display:flex;max-width:850px;flex-direction:column;gap:0;margin:0 auto}
+.reader-webtoon-pages img{display:block;width:100%;height:auto}
+.reader-studio-panel{margin:18px 0;padding:clamp(18px,3vw,28px);border:1px solid rgba(75,210,158,.2);border-radius:18px;background:linear-gradient(145deg,#151d1b,#101515)}
+.reader-studio-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+.reader-studio-heading h2{margin:7px 0;font-size:26px}
+.reader-studio-heading p{margin:0;color:#9eaaa4;font-size:12px;line-height:1.6}
+.reader-create-form{display:grid;gap:11px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.13)}
+.reader-create-form h3,.reader-studio-works h3{margin:0 0 5px;font-size:16px}
+.reader-field{width:100%;min-width:0;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;outline:none;background:#0e1413;color:#e8f2ed;font:inherit;font-size:13px}
+.reader-field:focus{border-color:rgba(77,211,157,.55)}
+.reader-field::placeholder{color:#6f7f77}
+.reader-field[type=file]{padding:8px;font-size:11px}
+.reader-upload-label{display:grid;gap:8px;color:#9eaaa4;font-size:11px}
+.reader-studio-works{display:grid;gap:12px;margin-top:24px}
+.reader-studio-work{padding:15px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.025)}
+.reader-studio-work-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reader-studio-work-title strong{font-size:14px}
+.reader-status-tag{padding:5px 8px;border:1px solid rgba(255,255,255,.1);border-radius:99px;color:#9db0a6;font-size:9px;font-weight:800}
+.reader-studio-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.reader-chapter-editor{display:grid;gap:10px;margin-top:14px;padding:14px;border:1px solid rgba(75,210,158,.16);border-radius:12px;background:#101615}
+.reader-chapter-editor h4{margin:0;font-size:14px}
+.reader-studio-work .reader-muted{margin:7px 0 0}
+@media(max-width:600px){.reader-author-cta{align-items:flex-start;flex-direction:column}.reader-author-button{width:100%}.reader-work-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.reader-work-cover{height:190px}.reader-detail-heading{gap:13px}.reader-detail-cover{width:95px;max-height:145px}.reader-studio-heading{flex-direction:column}.reader-studio-heading>.reader-back-button{width:100%}.reader-studio-actions>*{flex:1}.reader-prose{font-size:15px;line-height:1.85}}
