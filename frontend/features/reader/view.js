@@ -38,7 +38,7 @@ async function loadCatalog(panel, key, openWork) {
       const empty = node('div', 'reader-empty-state');
       empty.append(node('span', 'reader-empty-icon', key === 'novels' ? '📖' : '▥'));
       empty.append(node('h3', '', 'Пока здесь тихо'));
-      empty.append(node('p', '', 'Стань первым автором — опубликуй свою историю в Rebunar.'));
+      empty.append(node('p', '', 'Здесь пока нет произведений.'));
       panel.append(empty);
       return;
     }
@@ -131,8 +131,8 @@ async function renderStudio(panel, refreshLanding) {
   header.append(node('div', '', ''));
   header.firstChild.append(node('span', 'reader-eyebrow', 'REBUNAR / CREATOR STUDIO'));
   header.firstChild.append(node('h2', '', 'Моя студия'));
-  header.firstChild.append(node('p', '', 'Создавай произведения, добавляй главы и публикуй их для читателей.'));
-  header.append(button('← В Reader', 'reader-back-button', refreshLanding));
+  header.firstChild.append(node('p', '', 'Управляй произведениями и главами.'));
+  header.append(button('← Назад в Reader', 'reader-back-button', refreshLanding));
   panel.append(header);
 
   const form = node('form', 'reader-create-form');
@@ -200,7 +200,7 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       }));
       actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding)));
       if (work.status === 'draft') actions.append(button('Опубликовать произведение','reader-primary-button',async () => {
-        try { await api.post('/reader/works/'+work.id+'/publish',{}); const cta=document.querySelector('#reader-author-open'); if(cta) cta.textContent='Моя студия'; await loadStudioWorks(list,panel,refreshLanding); }
+        try { await api.post('/reader/works/'+work.id+'/publish',{}); await loadStudioWorks(list,panel,refreshLanding); }
         catch(error) { window.alert(error.message); }
       }));
       item.append(actions); list.append(item);
@@ -249,24 +249,16 @@ function renderChapterEditor(container,work,refreshLanding) {
 
 export function renderReaderScreen(outlet, params = {}) {
   const initialCategory = Object.hasOwn(categories, params.category) ? params.category : 'novels';
-  outlet.innerHTML = `
-    <section class="screen reader-screen">
-      <header class="reader-hero">
-        <span class="reader-eyebrow">REBUNAR / ЧИТАТЬ</span>
-        <h1>Reader</h1>
-        <p>Открывай новые истории, знакомься с героями и возвращайся к любимым мирам.</p>
-      </header>
-      <section class="reader-author-cta">
-        <div><span class="reader-eyebrow">ТВОЯ ИСТОРИЯ МОЖЕТ НАЧАТЬСЯ ЗДЕСЬ</span><h2>Хочешь стать автором?</h2><p>Создавай произведения, загружай главы и находи своих читателей.</p></div>
-        <button class="reader-author-button" type="button" id="reader-author-open">Стать автором</button>
-      </section>
-      <div class="reader-tabs" role="tablist" aria-label="Категории чтения">
-        <button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false"><span>Aa</span><span>Новеллы</span></button>
-        <button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false"><span>▤</span><span>Вебтуны</span></button>
-      </div>
-      <section class="reader-category-panel" id="reader-category-panel" aria-live="polite"></section>
-      <footer class="reader-footer"><span>REBUNAR READER</span><p>Истории, к которым хочется возвращаться.</p></footer>
-    </section>`;
+  outlet.innerHTML = [
+    '<section class="screen reader-screen">',
+    '<header class="reader-hero"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Что почитаем?</h1></header>',
+    '<div class="reader-tabs" role="tablist" aria-label="Категории чтения">',
+      '<button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">Aa</span><span class="reader-tab-copy"><strong>Новеллы</strong><small>Текстовые истории</small></span></button>',
+      '<button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">▤</span><span class="reader-tab-copy"><strong>Вебтуны</strong><small>Истории в картинках</small></span></button>',
+    '</div>',
+    '<section class="reader-category-panel" id="reader-category-panel" aria-live="polite"></section>',
+    '</section>'
+  ].join('');
   const panel=outlet.querySelector('#reader-category-panel');
   const tabs=[...outlet.querySelectorAll('[data-reader-tab]')];
   let active='novels';
@@ -276,31 +268,23 @@ export function renderReaderScreen(outlet, params = {}) {
     tabs.forEach(tab=>{const on=tab.dataset.readerTab===key;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;});
     panel.replaceChildren();
     const heading=node('div','reader-category-heading');
-    heading.append(node('div','',''));
-    heading.firstChild.append(node('span','reader-eyebrow',key==='novels'?'ТЕКСТОВЫЕ ИСТОРИИ':'ИСТОРИИ В КАРТИНКАХ'));
-    heading.firstChild.append(node('h2','',categories[key].title));
-    heading.firstChild.append(node('p','',categories[key].description));
+    heading.append(node('h2','',categories[key].title));
     panel.append(heading);
-    const catalog = node('div','reader-catalog-list');
+    const catalog=node('div','reader-catalog-list');
     panel.append(catalog);
     loadCatalog(catalog,key,id=>showPublicWork(panel,id,()=>activateCategory(key)));
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
-  const refreshLanding=()=>{outlet.querySelector('.reader-studio-panel')?.remove();outlet.querySelector('.reader-author-cta')?.scrollIntoView({behavior:'smooth',block:'start'});activateCategory(active);};
-  outlet.querySelector('#reader-author-open').addEventListener('click',async()=>{
-    const existingStudio=outlet.querySelector('.reader-studio-panel');
-    if(existingStudio){existingStudio.scrollIntoView({behavior:'smooth',block:'start'});return;}
-    try {
-      const works=await api.get('/reader/studio/works');
-      const cta=outlet.querySelector('.reader-author-cta');
-      const studio=node('section','reader-studio-panel');
-      cta.after(studio);
-      outlet.querySelector('#reader-author-open').textContent=works.some(w=>w.status==='published')?'Моя студия':'Стать автором';
-      await renderStudio(studio,refreshLanding);
-      studio.scrollIntoView({behavior:'smooth',block:'start'});
-    } catch(error) {
-      window.alert(error.message==='Не удалось подключиться к серверу'?error.message:'Войди в аккаунт Rebunar, чтобы открыть студию автора.');
-    }
-  });
-  activateCategory(initialCategory);
+  const refreshLanding=()=>{
+    outlet.querySelector('.reader-studio-panel')?.remove();
+    activateCategory(active);
+    outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  if(params.mode==='studio'){
+    const studio=node('section','reader-studio-panel');
+    panel.append(studio);
+    renderStudio(studio,refreshLanding);
+  }else{
+    activateCategory(initialCategory);
+  }
 }
