@@ -16,6 +16,10 @@ function node(tag, className, text) {
   return el;
 }
 
+function chapterDisplayTitle(chapter) {
+  return String(chapter?.title || '').replace(/^\s*Глава\s*\d+\s*[.·:—-]?\s*/i, '').trim();
+}
+
 function message(target, text, error = false) {
   target.textContent = text;
   target.classList.toggle('is-error', error);
@@ -92,7 +96,7 @@ async function showPublicWork(panel, workId, back) {
     panel.append(node('h3', 'reader-chapters-title', 'Главы'));
     if (!chapters.length) panel.append(node('p', 'reader-muted', 'Главы скоро появятся.'));
     chapters.forEach(chapter => panel.append(button(
-      'Глава ' + chapter.chapter_number + ' · ' + chapter.title,
+      'Глава ' + chapter.chapter_number + ' · ' + chapterDisplayTitle(chapter),
       'reader-chapter-link',
       () => showChapter(panel, chapter.id, () => showPublicWork(panel, workId, back))
     )));
@@ -119,7 +123,7 @@ async function showChapter(panel, chapterId, back) {
     top.append(button('← Произведение', 'reader-back-button reader-reading-back', back));
     top.append(node('span', 'reader-eyebrow', chapter.work_title));
     panel.append(top);
-    panel.append(node('h2', 'reader-reading-title', chapter.title));
+    panel.append(node('h2', 'reader-reading-title', chapterDisplayTitle(chapter)));
 
     const toolbar = node('div', 'reader-reading-toolbar');
     const listButton = button('☷', 'reader-toolbar-button reader-toolbar-icon', () => {
@@ -136,7 +140,7 @@ async function showChapter(panel, chapterId, back) {
         const itemProgress = progress.find(p => p.chapter_id === item.id);
         const readMark = itemProgress?.is_read ? '✓ Прочитана' : '○ Не прочитана';
         const favoriteMark = itemProgress?.is_favorite ? '♥ В избранном' : '♡ Не в избранном';
-        const label = 'Глава ' + item.chapter_number + ' · ' + item.title + '   ' + readMark + '   ' + favoriteMark;
+        const label = 'Глава ' + item.chapter_number + ' · ' + chapterDisplayTitle(item) + '   ' + readMark + '   ' + favoriteMark;
         drawer.append(button(label, 'reader-drawer-chapter' + (item.id === chapterId ? ' is-current' : ''), () => showChapter(panel, item.id, back)));
       });
       panel.append(drawer);
@@ -338,7 +342,7 @@ async function loadStudioWorks(list,panel,refreshLanding) {
         chapters.forEach(chapter => {
           const row = node('div','reader-studio-chapter');
           const chapterInfo = node('div','reader-studio-chapter-info');
-          chapterInfo.append(node('strong','', 'Глава '+chapter.chapter_number+' · '+chapter.title));
+          chapterInfo.append(node('strong','', 'Глава '+chapter.chapter_number+' · '+chapterDisplayTitle(chapter)));
           chapterInfo.append(node('small','',chapter.status === 'published' ? 'Опубликована' : 'Черновик'));
           row.append(chapterInfo);
           const chapterActions = node('div','reader-studio-chapter-actions');
