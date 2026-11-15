@@ -48,6 +48,7 @@ jobs:
           python -m pip install requests
           python - <<'PY'
           import os
+          import re
           import time
           from pathlib import Path
           from urllib.parse import quote
@@ -83,6 +84,42 @@ jobs:
                   f"{cleanup_response.text[:500]}"
               )
           print("Removed legacy circular avatar frame assets (or confirmed they were already absent).")
+
+          # Free quota by removing only obsolete, hash-named build assets that
+          # are not part of this exact build. Keep directories and user data.
+          current_assets = {
+              file.relative_to(build).as_posix()
+              for file in files
+              if file.relative_to(build).parts[0] == "assets"
+          }
+          assets_remote = f"/home/{username}/rebunar_next/frontend/build/assets/"
+          assets_url = base + quote(assets_remote, safe="/")
+          assets_response = requests.get(assets_url, headers=headers, timeout=60)
+          if assets_response.status_code != 200:
+              raise SystemExit(
+                  f"Could not inspect existing build assets: HTTP {assets_response.status_code} "
+                  f"{assets_response.text[:500]}"
+              )
+          existing_assets = assets_response.json()
+          hashed_asset = re.compile(r".+-[A-Za-z0-9_-]{8,}\\.(?:js|css|wasm|woff2?|ttf|otf|svg|png|webp|jpe?g)$")
+          removed_assets = 0
+          for name, metadata in existing_assets.items():
+              if (
+                  metadata.get("type") == "file"
+                  and hashed_asset.fullmatch(name)
+                  and f"assets/{name}" not in current_assets
+              ):
+                  stale_path = assets_remote + name
+                  stale_url = base + quote(stale_path, safe="/")
+                  stale_response = requests.delete(stale_url, headers=headers, timeout=60)
+                  if stale_response.status_code not in (204, 404):
+                      raise SystemExit(
+                          f"Could not remove obsolete build asset {name}: "
+                          f"HTTP {stale_response.status_code} {stale_response.text[:300]}"
+                      )
+                  removed_assets += 1
+                  time.sleep(1.6)
+          print(f"Removed {removed_assets} obsolete hashed build assets; current build assets were preserved.")
 
           def upload_with_retry(file, relative, url, index, total):
               max_attempts = 6
