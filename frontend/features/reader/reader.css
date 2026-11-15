@@ -249,3 +249,88 @@
 
 .reader-screen.reader-reading-mode.reader-controls-collapsed .reader-reading-toolbar{transform:translateY(115%);opacity:0;pointer-events:none}
 .reader-screen.reader-reading-mode .reader-reading-toolbar{transition:transform .2s ease,opacity .2s ease}
+
+
+/* Chapter mode: replace the app's bottom navigation with reader controls. */
+.reader-screen.reader-reading-mode > .reader-category-panel {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+.reader-screen.reader-reading-mode .reader-reading-toolbar {
+  position: fixed;
+  z-index: 60;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  gap: 5px;
+  width: 100%;
+  margin: 0;
+  padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(110,210,170,.28);
+  border-radius: 0;
+  background: rgba(13,20,18,.98);
+  box-shadow: 0 -8px 26px rgba(0,0,0,.28);
+  backdrop-filter: blur(16px);
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+.reader-screen.reader-reading-mode .reader-toolbar-button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 43px;
+  padding: 7px 5px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.reader-screen.reader-reading-mode .reader-toolbar-arrow {
+  min-width: 0;
+  font-size: 11px;
+}
+.reader-screen.reader-reading-mode .reader-toolbar-button:disabled {
+  opacity: .28;
+}
+.reader-screen.reader-reading-mode .reader-chapter-drawer {
+  position: fixed;
+  z-index: 59;
+  right: 10px;
+  bottom: calc(68px + env(safe-area-inset-bottom));
+  left: 10px;
+  max-height: min(48dvh, 420px);
+  margin: 0;
+  overflow: auto;
+  box-shadow: 0 -8px 28px rgba(0,0,0,.4);
+}
+.reader-screen.reader-reading-mode .reader-reading-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reader-screen.reader-reading-mode .reader-reading-back {
+  flex: 0 0 auto;
+}
+.reader-screen.reader-reading-mode .reader-reading-top .reader-eyebrow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .app-shell:has(.reader-screen.reader-reading-mode) > .mobile-navigation {
+    display: none !important;
+  }
+  .reader-screen.reader-reading-mode > .reader-category-panel {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+  }
+  .reader-screen.reader-reading-mode .reader-reading-toolbar {
+    gap: 3px;
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+  .reader-screen.reader-reading-mode .reader-toolbar-button {
+    min-height: 45px;
+    padding: 6px 3px;
+    font-size: 10px;
+  }
+}
