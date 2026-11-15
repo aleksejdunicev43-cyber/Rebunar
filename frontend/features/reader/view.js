@@ -116,6 +116,7 @@ async function showChapter(panel, chapterId, back) {
     panel.replaceChildren();
 
     const top = node('div', 'reader-detail-top reader-reading-top');
+    top.append(button('← Произведение', 'reader-back-button reader-reading-back', back));
     top.append(node('span', 'reader-eyebrow', chapter.work_title));
     panel.append(top);
     panel.append(node('h2', 'reader-reading-title', chapter.title));
@@ -130,21 +131,27 @@ async function showChapter(panel, chapterId, back) {
         const label = (itemProgress?.is_read ? '✓ ' : '') + 'Глава ' + item.chapter_number + ' · ' + item.title + (itemProgress?.is_favorite ? '  ♥' : '');
         drawer.append(button(label, 'reader-drawer-chapter' + (item.id === chapterId ? ' is-current' : ''), () => showChapter(panel, item.id, back)));
       });
-      toolbar.after(drawer);
+      panel.append(drawer);
     });
     toolbar.append(listButton);
     toolbar.append(button('← Произведение', 'reader-toolbar-button', back));
-    toolbar.append(button('←', 'reader-toolbar-button reader-toolbar-arrow', () => {
+    const previousButton = button('← Назад', 'reader-toolbar-button reader-toolbar-arrow', () => {
       if (index > 0) showChapter(panel, chapters[index - 1].id, back);
-    }));
-    toolbar.append(button('→', 'reader-toolbar-button reader-toolbar-arrow', () => {
+    });
+    previousButton.disabled = index <= 0;
+    previousButton.setAttribute('aria-label', 'Предыдущая глава');
+    toolbar.append(previousButton);
+    const nextButton = button('Вперёд →', 'reader-toolbar-button reader-toolbar-arrow', () => {
       if (index >= 0 && index < chapters.length - 1) showChapter(panel, chapters[index + 1].id, back);
-    }));
-    const favoriteButton = button(state.is_favorite ? '♥ В избранном' : '♡ В избранное', 'reader-toolbar-button reader-favorite-button' + (state.is_favorite ? ' is-active' : ''), async () => {
+    });
+    nextButton.disabled = index < 0 || index >= chapters.length - 1;
+    nextButton.setAttribute('aria-label', 'Следующая глава');
+    toolbar.append(nextButton);
+    const favoriteButton = button(state.is_favorite ? '♥ Понравилось' : '♡ Нравится', 'reader-toolbar-button reader-favorite-button' + (state.is_favorite ? ' is-active' : ''), async () => {
       try {
         const updated = await api.post('/reader/chapters/' + chapterId + '/progress', { is_favorite: !state.is_favorite });
         state.is_favorite = updated.is_favorite;
-        favoriteButton.textContent = state.is_favorite ? '♥ В избранном' : '♡ В избранное';
+        favoriteButton.textContent = state.is_favorite ? '♥ Понравилось' : '♡ Нравится';
         favoriteButton.classList.toggle('is-active', state.is_favorite);
       } catch (error) { window.alert(error.message); }
     });
@@ -158,13 +165,6 @@ async function showChapter(panel, chapterId, back) {
       } catch (error) { window.alert(error.message); }
     });
     toolbar.append(readButton);
-    panel.append(toolbar);
-    panel.addEventListener('click', event => {
-      if (event.target.closest('.reader-prose, .reader-webtoon-pages, .reader-reading-title')) {
-        screen?.classList.toggle('reader-controls-collapsed');
-      }
-    });
-
     if (chapter.category === 'novel') {
       const text = node('article', 'reader-prose');
       text.textContent = chapter.content;
@@ -178,6 +178,8 @@ async function showChapter(panel, chapterId, back) {
       });
       panel.append(pages);
     }
+    panel.append(toolbar);
+    panel.scrollTop = 0;
   } catch (error) {
     panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
   }
