@@ -180,7 +180,7 @@ async function loadStudioWorks(list,panel,refreshLanding) {
     const works = await api.get('/reader/studio/works');
     list.replaceChildren(node('h3','','Мои произведения'));
     if (!works.length) list.append(node('p','reader-muted','Пока нет произведений. Создай первое выше.'));
-    works.forEach(work => {
+    for (const work of works) {
       const item = node('section','reader-studio-work');
       const title = node('div','reader-studio-work-title');
       title.append(node('strong','',work.title));
@@ -203,8 +203,41 @@ async function loadStudioWorks(list,panel,refreshLanding) {
         try { await api.post('/reader/works/'+work.id+'/publish',{}); await loadStudioWorks(list,panel,refreshLanding); }
         catch(error) { window.alert(error.message); }
       }));
-      item.append(actions); list.append(item);
-    });
+      actions.append(button('Удалить произведение','reader-danger-button',async () => {
+        const confirmed = window.confirm('Удалить произведение «'+work.title+'» вместе со всеми главами и изображениями? Это действие нельзя отменить.');
+        if (!confirmed) return;
+        try {
+          await api.delete('/reader/works/'+work.id);
+          await loadStudioWorks(list,panel,refreshLanding);
+        } catch(error) { window.alert(error.message); }
+      }));
+      item.append(actions);
+
+      const chaptersBox = node('div','reader-studio-chapters');
+      chaptersBox.append(node('h4','','Главы'));
+      try {
+        const chapters = await api.get('/reader/studio/works/'+work.id+'/chapters');
+        if (!chapters.length) chaptersBox.append(node('p','reader-muted','Глав пока нет.'));
+        chapters.forEach(chapter => {
+          const row = node('div','reader-studio-chapter');
+          const chapterInfo = node('div','reader-studio-chapter-info');
+          chapterInfo.append(node('strong','', 'Глава '+chapter.chapter_number+' · '+chapter.title));
+          chapterInfo.append(node('small','',chapter.status === 'published' ? 'Опубликована' : 'Черновик'));
+          row.append(chapterInfo);
+          row.append(button('Удалить','reader-danger-button reader-danger-button-small',async () => {
+            const confirmed = window.confirm('Удалить главу «'+chapter.title+'»? Это действие нельзя отменить.');
+            if (!confirmed) return;
+            try { await api.delete('/reader/chapters/'+chapter.id); await loadStudioWorks(list,panel,refreshLanding); }
+            catch(error) { window.alert(error.message); }
+          }));
+          chaptersBox.append(row);
+        });
+      } catch(error) {
+        chaptersBox.append(node('p','reader-feedback is-error',error.message));
+      }
+      item.append(chaptersBox);
+      list.append(item);
+    }
   } catch(error) { list.append(node('p','reader-feedback is-error',error.message)); }
 }
 
