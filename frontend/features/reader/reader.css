@@ -546,3 +546,100 @@
  .reader-similar-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  .reader-work-tab{flex:1}
 }
+
+
+/* Work detail page: use the full mobile reading canvas and remove inherited card clipping. */
+.reader-screen.reader-detail-mode {
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:0;
+}
+.reader-screen.reader-detail-mode > .reader-category-panel {
+  width:100%;
+  min-height:0;
+  margin:0;
+  padding:14px clamp(14px,3vw,28px) 32px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.reader-screen.reader-detail-mode .reader-work-detail {
+  width:100%;
+  max-width:none;
+  margin:0;
+}
+.reader-screen.reader-detail-mode .reader-detail-art img {
+  width:100%;
+  height:100%;
+  max-height:none;
+  object-fit:cover;
+}
+.reader-screen.reader-detail-mode .reader-work-description {
+  display:block;
+  max-width:none;
+  overflow:visible;
+  -webkit-line-clamp:unset;
+  -webkit-box-orient:initial;
+  color:#c1cbc5;
+  font-size:15px;
+  line-height:1.85;
+  white-space:pre-wrap;
+}
+@media (max-width:760px) {
+  .app-layout:has(.reader-screen.reader-detail-mode) {
+    padding:0!important;
+    gap:0!important;
+  }
+  .main-content:has(.reader-screen.reader-detail-mode) {
+    min-height:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    overflow:hidden!important;
+  }
+  .main-content:has(.reader-screen.reader-detail-mode) #screen-outlet {
+    width:100%!important;
+    min-height:0!important;
+    padding:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  .reader-screen.reader-detail-mode {
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .reader-screen.reader-detail-mode > .reader-category-panel {
+    width:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:12px 14px 28px!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-hero {
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:15px!important;
+    margin-bottom:20px!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-art {
+    width:100%;
+    min-height:0!important;
+    max-height:none!important;
+    aspect-ratio:16/9!important;
+    border:0;
+    border-radius:12px;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info h2 {
+    margin:8px 0 10px;
+    font-size:clamp(26px,7vw,34px);
+  }
+  .reader-screen.reader-detail-mode .reader-work-tab-content {
+    padding:18px 2px 24px;
+  }
+}
