@@ -74,36 +74,91 @@ async function loadCatalog(panel, key, openWork) {
 }
 
 async function showPublicWork(panel, workId, back) {
-  panel.closest('.reader-screen')?.classList.remove('reader-reading-mode');
+  const screen = panel.closest('.reader-screen');
+  screen?.classList.remove('reader-reading-mode');
+  screen?.classList.add('reader-work-detail-mode');
   panel.replaceChildren(node('p', 'reader-loading', 'Открываем произведение…'));
   try {
-    const [work, chapters] = await Promise.all([
+    const [work, chapters, related] = await Promise.all([
       api.get('/reader/works/' + workId),
-      api.get('/reader/works/' + workId + '/chapters')
+      api.get('/reader/works/' + workId + '/chapters'),
+      api.get('/reader/works?category=' + (screen?.dataset.readerCategory === 'webtoons' ? 'webtoon' : 'novel')).catch(() => [])
     ]);
     panel.replaceChildren();
     const top = node('div', 'reader-detail-top');
     top.append(button('← К каталогу', 'reader-back-button', back));
     panel.append(top);
-    const heading = node('div', 'reader-detail-heading');
+
+    const hero = node('section', 'reader-work-detail-hero');
     if (work.cover_url) {
-      const img = node('img', 'reader-detail-cover');
-      img.src = work.cover_url; img.alt = 'Обложка: ' + work.title;
-      heading.append(img);
+      const img = node('img', 'reader-work-detail-art');
+      img.src = work.cover_url;
+      img.alt = 'Обложка: ' + work.title;
+      img.loading = 'eager';
+      hero.append(img);
     }
-    const info = node('div', 'reader-detail-info');
-    info.append(node('span', 'reader-eyebrow', work.category === 'novel' ? 'НОВЕЛЛА' : 'ВЕБТУН'));
-    info.append(node('h2', '', work.title));
-    info.append(node('p', '', work.description || 'Описание пока не добавлено.'));
-    info.append(node('small', '', 'Автор: ' + work.author));
-    heading.append(info); panel.append(heading);
-    panel.append(node('h3', 'reader-chapters-title', 'Главы'));
-    if (!chapters.length) panel.append(node('p', 'reader-muted', 'Главы скоро появятся.'));
-    chapters.forEach(chapter => panel.append(button(
+    hero.append(node('h1', 'reader-work-detail-title', work.title));
+    hero.append(node('p', 'reader-work-detail-meta', (work.category === 'novel' ? 'Новелла' : 'Вебтун') + ' · Автор: ' + work.author));
+    panel.append(hero);
+
+    const tabs = node('div', 'reader-work-detail-tabs');
+    tabs.setAttribute('role', 'tablist');
+    const content = node('section', 'reader-work-detail-content');
+    const descriptionTab = button('Описание', 'reader-work-detail-tab is-active', () => activateDetailTab('description'));
+    const chaptersTab = button('Главы', 'reader-work-detail-tab', () => activateDetailTab('chapters'));
+    descriptionTab.setAttribute('role', 'tab');
+    chaptersTab.setAttribute('role', 'tab');
+    tabs.append(descriptionTab, chaptersTab);
+    panel.append(tabs, content);
+
+    const description = node('div', 'reader-work-description-panel');
+    description.append(node('p', '', work.description || 'Описание пока не добавлено.'));
+    description.append(node('small', '', 'Автор: ' + work.author));
+    const chapterList = node('div', 'reader-work-chapters-panel');
+    chapterList.hidden = true;
+    chapterList.append(node('h3', '', 'Список глав'));
+    if (!chapters.length) chapterList.append(node('p', 'reader-muted', 'Главы скоро появятся.'));
+    chapters.forEach(chapter => chapterList.append(button(
       'Глава ' + chapter.chapter_number + ' · ' + chapterDisplayTitle(chapter),
       'reader-chapter-link',
       () => showChapter(panel, chapter.id, () => showPublicWork(panel, workId, back))
     )));
+    content.append(description, chapterList);
+
+    function activateDetailTab(name) {
+      const isDescription = name === 'description';
+      description.hidden = !isDescription;
+      chapterList.hidden = isDescription;
+      descriptionTab.classList.toggle('is-active', isDescription);
+      chaptersTab.classList.toggle('is-active', !isDescription);
+      descriptionTab.setAttribute('aria-selected', String(isDescription));
+      chaptersTab.setAttribute('aria-selected', String(!isDescription));
+    }
+
+    const similar = node('section', 'reader-similar-section');
+    similar.append(node('h2', '', 'Похожие истории'));
+    const similarWorks = related.filter(item => String(item.id) !== String(workId)).slice(0, 8);
+    if (!similarWorks.length) {
+      similar.append(node('p', 'reader-muted', 'Похожие истории скоро появятся.'));
+    } else {
+      const grid = node('div', 'reader-similar-grid');
+      similarWorks.forEach(item => {
+        const card = button('', 'reader-similar-card', () => showPublicWork(panel, item.id, back));
+        if (item.cover_url) {
+          const cover = node('img', '', '');
+          cover.src = item.cover_url;
+          cover.alt = 'Обложка: ' + item.title;
+          cover.loading = 'lazy';
+          card.append(cover);
+        }
+        card.append(node('strong', '', item.title));
+        grid.append(card);
+      });
+      similar.append(grid);
+    }
+    panel.append(similar);
+    const scrollArea = panel.closest('#screen-outlet');
+    if (scrollArea) scrollArea.scrollTop = 0;
   } catch (error) {
     panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
   }
@@ -456,6 +511,8 @@ export function renderReaderScreen(outlet, params = {}) {
   let active='novels';
   const activateCategory=key=>{
     if(!categories[key])return;
+    outlet.querySelector('.reader-screen')?.classList.remove('reader-work-detail-mode');
+    outlet.querySelector('.reader-screen')?.setAttribute('data-reader-category',key);
     active=key;
     tabs.forEach(tab=>{const on=tab.dataset.readerTab===key;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;});
     panel.replaceChildren();
