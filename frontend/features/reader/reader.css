@@ -643,3 +643,38 @@
     padding:18px 2px 24px;
   }
 }
+
+
+/* Individual novel artwork: portrait frame, preserve the complete source image. */
+.reader-screen.reader-detail-mode .reader-detail-art {
+  width:100%;
+  min-height:0!important;
+  max-height:none!important;
+  aspect-ratio:2 / 3!important;
+  overflow:hidden;
+  background:#101615;
+}
+.reader-screen.reader-detail-mode .reader-detail-art img,
+.reader-screen.reader-detail-mode .reader-detail-cover {
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+@media (max-width:760px) {
+  .reader-screen.reader-detail-mode .reader-detail-art {
+    width:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    aspect-ratio:2 / 3!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-art img,
+  .reader-screen.reader-detail-mode .reader-detail-cover {
+    width:100%!important;
+    height:100%!important;
+    max-height:none!important;
+    object-fit:contain!important;
+  }
+}
