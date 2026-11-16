@@ -506,8 +506,8 @@
   }
 }
 
-/* Novel catalog: artwork only, with the full cover visible */
-.reader-work-card-novel{background:transparent;border-color:rgba(255,255,255,.06)}
+/* Novel catalog: portrait artwork fills the entire card without letterboxing */
+.reader-work-card-novel{display:block;aspect-ratio:2/3;background:transparent;border-color:rgba(255,255,255,.06)}
 .reader-work-card-novel:hover{border-color:rgba(77,211,157,.42)}
-.reader-work-cover-novel{height:auto;aspect-ratio:2/3;object-fit:contain;background:transparent}
-@media(max-width:600px){.reader-work-cover-novel{height:auto;aspect-ratio:2/3;object-fit:contain}}
+.reader-work-cover-novel{display:block;width:100%;height:100%;aspect-ratio:2/3;object-fit:cover;object-position:center;background:transparent}
+@media(max-width:600px){.reader-work-card-novel{aspect-ratio:2/3}.reader-work-cover-novel{width:100%;height:100%;object-fit:cover}}
