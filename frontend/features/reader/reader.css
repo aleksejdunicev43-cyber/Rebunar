@@ -678,3 +678,27 @@
     object-fit:contain!important;
   }
 }
+
+
+/* Novel detail spacing: artwork sits close to the catalog button; title directly follows the art. */
+.reader-screen.reader-detail-mode .reader-detail-top {
+  margin-bottom:5px!important;
+}
+@media (max-width:760px) {
+  .reader-screen.reader-detail-mode .reader-detail-hero {
+    gap:0!important;
+    margin-bottom:16px!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info .reader-eyebrow {
+    display:none!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info h2 {
+    margin:0 0 5px!important;
+    padding:0!important;
+    line-height:1.15!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info small {
+    display:block;
+    margin:0!important;
+  }
+}
