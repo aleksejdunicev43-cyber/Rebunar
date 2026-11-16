@@ -74,37 +74,94 @@ async function loadCatalog(panel, key, openWork) {
 }
 
 async function showPublicWork(panel, workId, back) {
-  panel.closest('.reader-screen')?.classList.remove('reader-reading-mode');
+  const screen = panel.closest('.reader-screen');
+  screen?.classList.remove('reader-reading-mode');
+  screen?.classList.add('reader-detail-mode');
   panel.replaceChildren(node('p', 'reader-loading', 'Открываем произведение…'));
   try {
-    const [work, chapters] = await Promise.all([
+    const [work, chapters, catalog] = await Promise.all([
       api.get('/reader/works/' + workId),
-      api.get('/reader/works/' + workId + '/chapters')
+      api.get('/reader/works/' + workId + '/chapters'),
+      api.get('/reader/works?category=' + (panel.closest('.reader-screen')?.querySelector('[data-reader-tab="webtoons"].is-active') ? 'webtoon' : 'novel')).catch(() => [])
     ]);
     panel.replaceChildren();
+    const detail = node('section', 'reader-work-detail');
     const top = node('div', 'reader-detail-top');
-    top.append(button('← К каталогу', 'reader-back-button', back));
-    panel.append(top);
-    const heading = node('div', 'reader-detail-heading');
+    top.append(button('← К каталогу', 'reader-back-button', () => {
+      screen?.classList.remove('reader-detail-mode');
+      back();
+    }));
+    detail.append(top);
+    const hero = node('div', 'reader-detail-hero');
     if (work.cover_url) {
+      const art = node('div', 'reader-detail-art');
       const img = node('img', 'reader-detail-cover');
-      img.src = work.cover_url; img.alt = 'Обложка: ' + work.title;
-      heading.append(img);
+      img.src = work.cover_url; img.alt = 'Обложка: ' + work.title; img.loading = 'eager';
+      art.append(img);
+      hero.append(art);
     }
     const info = node('div', 'reader-detail-info');
-    info.append(node('span', 'reader-eyebrow', work.category === 'novel' ? 'НОВЕЛЛА' : 'ВЕБТУН'));
+    info.append(node('span', 'reader-eyebrow', work.category === 'novel' ? 'REBUNAR / НОВЕЛЛА' : 'REBUNAR / ВЕБТУН'));
     info.append(node('h2', '', work.title));
-    info.append(node('p', '', work.description || 'Описание пока не добавлено.'));
-    info.append(node('small', '', 'Автор: ' + work.author));
-    heading.append(info); panel.append(heading);
-    panel.append(node('h3', 'reader-chapters-title', 'Главы'));
-    if (!chapters.length) panel.append(node('p', 'reader-muted', 'Главы скоро появятся.'));
-    chapters.forEach(chapter => panel.append(button(
-      'Глава ' + chapter.chapter_number + ' · ' + chapterDisplayTitle(chapter),
-      'reader-chapter-link',
-      () => showChapter(panel, chapter.id, () => showPublicWork(panel, workId, back))
-    )));
+    info.append(node('small', '', 'Автор: ' + (work.author || 'Не указан')));
+    hero.append(info);
+    detail.append(hero);
+    const tabBar = node('div', 'reader-work-tabs');
+    tabBar.setAttribute('role', 'tablist');
+    tabBar.setAttribute('aria-label', 'Разделы произведения');
+    const content = node('div', 'reader-work-tab-content');
+    const descriptionTab = button('Описание', 'reader-work-tab is-active', () => activateTab('description'));
+    const chaptersTab = button('Главы', 'reader-work-tab', () => activateTab('chapters'));
+    descriptionTab.setAttribute('role', 'tab');
+    chaptersTab.setAttribute('role', 'tab');
+    descriptionTab.setAttribute('aria-selected', 'true');
+    chaptersTab.setAttribute('aria-selected', 'false');
+    tabBar.append(descriptionTab, chaptersTab);
+    detail.append(tabBar, content);
+    function activateTab(name) {
+      const isDescription = name === 'description';
+      descriptionTab.classList.toggle('is-active', isDescription);
+      chaptersTab.classList.toggle('is-active', !isDescription);
+      descriptionTab.setAttribute('aria-selected', String(isDescription));
+      chaptersTab.setAttribute('aria-selected', String(!isDescription));
+      content.replaceChildren();
+      if (isDescription) {
+        content.append(node('p', 'reader-work-description', work.description || 'Описание пока не добавлено.'));
+      } else if (!chapters.length) {
+        content.append(node('p', 'reader-muted', 'Главы скоро появятся.'));
+      } else {
+        chapters.forEach(chapter => content.append(button(
+          'Глава ' + chapter.chapter_number + ' · ' + chapterDisplayTitle(chapter),
+          'reader-chapter-link',
+          () => showChapter(panel, chapter.id, () => showPublicWork(panel, workId, back))
+        )));
+      }
+    }
+    activateTab('description');
+    const similar = catalog.filter(item => String(item.id) !== String(workId)).slice(0, 4);
+    if (similar.length) {
+      const section = node('section', 'reader-similar-section');
+      section.append(node('h3', '', 'Похожие произведения'));
+      const grid = node('div', 'reader-similar-grid');
+      similar.forEach(item => {
+        const card = button('', 'reader-similar-card', () => showPublicWork(panel, item.id, back));
+        if (item.cover_url) {
+          const image = node('img', 'reader-similar-cover');
+          image.src = item.cover_url; image.alt = 'Обложка: ' + item.title; image.loading = 'lazy';
+          card.append(image);
+        }
+        const copy = node('span', 'reader-similar-copy');
+        copy.append(node('strong', '', item.title || 'Без названия'));
+        copy.append(node('small', '', item.author || 'Автор не указан'));
+        card.append(copy);
+        grid.append(card);
+      });
+      section.append(grid);
+      detail.append(section);
+    }
+    panel.append(detail);
   } catch (error) {
+    screen?.classList.remove('reader-detail-mode');
     panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
   }
 }
@@ -456,6 +513,7 @@ export function renderReaderScreen(outlet, params = {}) {
   let active='novels';
   const activateCategory=key=>{
     if(!categories[key])return;
+    outlet.querySelector('.reader-screen')?.classList.remove('reader-detail-mode','reader-reading-mode');
     active=key;
     tabs.forEach(tab=>{const on=tab.dataset.readerTab===key;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;});
     panel.replaceChildren();
