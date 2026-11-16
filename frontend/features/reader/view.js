@@ -177,6 +177,7 @@ async function showChapter(panel, chapterId, back) {
     const index = chapters.findIndex(item => item.id === chapterId);
     const state = progress.find(item => item.chapter_id === chapterId) || { is_read: false, is_favorite: false };
     const screen = panel.closest('.reader-screen');
+    screen?.classList.remove('reader-detail-mode');
     screen?.classList.add('reader-reading-mode');
     panel.replaceChildren();
 
