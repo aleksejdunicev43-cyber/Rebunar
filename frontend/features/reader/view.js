@@ -48,19 +48,23 @@ async function loadCatalog(panel, key, openWork) {
     }
     const grid = node('div', 'reader-work-grid');
     works.forEach(work => {
-      const card = button('', 'reader-work-card', () => openWork(work.id));
+      const isNovel = key === 'novels';
+      const card = button('', 'reader-work-card' + (isNovel ? ' reader-work-card-novel' : ''), () => openWork(work.id));
+      card.setAttribute('aria-label', work.title);
       if (work.cover_url) {
-        const cover = node('img', 'reader-work-cover');
+        const cover = node('img', 'reader-work-cover' + (isNovel ? ' reader-work-cover-novel' : ''));
         cover.src = work.cover_url;
         cover.alt = 'Обложка: ' + work.title;
         cover.loading = 'lazy';
         card.append(cover);
       } else card.append(node('div', 'reader-work-cover reader-work-cover-empty', 'REBUNAR'));
-      const info = node('span', 'reader-work-info');
-      info.append(node('strong', '', work.title));
-      info.append(node('small', '', 'Автор: ' + work.author));
-      if (work.description) info.append(node('span', 'reader-work-description', work.description));
-      card.append(info);
+      if (!isNovel) {
+        const info = node('span', 'reader-work-info');
+        info.append(node('strong', '', work.title));
+        info.append(node('small', '', 'Автор: ' + work.author));
+        if (work.description) info.append(node('span', 'reader-work-description', work.description));
+        card.append(info);
+      }
       grid.append(card);
     });
     panel.append(grid);
