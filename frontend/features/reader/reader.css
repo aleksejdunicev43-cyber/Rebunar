@@ -511,3 +511,33 @@
 .reader-work-card-novel:hover{border-color:rgba(77,211,157,.42)}
 .reader-work-cover-novel{display:block;width:100%;height:100%;aspect-ratio:2/3;object-fit:cover;object-position:center;background:transparent}
 @media(max-width:600px){.reader-work-card-novel{aspect-ratio:2/3}.reader-work-cover-novel{width:100%;height:100%;object-fit:cover}}
+
+/* Work detail page: large artwork, local tabs and related stories. */
+.reader-screen.reader-work-detail-mode>.reader-hero,
+.reader-screen.reader-work-detail-mode>.reader-tabs{display:none!important}
+.reader-screen.reader-work-detail-mode>.reader-category-panel{padding-top:12px}
+.reader-work-detail-hero{display:grid;justify-items:center;gap:10px;margin:4px auto 18px;text-align:center}
+.reader-work-detail-art{display:block;width:100%;max-width:760px;max-height:min(68vh,620px);height:auto;object-fit:contain;object-position:center;border-radius:15px}
+.reader-work-detail-title{margin:4px 0 0;color:#edf7f1;font-size:clamp(22px,4vw,32px);line-height:1.2}
+.reader-work-detail-meta{margin:0;color:#91a39a;font-size:12px}
+.reader-work-detail-tabs{position:sticky;top:0;z-index:12;display:flex;gap:6px;overflow-x:auto;margin:16px -2px 0;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.09);background:rgba(15,22,20,.96);backdrop-filter:blur(14px)}
+.reader-work-detail-tab{flex:0 0 auto;min-width:105px;padding:11px 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:#9aa9a1;font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.reader-work-detail-tab.is-active{border-bottom-color:#55d69d;color:#75e4b2}
+.reader-work-detail-content{min-height:130px;padding:18px 4px 8px}
+.reader-work-description-panel p{margin:0 0 12px;color:#d5e2da;font-size:14px;line-height:1.8;white-space:pre-wrap}
+.reader-work-description-panel small{color:#8fa198;font-size:11px}
+.reader-work-chapters-panel h3{margin:0 0 12px;font-size:16px}
+.reader-similar-section{margin-top:28px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+.reader-similar-section h2{margin:0 0 14px;font-size:18px}
+.reader-similar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px}
+.reader-similar-card{display:flex;min-width:0;flex-direction:column;gap:7px;padding:0;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#141c19;color:#e4efe8;text-align:left;cursor:pointer}
+.reader-similar-card img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover}
+.reader-similar-card strong{padding:0 8px 9px;font-size:11px;line-height:1.35}
+.reader-similar-card:not(:has(img)){padding:12px}
+@media(max-width:600px){
+ .reader-screen.reader-work-detail-mode>.reader-category-panel{padding:10px 12px 24px}
+ .reader-work-detail-art{max-height:58vh;border-radius:11px}
+ .reader-work-detail-tabs{margin-right:-12px;margin-left:-12px;padding-right:12px;padding-left:12px}
+ .reader-similar-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .reader-similar-card strong{font-size:10px}
+}
