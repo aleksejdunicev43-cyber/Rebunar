@@ -733,3 +733,21 @@
     height:auto!important;
   }
 }
+
+
+/* Chapter reading: use one uniform dark canvas, never a color gradient. */
+.reader-screen.reader-reading-mode,
+.reader-screen.reader-reading-mode > .reader-category-panel,
+.reader-screen.reader-reading-mode .reader-prose {
+  background-color:#111816!important;
+  background-image:none!important;
+}
+.reader-screen.reader-reading-mode::before,
+.reader-screen.reader-reading-mode::after,
+.reader-screen.reader-reading-mode > .reader-category-panel::before,
+.reader-screen.reader-reading-mode > .reader-category-panel::after,
+.reader-screen.reader-reading-mode .reader-prose::before,
+.reader-screen.reader-reading-mode .reader-prose::after {
+  content:none!important;
+  display:none!important;
+}
