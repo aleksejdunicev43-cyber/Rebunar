@@ -678,3 +678,58 @@
     object-fit:contain!important;
   }
 }
+
+
+/* Novel detail spacing: artwork sits close to the catalog button; title directly follows the art. */
+.reader-screen.reader-detail-mode .reader-detail-top {
+  margin-bottom:5px!important;
+}
+@media (max-width:760px) {
+  .reader-screen.reader-detail-mode .reader-detail-hero {
+    gap:0!important;
+    margin-bottom:16px!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info .reader-eyebrow {
+    display:none!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info h2 {
+    margin:0 0 5px!important;
+    padding:0!important;
+    line-height:1.15!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-info small {
+    display:block;
+    margin:0!important;
+  }
+}
+
+
+/* Novel detail: let the artwork keep its real source proportions; remove empty letterbox space. */
+.reader-screen.reader-detail-mode .reader-detail-art {
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+}
+.reader-screen.reader-detail-mode .reader-detail-art img,
+.reader-screen.reader-detail-mode .reader-detail-cover {
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+@media (max-width:760px) {
+  .reader-screen.reader-detail-mode .reader-detail-art {
+    height:auto!important;
+    aspect-ratio:auto!important;
+  }
+  .reader-screen.reader-detail-mode .reader-detail-art img,
+  .reader-screen.reader-detail-mode .reader-detail-cover {
+    height:auto!important;
+  }
+}
