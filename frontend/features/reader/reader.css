@@ -751,3 +751,17 @@
   content:none!important;
   display:none!important;
 }
+
+
+/* Chapter reader: make both the text canvas and the surrounding side gutters pure black. */
+.app-layout:has(.reader-screen.reader-reading-mode),
+.main-content:has(.reader-screen.reader-reading-mode),
+.main-content:has(.reader-screen.reader-reading-mode) #screen-outlet,
+.reader-screen.reader-reading-mode,
+.reader-screen.reader-reading-mode > .reader-category-panel,
+.reader-screen.reader-reading-mode .reader-prose {
+  background:#000!important;
+  background-image:none!important;
+  border-color:#000!important;
+  box-shadow:none!important;
+}
