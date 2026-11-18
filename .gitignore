@@ -14,11 +14,13 @@ instance/
 uploads/
 user_uploads/
 
-# Backups
+# Backups and old versions
 *backup*
 *.bak
 *.old
 *.orig
+*-before-*
+*.before-*
 
 # Dependencies
 node_modules/
@@ -27,6 +29,7 @@ node_modules/
 # Build output
 frontend/build/
 dist/
+artifacts/
 
 # Python
 __pycache__/
@@ -44,35 +47,6 @@ venv/
 cookies.txt
 cookies*.txt
 
-# Old versions of files
-*-before-*
-*.before-*
-
 # Separate Matrix experiment
 matrix-test/
 matrix-test-*.tar.gz
-
-# Session data
-cookies.txt
-cookies*.txt
-
-# Old versions of files
-*-before-*
-*.before-*
-
-# Separate Matrix experiment
-matrix-test/
-matrix-test-*.tar.gz
-
-# Session data
-cookies.txt
-cookies*.txt
-
-# Old versions
-*-before-*
-*.before-*
-
-# Separate Matrix experiment
-matrix-test/
-matrix-test-*.tar.gz
-artifacts/
