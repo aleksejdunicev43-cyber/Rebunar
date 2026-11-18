@@ -59,13 +59,12 @@ async function loadCatalog(panel, key, openWork) {
         cover.loading = 'lazy';
         card.append(cover);
       } else card.append(node('div', 'reader-work-cover reader-work-cover-empty', 'REBUNAR'));
-      if (!isNovel) {
-        const info = node('span', 'reader-work-info');
-        info.append(node('strong', '', work.title));
-        info.append(node('small', '', 'Автор: ' + work.author));
-        if (work.description) info.append(node('span', 'reader-work-description', work.description));
-        card.append(info);
-      }
+      const info = node('span', 'reader-work-info');
+      info.append(node('strong', '', work.title));
+      info.append(node('small', '', 'Автор: ' + (work.author || 'Rebunar')));
+      if (work.description) info.append(node('span', 'reader-work-description', work.description));
+      info.append(node('span', 'reader-work-meta', isNovel ? 'НОВЕЛЛА' : 'ВЕБТУН'));
+      card.append(info);
       grid.append(card);
     });
     panel.append(grid);
