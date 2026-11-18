@@ -38,14 +38,14 @@ async function loadCatalog(panel, key, openWork) {
   try {
     const works = await api.get('/reader/works?category=' + categories[key].type);
     panel.replaceChildren();
+    const toolbar = node('div', 'reader-catalog-toolbar');
+    const search = node('input', 'reader-catalog-search');
+    search.type = 'search';
+    search.placeholder = 'Поиск по названию или автору';
+    search.setAttribute('aria-label', 'Поиск по каталогу');
+    toolbar.append(search);
+    panel.append(toolbar);
     if (!works.length) {
-      const toolbar = node('div', 'reader-catalog-toolbar');
-      const search = node('input', 'reader-catalog-search');
-      search.type = 'search';
-      search.placeholder = 'Поиск по названию или автору';
-      search.setAttribute('aria-label', 'Поиск по каталогу');
-      toolbar.append(search);
-      panel.append(toolbar);
       const empty = node('div', 'reader-empty-state');
       empty.append(node('span', 'reader-empty-kicker', 'REBUNAR'));
       empty.append(node('h3', '', 'Скоро здесь появятся истории'));
@@ -53,8 +53,6 @@ async function loadCatalog(panel, key, openWork) {
       panel.append(empty);
       return;
     }
-    const toolbar = panel.querySelector('.reader-catalog-toolbar');
-    const search = toolbar.querySelector('.reader-catalog-search');
     const grid = node('div', 'reader-work-grid');
     works.forEach(work => {
       const isNovel = key === 'novels';
@@ -80,14 +78,13 @@ async function loadCatalog(panel, key, openWork) {
     search.addEventListener('input', () => {
       const query = search.value.trim().toLocaleLowerCase('ru');
       grid.querySelectorAll('.reader-work-card').forEach(card => {
-        card.hidden = query && !card.dataset.search.includes(query);
+        card.hidden = Boolean(query) && !card.dataset.search.includes(query);
       });
     });
   } catch (error) {
     panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
   }
 }
-
 async function showPublicWork(panel, workId, back) {
   const screen = panel.closest('.reader-screen');
   screen?.classList.remove('reader-reading-mode');
