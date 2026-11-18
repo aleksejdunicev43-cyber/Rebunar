@@ -1,42 +1,16 @@
 /**
  * REBUNAR — PROFILE STATUS / XP / ACHIEVEMENTS / CUSTOMIZATION
  */
-import { getTheme, applyTheme as applyAppTheme } from '../../shared/theme.js';
 export function enhanceProfileScreen(container, user) {
   const details = container.querySelector('.profile-details');
   const profileCard = container.querySelector('.profile-card');
   if (!details || !profileCard || details.querySelector('.profile-status-card')) return;
 
-  const themes = {
-    steel: { name: 'Steel & Blood', description: 'Стальной игровой стиль с алым свечением' },
-    cyber: { name: 'Cyberpunk', description: 'Неон, цифровая сетка и ночной город' },
-    sakura: { name: 'Anime: Sakura', description: 'Аниме-эстетика, розовый свет и сакура' },
-    fantasy: { name: 'Dark Fantasy', description: 'Тёмное фэнтези, руны и мистическое золото' }
-  };
-  let selectedTheme = getTheme(user?.id ?? 'guest');
-
-  const screen = container.querySelector('.profile-screen');
-  if (screen) screen.dataset.profileTheme = selectedTheme;
-
   const cover = document.createElement('div');
   cover.className = 'profile-cover';
-  cover.dataset.theme = selectedTheme;
+  cover.dataset.theme = 'blackLabel';
   cover.innerHTML = '<span class="profile-cover-mark">REBUNAR</span><span class="profile-cover-caption">ТВОЯ ИСТОРИЯ. ТВОЙ МИР.</span>';
   profileCard.insertBefore(cover, profileCard.firstChild);
-
-  const applyTheme = theme => {
-    if (!themes[theme]) return;
-    selectedTheme = theme;
-    cover.dataset.theme = theme;
-    if (screen) screen.dataset.profileTheme = theme;
-    applyAppTheme(theme, user?.id ?? 'guest');
-    const card = container.querySelector('.profile-customization-card');
-    card?.querySelectorAll('[data-profile-theme]').forEach(button => {
-      const active = button.dataset.profileTheme === theme;
-      button.classList.toggle('is-selected', active);
-      button.setAttribute('aria-pressed', String(active));
-    });
-  };
 
   const status = user?.bio?.trim() ? 'Активен в Rebunar' : 'Новый участник Rebunar';
   const statusCard = document.createElement('div');
@@ -62,30 +36,6 @@ export function enhanceProfileScreen(container, user) {
   details.appendChild(achievements);
   if (isFounder) achievements.querySelector('[data-achievement="founder"]')?.addEventListener('click', () => openFounderAchievement(container));
 
-  const customization = document.createElement('section');
-  customization.className = 'profile-customization-card';
-  customization.innerHTML = `
-    <div class="profile-feature-heading"><div><span class="profile-feature-kicker">Персонализация</span><strong>Оформление профиля</strong></div><span class="profile-customization-symbol">✦</span></div>
-    <p class="profile-customization-description">Одна тема для всего Rebunar: фон, панели, кнопки, навигация и акценты меняются одновременно.</p>
-    <div class="profile-theme-options" aria-label="Темы оформления">
-      ${Object.entries(themes).map(([key, theme]) => `<button type="button" class="profile-theme-option${key === selectedTheme ? ' is-selected' : ''}" data-profile-theme="${key}" aria-pressed="${key === selectedTheme}" title="${theme.description}"><span class="profile-theme-swatch theme-${key}"></span><span>${theme.name}</span>${key === selectedTheme ? '<span class="profile-theme-check">✓</span>' : ''}</button>`).join('')}
-    </div>
-    <div class="profile-locked-customization" aria-label="Будущие возможности персонализации"><button class="profile-locked-option" type="button" disabled aria-disabled="true"><span aria-hidden="true">🔒</span> Загрузить свой арт</button><button class="profile-locked-option" type="button" disabled aria-disabled="true"><span aria-hidden="true">🔒</span> Авторская аниме-обложка</button></div>`;
-  details.appendChild(customization);
-  customization.querySelectorAll('[data-profile-theme]').forEach(button => {
-    button.addEventListener('click', () => {
-      applyTheme(button.dataset.profileTheme);
-      customization.querySelectorAll('[data-profile-theme]').forEach(item => {
-        const active = item.dataset.profileTheme === selectedTheme;
-        item.classList.toggle('is-selected', active);
-        item.setAttribute('aria-pressed', String(active));
-        const check = item.querySelector('.profile-theme-check');
-        if (active && !check) item.insertAdjacentHTML('beforeend', '<span class="profile-theme-check">✓</span>');
-        if (!active) check?.remove();
-      });
-    });
-  });
-}
 
 
 function openFounderAchievement(container) {
