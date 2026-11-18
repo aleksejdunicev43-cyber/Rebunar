@@ -6,16 +6,14 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/publish-android.yml"
-      - "frontend/features/studio/view.js"
-      - "frontend/features/studio/studio.css"
+      - "frontend/**"
       - "package.json"
       - "package-lock.json"
   pull_request:
     branches: [main]
     paths:
       - ".github/workflows/publish-android.yml"
-      - "frontend/features/studio/view.js"
-      - "frontend/features/studio/studio.css"
+      - "frontend/**"
       - "package.json"
       - "package-lock.json"
 
@@ -60,10 +58,8 @@ jobs:
           grep -q 'serveBundledFrontend' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
           grep -q 'minSdk = 24' android-rebunar/app/build.gradle.kts
 
-
       - name: Prepare application icon
         run: |
-          # Replace the fallback vector with the generated PNG so Android sees exactly one drawable resource.
           rm -f android-rebunar/app/src/main/res/drawable/rebunar_logo.xml
           python -m pip install Pillow numpy
           python - <<'PY'
@@ -122,8 +118,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.6
-          name: Rebunar Android 0.1.6
+          tag_name: v0.1.7
+          name: Rebunar Android 0.1.7
           target_commitish: main
           generate_release_notes: true
           make_latest: true
