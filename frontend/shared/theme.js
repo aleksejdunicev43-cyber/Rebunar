@@ -1,26 +1,9 @@
 const THEME_STORAGE_PREFIX = 'rebunar.profile.theme.v2.';
-const LEGACY_THEME_STORAGE_PREFIX = 'rebunar.profile.theme.';
 
 export const THEMES = {
   blackLabel: {
     name: 'Black Label',
-    description: 'Минималистичный тёмный интерфейс с изумрудными и фиолетовыми акцентами.'
-  },
-  steel: {
-    name: 'Steel & Blood',
-    description: 'Стальной интерфейс с кроваво-красными акцентами.'
-  },
-  cyber: {
-    name: 'Cyberpunk',
-    description: 'Холодный тёмный интерфейс с неоновыми бирюзовыми акцентами.'
-  },
-  sakura: {
-    name: 'Anime: Sakura',
-    description: 'Тёмная аниме-эстетика с розовыми и цветочными оттенками.'
-  },
-  fantasy: {
-    name: 'Dark Fantasy',
-    description: 'Тёмное фэнтези с мистическим золотом и бронзой.'
+    description: 'Исходное тёмное оформление Rebunar с изумрудными акцентами.'
   }
 };
 
@@ -37,26 +20,22 @@ export function getThemes() {
 export function getTheme(userId = 'guest') {
   try {
     const saved = localStorage.getItem(storageKey(userId));
-    if (Object.hasOwn(THEMES, saved)) return saved;
-    const legacy = localStorage.getItem(LEGACY_THEME_STORAGE_PREFIX + (userId ?? 'guest'));
-    if (Object.hasOwn(THEMES, legacy)) {
-      const migrated = legacy === 'steel' ? DEFAULT_THEME : legacy;
-      localStorage.setItem(storageKey(userId), migrated);
-      return migrated;
-    }
+    if (saved === DEFAULT_THEME) return DEFAULT_THEME;
+    // Any previously selected alternate theme now falls back to the sole
+    // supported appearance, Black Label.
+    localStorage.setItem(storageKey(userId), DEFAULT_THEME);
   } catch {}
   return DEFAULT_THEME;
 }
 
 export function applyTheme(theme, userId = 'guest') {
-  const selected = Object.hasOwn(THEMES, theme) ? theme : DEFAULT_THEME;
-  document.documentElement.dataset.theme = selected;
+  document.documentElement.dataset.theme = DEFAULT_THEME;
   try {
-    localStorage.setItem(storageKey(userId), selected);
+    localStorage.setItem(storageKey(userId), DEFAULT_THEME);
   } catch {}
-  return selected;
+  return DEFAULT_THEME;
 }
 
 export function initializeTheme(user) {
-  return applyTheme(getTheme(user?.id ?? 'guest'), user?.id ?? 'guest');
+  return applyTheme(DEFAULT_THEME, user?.id ?? 'guest');
 }
