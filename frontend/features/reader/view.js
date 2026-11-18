@@ -39,6 +39,13 @@ async function loadCatalog(panel, key, openWork) {
     const works = await api.get('/reader/works?category=' + categories[key].type);
     panel.replaceChildren();
     if (!works.length) {
+      const toolbar = node('div', 'reader-catalog-toolbar');
+      const search = node('input', 'reader-catalog-search');
+      search.type = 'search';
+      search.placeholder = 'Поиск по названию или автору';
+      search.setAttribute('aria-label', 'Поиск по каталогу');
+      toolbar.append(search);
+      panel.append(toolbar);
       const empty = node('div', 'reader-empty-state');
       empty.append(node('span', 'reader-empty-kicker', 'REBUNAR'));
       empty.append(node('h3', '', 'Скоро здесь появятся истории'));
@@ -46,13 +53,8 @@ async function loadCatalog(panel, key, openWork) {
       panel.append(empty);
       return;
     }
-    const toolbar = node('div', 'reader-catalog-toolbar');
-    const search = node('input', 'reader-catalog-search');
-    search.type = 'search';
-    search.placeholder = 'Поиск по названию или автору';
-    search.setAttribute('aria-label', 'Поиск по каталогу');
-    toolbar.append(search);
-    panel.append(toolbar);
+    const toolbar = panel.querySelector('.reader-catalog-toolbar');
+    const search = toolbar.querySelector('.reader-catalog-search');
     const grid = node('div', 'reader-work-grid');
     works.forEach(work => {
       const isNovel = key === 'novels';
@@ -514,7 +516,7 @@ export function renderReaderScreen(outlet, params = {}) {
   const initialCategory = Object.hasOwn(categories, params.category) ? params.category : 'novels';
   outlet.innerHTML = [
     '<section class="screen reader-screen">',
-    '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR</span><h1>Каталог</h1></div></header>',
+    '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Что почитаем?</h1></div></header>',
     '<div class="reader-tabs" role="tablist" aria-label="Категории чтения">',
       '<button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">Aa</span><span class="reader-tab-copy"><strong>Новеллы</strong><small>Текстовые истории</small></span></button>',
       '<button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">▤</span><span class="reader-tab-copy"><strong>Вебтуны</strong><small>Истории в картинках</small></span></button>',
@@ -538,7 +540,7 @@ export function renderReaderScreen(outlet, params = {}) {
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
   const refreshLanding=()=>{
     outlet.querySelector('.reader-studio-panel')?.remove();
-    outlet.querySelector('.reader-hero h1').textContent='Мир историй начинается здесь';
+    outlet.querySelector('.reader-hero h1').textContent='Что почитаем?';
     outlet.querySelector('.reader-tabs').hidden=false;
     activateCategory(active);
     outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
