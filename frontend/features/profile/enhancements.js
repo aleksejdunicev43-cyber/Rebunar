@@ -35,8 +35,7 @@ export function enhanceProfileScreen(container, user) {
     </div>`;
   details.appendChild(achievements);
   if (isFounder) achievements.querySelector('[data-achievement="founder"]')?.addEventListener('click', () => openFounderAchievement(container));
-
-
+}
 
 function openFounderAchievement(container) {
   if (container.querySelector('.profile-achievement-overlay')) return;
