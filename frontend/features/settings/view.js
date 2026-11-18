@@ -5,7 +5,6 @@
 
 import { changePassword } from '../profile/api.js';
 import { getUser } from '../auth/session.js';
-import { getThemes, getTheme, applyTheme } from '../../shared/theme.js';
 import { getLinkedMatrixAccount, beginMatrixConnection, removeMatrixConnection } from '../../infrastructure/matrix/connection.js';
 
 export function renderSettingsScreen(outlet) {
@@ -46,15 +45,6 @@ export function renderSettingsScreen(outlet) {
           <span class="settings-arrow">›</span>
         </button>
 
-        <button class="settings-item" type="button" data-action="appearance">
-          <span class="settings-icon">◐</span>
-          <span class="settings-item-content">
-            <strong>Оформление</strong>
-            <small>Внешний вид Rebunar</small>
-          </span>
-          <span class="settings-arrow">›</span>
-        </button>
-
         <button class="settings-item" type="button" data-route="statistics">
           <span class="settings-icon">▥</span>
           <span class="settings-item-content">
@@ -71,11 +61,6 @@ export function renderSettingsScreen(outlet) {
   outlet.querySelector('[data-action="security"]')
     .addEventListener('click', () => {
       openSecurityEditor(outlet);
-    });
-
-  outlet.querySelector('[data-action="appearance"]')
-    .addEventListener('click', () => {
-      openAppearanceEditor(outlet);
     });
 
   outlet.querySelector('[data-action="matrix"]')
@@ -354,91 +339,3 @@ function openSecurityEditor(outlet) {
 }
 
 
-function openAppearanceEditor(outlet) {
-  const overlay = document.createElement('div');
-  overlay.className = 'appearance-editor-overlay';
-
-  const currentTheme = getTheme(getUser()?.id ?? "guest");
-  const themes = getThemes();
-
-  overlay.innerHTML = `
-    <div class="appearance-editor" role="dialog"
-      aria-modal="true" aria-labelledby="appearance-editor-title">
-
-      <div class="appearance-editor-heading">
-        <div>
-          <span class="appearance-editor-eyebrow">
-            REBUNAR / APPEARANCE
-          </span>
-          <h2 id="appearance-editor-title">Оформление</h2>
-        </div>
-
-        <button class="appearance-editor-close"
-          type="button" aria-label="Закрыть">×</button>
-      </div>
-
-      <div class="appearance-editor-section">
-        <div class="appearance-editor-section-heading">
-          <strong>Выбери свою тему</strong>
-          <span>Четыре единые темы для всего Rebunar</span>
-        </div>
-
-        <div class="appearance-theme-options">
-          ${Object.entries(themes).map(([key, theme]) => `
-            <button
-              class="appearance-theme-option ${currentTheme === key ? 'is-active' : ''}"
-              type="button"
-              data-theme="${key}">
-
-              <span class="appearance-theme-preview appearance-theme-preview-${key}">
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-
-              <span class="appearance-theme-info">
-                <strong>${theme.name}</strong>
-                <small>${theme.description}</small>
-              </span>
-
-              <span class="appearance-theme-check">✓</span>
-            </button>
-          `).join('')}
-        </div>
-      </div>
-
-      <p class="appearance-editor-note">
-        Тема применяется ко всем разделам приложения и сохраняется для этого аккаунта.
-      </p>
-    </div>
-  `;
-
-  outlet.appendChild(overlay);
-
-  function closeEditor() {
-    overlay.remove();
-  }
-
-  overlay.querySelector('.appearance-editor-close')
-    .addEventListener('click', closeEditor);
-
-  overlay.addEventListener('click', (event) => {
-    if (event.target === overlay) {
-      closeEditor();
-    }
-  });
-
-  overlay.querySelectorAll('[data-theme]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const theme = button.dataset.theme;
-      applyTheme(theme, getUser()?.id ?? "guest");
-
-      overlay.querySelectorAll('[data-theme]').forEach((item) => {
-        item.classList.toggle(
-          'is-active',
-          item.dataset.theme === theme
-        );
-      });
-    });
-  });
-}
