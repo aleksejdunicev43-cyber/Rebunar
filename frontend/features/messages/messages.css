@@ -1510,3 +1510,19 @@
 }
 
 
+
+
+/* Neutral selected-chat state: no red outline or red accent stripe. */
+.messages-room-item,
+.messages-room-item:hover,
+.messages-room-item.is-active,
+.messages-room-item:focus,
+.messages-room-item:focus-visible {
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.messages-room-item:hover,
+.messages-room-item.is-active {
+  background: #202833 !important;
+}
