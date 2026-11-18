@@ -1115,3 +1115,31 @@
   .reader-work-card .reader-work-cover {min-height:156px}
   .reader-work-card .reader-work-info {padding:10px}
 }
+
+
+/* Match the app's approved Reader landing on the website and bundled APK. */
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero {
+  display:block!important;
+  min-height:112px;
+  padding:24px 26px;
+}
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero h1 {
+  margin:9px 0 0;
+  max-width:none;
+  font-size:clamp(25px,4.5vw,34px);
+}
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero .reader-eyebrow {
+  display:block;
+}
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero .reader-hero-symbol {
+  display:none!important;
+}
+@media(max-width:600px) {
+  .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero {
+    min-height:112px;
+    padding:22px 18px;
+  }
+  .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero h1 {
+    font-size:27px;
+  }
+}
