@@ -1538,3 +1538,35 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+
+/* Full-bleed mobile chat list: remove the black outer frame/gutters. */
+@media (max-width: 760px) {
+  .main-content:has(.messages-screen) {
+    width: 100vw !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  #screen-outlet:has(.messages-screen),
+  .messages-screen,
+  .messages-layout,
+  .messages-sidebar {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .messages-layout,
+  .messages-sidebar,
+  .messages-chat-list {
+    background: #19222e !important;
+  }
+}
