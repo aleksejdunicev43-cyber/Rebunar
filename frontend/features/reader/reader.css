@@ -1145,26 +1145,22 @@
 }
 
 
-/* Clean Reader controls: remove faint green edge strokes. */
+/* Blend Reader control outlines into the dark background instead of removing them. */
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tabs,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:hover,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:focus,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:focus-visible {
-  border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-}
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:focus-visible,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab.is-active {
-  border: 0 !important;
+  border-color: #0a1110 !important;
   box-shadow: none !important;
+  outline: 0 !important;
 }
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus-visible {
-  border-top: 0 !important;
-  border-bottom: 0 !important;
-  border-left: 0 !important;
-  border-right: 0 !important;
+  border: 1px solid #0a1110 !important;
+  border-radius: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
 }
