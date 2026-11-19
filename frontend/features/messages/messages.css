@@ -1448,7 +1448,7 @@
   min-width: 0;
   overflow: hidden;
   border-bottom: 1px solid rgba(150, 160, 175, .07);
-  background: #8f303a;
+  background: #19222e;
 }
 .messages-chat-row .messages-room-item {
   position: relative;
@@ -1525,4 +1525,16 @@
 .messages-room-item:hover,
 .messages-room-item.is-active {
   background: #202833 !important;
+}
+
+/* The swipe container must not expose the old red delete-action background. */
+.messages-chat-row {
+  background: #19222e !important;
+}
+.messages-chat-row .messages-room-item,
+.messages-chat-row .messages-room-item:hover,
+.messages-chat-row .messages-room-item.is-active {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
