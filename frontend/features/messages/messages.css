@@ -1570,3 +1570,40 @@
     background: #19222e !important;
   }
 }
+
+
+/* Final mobile edge-to-edge correction: remove the parent layout gutter too. */
+@media (max-width: 760px) {
+  body:has(.messages-screen) .app-shell,
+  body:has(.messages-screen) .app-layout,
+  body:has(.messages-screen) .main-content,
+  body:has(.messages-screen) #screen-outlet {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body:has(.messages-screen) .app-layout {
+    gap: 0 !important;
+    background: #19222e !important;
+  }
+
+  body:has(.messages-screen) .main-content,
+  body:has(.messages-screen) #screen-outlet,
+  body:has(.messages-screen) .messages-screen,
+  body:has(.messages-screen) .messages-layout,
+  body:has(.messages-screen) .messages-sidebar {
+    background-color: #19222e !important;
+  }
+
+  body:has(.messages-screen) .messages-screen,
+  body:has(.messages-screen) .messages-layout,
+  body:has(.messages-screen) .messages-sidebar {
+    min-width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+}
