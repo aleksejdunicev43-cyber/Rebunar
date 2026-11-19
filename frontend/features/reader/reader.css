@@ -1202,3 +1202,11 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+
+/* Remove the green frame around the small icons inside the Novels/Webtoons category buttons. */
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab-icon,
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab.is-active .reader-tab-icon {
+  border: 0 !important;
+  box-shadow: none !important;
+}
