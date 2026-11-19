@@ -86,12 +86,12 @@
 .reader-hero h1{margin:5px 0 0;font-size:clamp(23px,4vw,31px);letter-spacing:-.035em}
 .reader-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;padding:0;border:0;background:transparent}
 .reader-tab{justify-content:flex-start;min-height:68px;gap:12px;padding:11px 14px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:linear-gradient(145deg,#171f1c,#111716);text-align:left}
-.reader-tab-icon{display:grid;flex:0 0 40px;width:40px;height:40px;place-items:center;border:0;border-radius:11px;background:rgba(43,181,131,.09);color:#69d9aa;font-size:19px;font-weight:900;box-shadow:none}
+.reader-tab-icon{display:grid;flex:0 0 40px;width:40px;height:40px;place-items:center;border:1px solid rgba(75,211,157,.2);border-radius:11px;background:rgba(43,181,131,.09);color:#69d9aa;font-size:19px;font-weight:900}
 .reader-tab-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
 .reader-tab-copy strong{color:inherit;font-size:13px}
 .reader-tab-copy small{color:#8f9d96;font-size:10px;font-weight:500}
 .reader-tab.is-active{border-color:rgba(65,205,151,.52);background:linear-gradient(135deg,rgba(35,133,98,.3),rgba(21,66,53,.24))}
-.reader-tab.is-active .reader-tab-icon{border:0;background:rgba(43,181,131,.18);box-shadow:none}
+.reader-tab.is-active .reader-tab-icon{border-color:rgba(75,211,157,.5);background:rgba(43,181,131,.18)}
 .reader-category-panel{min-height:220px;padding:17px;border-radius:15px}
 .reader-category-heading{padding-bottom:12px}
 .reader-category-heading h2{margin:0;font-size:20px}
@@ -1145,68 +1145,10 @@
 }
 
 
-/* Reader: merge tab and search edges completely into the page background. */
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tabs,
+
+
+/* Remove only the outer border of the two Reader category buttons. */
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:hover,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:focus,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab:focus-visible,
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab.is-active {
-  border-color: #08090a !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-}
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-toolbar {
   border: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:hover,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus-visible {
-  appearance: none !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  outline: 0 !important;
-  box-shadow: none !important;
-  background: #08090a !important;
-}
-
-
-/* Reader catalog surfaces: one neutral dark panel tone; preserve all buttons and typography. */
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-empty-state {
-  background: #121316 !important;
-  background-image: none !important;
-  border-color: #292d33 !important;
-  box-shadow: none !important;
-}
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-toolbar {
-  background: transparent !important;
-  background-image: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:hover,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus-visible {
-  appearance: none !important;
-  min-height: 48px;
-  background: #121316 !important;
-  background-image: none !important;
-  border: 1px solid #292d33 !important;
-  border-radius: 10px !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-
-/* Remove the green frame around the small icons inside the Novels/Webtoons category buttons. */
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab-icon,
-.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab.is-active .reader-tab-icon {
-  border: 0 !important;
-  box-shadow: none !important;
 }
