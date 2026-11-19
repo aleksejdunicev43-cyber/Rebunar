@@ -1173,3 +1173,32 @@
   box-shadow: none !important;
   background: #08090a !important;
 }
+
+
+/* Reader catalog surfaces: one neutral dark panel tone; preserve all buttons and typography. */
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-hero,
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-empty-state {
+  background: #121316 !important;
+  background-image: none !important;
+  border-color: #292d33 !important;
+  box-shadow: none !important;
+}
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-toolbar {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search,
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:hover,
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus,
+.reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-catalog-search:focus-visible {
+  appearance: none !important;
+  min-height: 48px;
+  background: #121316 !important;
+  background-image: none !important;
+  border: 1px solid #292d33 !important;
+  border-radius: 10px !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
