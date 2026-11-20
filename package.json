@@ -4,9 +4,7 @@
   "description": "Rebunar frontend application",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "avatar:analyze": "python3 tools/analyze_frames.py",
-    "test:avatar": "python3 tests/avatar/verify_frames.py"
+    "build": "vite build"
   },
   "type": "module",
   "dependencies": {
