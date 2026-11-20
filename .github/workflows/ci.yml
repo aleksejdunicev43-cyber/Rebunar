@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Python backend syntax
-        run: python3 -m py_compile server.py metrics_routes.py community_routes.py static_routes.py matrix_routes.py frontend_routes.py
+        run: python3 -m py_compile server.py metrics_routes.py community_routes.py static_routes.py matrix_routes.py frontend_routes.py reader_media_routes.py
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -216,7 +216,7 @@ jobs:
               upload_with_retry(file, relative, url, index, len(files) + 1)
               time.sleep(2.5)
 
-          backend_files = [Path("metrics_routes.py"), Path("community_routes.py"), Path("static_routes.py"), Path("matrix_routes.py"), Path("frontend_routes.py"), Path("server.py")]
+          backend_files = [Path("metrics_routes.py"), Path("community_routes.py"), Path("static_routes.py"), Path("matrix_routes.py"), Path("frontend_routes.py"), Path("reader_media_routes.py"), Path("server.py")]
           total_uploads = len(files) + len(backend_files)
           for index, backend_file in enumerate(backend_files, len(files) + 1):
               relative = backend_file.as_posix()

@@ -46,6 +46,10 @@ from frontend_routes import register_frontend_routes
 
 register_frontend_routes(app, BASE)
 
+from reader_media_routes import register_reader_media_routes
+
+register_reader_media_routes(app, READER_STORAGE)
+
 
 @app.after_request
 def disable_api_caching(response):
@@ -328,11 +332,6 @@ def remove_reader_media(paths):
         except OSError:
             # A stale media file must not prevent the database deletion.
             pass
-
-@app.get("/reader-media/<path:filename>")
-def reader_media(filename):
-    # send_from_directory prevents path traversal outside the persistent media folder.
-    return send_from_directory(READER_STORAGE, filename)
 
 @app.get("/api/reader/works")
 def reader_public_works():
