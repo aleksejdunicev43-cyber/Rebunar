@@ -242,10 +242,6 @@ from reader_media_routes import register_reader_media_routes
 
 register_reader_media_routes(app, READER_STORAGE)
 
-from reader_public_routes import register_reader_public_routes
-
-register_reader_public_routes(app, connect, ensure_reader_tables, reader_work_dict)
-
 READER_MAX_IMAGE = 8 * 1024 * 1024
 
 def ensure_reader_tables():
@@ -305,6 +301,10 @@ def ensure_reader_tables():
 
 
 from reader_helpers import reader_user_required, reader_work_dict, remove_reader_media
+
+from reader_public_routes import register_reader_public_routes
+
+register_reader_public_routes(app, connect, ensure_reader_tables, reader_work_dict)
 
 
 @app.get("/api/reader/works/<int:work_id>/progress")
