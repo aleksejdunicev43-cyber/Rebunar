@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Python backend syntax
-        run: python3 -m py_compile server.py
+        run: python3 -m py_compile server.py metrics_routes.py
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -216,10 +216,13 @@ jobs:
               upload_with_retry(file, relative, url, index, len(files) + 1)
               time.sleep(2.5)
 
-          backend_file = Path("server.py")
-          backend_remote = f"/home/{username}/rebunar_next/server.py"
-          backend_url = base + quote(backend_remote, safe="/")
-          upload_with_retry(backend_file, "server.py", backend_url, len(files) + 1, len(files) + 1)
+          backend_files = [Path("metrics_routes.py"), Path("server.py")]
+          total_uploads = len(files) + len(backend_files)
+          for index, backend_file in enumerate(backend_files, len(files) + 1):
+              relative = backend_file.as_posix()
+              backend_remote = f"/home/{username}/rebunar_next/{relative}"
+              backend_url = base + quote(backend_remote, safe="/")
+              upload_with_retry(backend_file, relative, backend_url, index, total_uploads)
 
           reload_url = (
               f"https://{host}/api/v0/user/{quote(username, safe='')}"
