@@ -1,6 +1,6 @@
 import sqlite3
 
-from flask import jsonify
+from flask import jsonify, request
 
 
 def register_reader_public_routes(app, connect, ensure_reader_tables, reader_work_dict):
