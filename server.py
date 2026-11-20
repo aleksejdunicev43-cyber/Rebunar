@@ -34,6 +34,10 @@ from community_routes import register_community_routes
 
 register_community_routes(app, connect, BASE)
 
+from static_routes import register_static_routes
+
+register_static_routes(app, BASE)
+
 
 @app.after_request
 def disable_api_caching(response):
@@ -1757,18 +1761,6 @@ def message_history():
     ])
 
 
-@app.get("/rebunar.css")
-def rebunar_css():
-    return send_from_directory(BASE, "rebunar.css")
-
-@app.get("/rebunar-blood.css")
-def rebunar_blood_css():
-    return send_from_directory(BASE, "rebunar-blood.css")
-
-
-@app.get("/rebunar-home.js")
-def rebunar_home_js():
-    return send_from_directory(BASE, "rebunar-home.js")
 
 if __name__ == "__main__":
     init_db()
