@@ -299,40 +299,8 @@ def ensure_reader_tables():
         con.execute("CREATE INDEX IF NOT EXISTS idx_reader_progress_work ON reader_progress(user_id, work_id)")
 
 
-def reader_user_required():
-    if not session.get("user_id"):
-        return jsonify({"error": "Войди в аккаунт, чтобы пользоваться студией автора"}), 401
-    return None
+from reader_helpers import reader_user_required, reader_work_dict, remove_reader_media
 
-def reader_work_dict(row):
-    return {
-        "id": row["id"], "title": row["title"],
-        "description": row["description"] or "",
-        "category": row["category"], "cover_url": row["cover_path"] or "",
-        "status": row["status"], "author": row["author_name"],
-        "author_id": row["author_id"], "created_at": row["created_at"]
-    }
-
-
-def remove_reader_media(paths):
-    root = READER_STORAGE.resolve()
-    for stored_path in paths:
-        if not stored_path:
-            continue
-        relative = str(stored_path)
-        if relative.startswith("/reader-media/"):
-            relative = relative[len("/reader-media/"):]
-        target = (root / relative).resolve()
-        try:
-            target.relative_to(root)
-        except ValueError:
-            continue
-        try:
-            if target.is_file():
-                target.unlink()
-        except OSError:
-            # A stale media file must not prevent the database deletion.
-            pass
 
 @app.get("/api/reader/works")
 def reader_public_works():
@@ -512,7 +480,7 @@ def reader_delete_chapter(chapter_id):
         ).fetchall()]
         con.execute("DELETE FROM reader_pages WHERE chapter_id = ?", (chapter_id,))
         con.execute("DELETE FROM reader_chapters WHERE id = ?", (chapter_id,))
-    remove_reader_media(media)
+    remove_reader_media(media, READER_STORAGE)
     return jsonify({"ok": True})
 
 
@@ -544,7 +512,7 @@ def reader_delete_work(work_id):
         con.execute("DELETE FROM reader_chapters WHERE work_id = ?", (work_id,))
         con.execute("DELETE FROM reader_works WHERE id = ? AND author_id = ?",
                     (work_id, session["user_id"]))
-    remove_reader_media(media)
+    remove_reader_media(media, READER_STORAGE)
     return jsonify({"ok": True})
 
 @app.post("/api/reader/works")
