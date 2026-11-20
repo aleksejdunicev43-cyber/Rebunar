@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check Python backend syntax
-        run: python3 -m py_compile server.py metrics_routes.py community_routes.py static_routes.py matrix_routes.py frontend_routes.py reader_media_routes.py reader_helpers.py reader_public_routes.py
+        run: python3 -m py_compile server.py metrics_routes.py community_routes.py static_routes.py matrix_routes.py frontend_routes.py reader_media_routes.py reader_helpers.py reader_public_routes.py reader_progress_routes.py
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -41,8 +41,9 @@ Feature views should call their feature API module or the shared API client rath
 
 ## Backend
 
-- `server.py` currently contains the Flask application, SQLite connection and schema initialization, static frontend serving, and API routes for the reader, statistics, presence, authentication, Matrix linking, users, profile, communities, and posts.
-- The backend is currently a monolith. Splitting it into blueprints and isolated database/migration modules is a future refactor, not yet completed.
+- `server.py` currently contains the Flask application, SQLite connection and schema initialization, plus remaining reader studio/mutation, authentication, users, profile, and self-message routes.
+- Reader public catalog endpoints live in `reader_public_routes.py`; reading progress endpoints live in `reader_progress_routes.py`; shared reader helpers live in `reader_helpers.py`.
+- The backend is partially modularized, but `server.py` remains the application entry point and still contains several route groups. Further extraction into blueprints and isolated database/migration modules is future work.
 - Database schema changes must be reviewed carefully. Do not drop or rewrite production tables as part of a cosmetic or structural refactor. Use explicit, backed-up, versioned migrations.
 
 ## Build and deployment
@@ -64,7 +65,7 @@ Feature views should call their feature API module or the shared API client rath
 
 ## Known audit findings (2026-11-20)
 
-- `server.py` is approximately 1,980 lines and mixes multiple domains.
+- `server.py` was approximately 1,500 lines at the latest inspection and still mixes multiple domains.
 - The reader, messages, and profile CSS files are large and need selector/dependency mapping before splitting.
 - `package.json` references `tools/analyze_frames.py` and `tests/avatar/verify_frames.py`; those exact paths were not present in the inspected repository tree. Verify whether the scripts were retired or moved before changing the scripts.
 - The repository contains root-level legacy frontend files alongside the current `frontend/` application. Their usage needs to be traced before cleanup.
