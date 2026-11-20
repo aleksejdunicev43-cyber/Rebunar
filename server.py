@@ -46,9 +46,6 @@ from frontend_routes import register_frontend_routes
 
 register_frontend_routes(app, BASE)
 
-from reader_media_routes import register_reader_media_routes
-
-register_reader_media_routes(app, READER_STORAGE)
 
 
 @app.after_request
@@ -240,6 +237,10 @@ def init_db():
             con.execute("ALTER TABLE posts ADD COLUMN user_id INTEGER")
 
 READER_STORAGE = BASE.parent / "reader_uploads"
+
+from reader_media_routes import register_reader_media_routes
+
+register_reader_media_routes(app, READER_STORAGE)
 READER_MAX_IMAGE = 8 * 1024 * 1024
 
 def ensure_reader_tables():
