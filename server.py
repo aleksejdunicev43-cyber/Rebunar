@@ -42,6 +42,10 @@ from matrix_routes import register_matrix_routes
 
 register_matrix_routes(app, connect)
 
+from frontend_routes import register_frontend_routes
+
+register_frontend_routes(app, BASE)
+
 
 @app.after_request
 def disable_api_caching(response):
@@ -231,27 +235,6 @@ def init_db():
         if "user_id" not in columns:
             con.execute("ALTER TABLE posts ADD COLUMN user_id INTEGER")
 
-@app.get("/")
-def home():
-    return send_from_directory(BASE, "index.html")
-
-@app.get("/new")
-def new_frontend():
-    build_dir = BASE / "frontend" / "build"
-    if (build_dir / "index.html").is_file():
-        return send_from_directory(build_dir, "index.html")
-    return send_from_directory(BASE / "frontend", "index.html")
-
-@app.get("/new/<path:filename>")
-def new_frontend_file(filename):
-    build_dir = BASE / "frontend" / "build"
-    if (build_dir / filename).is_file():
-        return send_from_directory(build_dir, filename)
-    return send_from_directory(BASE / "frontend", filename)
-
-
-# Reader content lives outside the application source directory. Deploying code
-# must never overwrite uploaded stories, covers, or webtoon pages.
 READER_STORAGE = BASE.parent / "reader_uploads"
 READER_MAX_IMAGE = 8 * 1024 * 1024
 
