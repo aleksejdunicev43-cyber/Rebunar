@@ -216,7 +216,7 @@ jobs:
               upload_with_retry(file, relative, url, index, len(files) + 1)
               time.sleep(2.5)
 
-          backend_files = [Path("metrics_routes.py"), Path("community_routes.py"), Path("static_routes.py"), Path("matrix_routes.py"), Path("frontend_routes.py"), Path("reader_media_routes.py"), Path("reader_helpers.py"), Path("reader_public_routes.py"), Path("server.py")]
+          backend_files = [Path("metrics_routes.py"), Path("community_routes.py"), Path("static_routes.py"), Path("matrix_routes.py"), Path("frontend_routes.py"), Path("reader_media_routes.py"), Path("reader_helpers.py"), Path("reader_public_routes.py"), Path("reader_progress_routes.py"), Path("server.py")]
           total_uploads = len(files) + len(backend_files)
           for index, backend_file in enumerate(backend_files, len(files) + 1):
               relative = backend_file.as_posix()
