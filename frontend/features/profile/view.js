@@ -40,7 +40,6 @@ export function renderProfileScreen(container, user, onLogout) {
             ${renderProfileQuickActions([
               ["creator","Автор / разработчик","✦"], ["mail","Почта","✉"],
               ["recent","Последнее чтение","◷"], ["bookmarks","Закладки","☆"],
-              ["myworks","Мои истории","▤"], ["drafts","Черновики","✎"],
               ["notifications","Уведомления","♢"], ["saved","Сохранённое","▣"]
             ])}
           </div>
@@ -83,7 +82,7 @@ export function renderProfileScreen(container, user, onLogout) {
     button.addEventListener('click', () => {
       const action = button.dataset.profileAction;
       if (button.disabled) return;
-      if (action === 'creator') openCreatorChoice(container);
+      if (action === 'creator') navigate('reader', { mode: 'studio' });
       else if (action === 'mail') navigate('mail');
       else if (action === 'users') navigate('users');
       else if (action === 'recent' || action === 'bookmarks') navigate('reader');
