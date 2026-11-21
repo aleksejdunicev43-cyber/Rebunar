@@ -299,6 +299,15 @@ def ensure_reader_tables():
         """)
         con.execute("CREATE INDEX IF NOT EXISTS idx_reader_progress_work ON reader_progress(user_id, work_id)")
 
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS reader_library (
+                user_id INTEGER NOT NULL,
+                work_id INTEGER NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY(user_id, work_id)
+            )
+        """)
+
 
 from reader_helpers import reader_user_required, reader_work_dict, remove_reader_media
 
@@ -314,6 +323,13 @@ register_reader_progress_routes(app, connect, ensure_reader_tables)
 from reader_studio_list_routes import register_reader_studio_list_routes
 
 register_reader_studio_list_routes(
+    app, connect, ensure_reader_tables, reader_user_required, reader_work_dict
+)
+
+
+from reader_library_routes import register_reader_library_routes
+
+register_reader_library_routes(
     app, connect, ensure_reader_tables, reader_user_required, reader_work_dict
 )
 
