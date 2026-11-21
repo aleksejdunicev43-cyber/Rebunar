@@ -979,10 +979,24 @@ function renderChapterEditor(container,work,refreshLanding,list,panel) {
 }
 
 export function renderReaderScreen(outlet, params = {}) {
+  if (params.mode === 'studio') {
+    outlet.innerHTML = [
+      '<section class="screen reader-screen reader-studio-screen">',
+      '<section class="reader-category-panel">',
+      '<section class="reader-studio-panel" aria-live="polite"></section>',
+      '</section>',
+      '</section>'
+    ].join('');
+    const studio = outlet.querySelector('.reader-studio-panel');
+    const returnToReader = () => renderReaderScreen(outlet, {});
+    renderStudio(studio, returnToReader);
+    return;
+  }
+
   const initialCategory = params.category === 'library' ? 'library' : (Object.hasOwn(categories, params.category) ? params.category : 'novels');
   outlet.innerHTML = [
     '<section class="screen reader-screen">',
-    '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Что почитаем?</h1></div></header>',
+    '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Что почитаем?</h1></div><button class="reader-back-button reader-open-studio" type="button">Моя студия</button></header>',
     '<div class="reader-tabs" role="tablist" aria-label="Категории чтения">',
       '<button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">Aa</span><span class="reader-tab-copy"><strong>Новеллы</strong><small>Текстовые истории</small></span></button>',
       '<button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">▤</span><span class="reader-tab-copy"><strong>Вебтуны</strong><small>Истории в картинках</small></span></button>',
@@ -991,6 +1005,9 @@ export function renderReaderScreen(outlet, params = {}) {
     '<section class="reader-category-panel" id="reader-category-panel" aria-live="polite"></section>',
     '</section>'
   ].join('');
+  outlet.querySelector('.reader-open-studio')?.addEventListener('click', () => {
+    renderReaderScreen(outlet, { mode: 'studio' });
+  });
   const panel=outlet.querySelector('#reader-category-panel');
   const tabs=[...outlet.querySelectorAll('[data-reader-tab]')];
   let active='novels';
@@ -1009,20 +1026,5 @@ export function renderReaderScreen(outlet, params = {}) {
     loadCatalog(catalog,key,id=>showPublicWork(panel,id,()=>activateCategory(key)));
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
-  const refreshLanding=()=>{
-    outlet.querySelector('.reader-studio-panel')?.remove();
-    outlet.querySelector('.reader-hero h1').textContent='Что почитаем?';
-    outlet.querySelector('.reader-tabs').hidden=false;
-    activateCategory(active);
-    outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
-  };
-  if(params.mode==='studio'){
-    outlet.querySelector('.reader-hero h1').textContent='Студия автора';
-    outlet.querySelector('.reader-tabs').hidden=true;
-    const studio=node('section','reader-studio-panel');
-    panel.append(studio);
-    renderStudio(studio,refreshLanding);
-  }else{
-    activateCategory(initialCategory);
-  }
+  activateCategory(initialCategory);
 }
