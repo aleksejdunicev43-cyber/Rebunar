@@ -40,7 +40,6 @@ export function renderProfileScreen(container, user, onLogout) {
             ${renderProfileQuickActions([
               ["creator","Автор / разработчик","✦"], ["mail","Почта","✉"],
               ["recent","Последнее чтение","◷"], ["bookmarks","Закладки","☆"],
-              ["myworks","Мои истории","▤"], ["drafts","Черновики","✎"],
               ["notifications","Уведомления","♢"], ["saved","Сохранённое","▣"]
             ])}
           </div>
