@@ -83,6 +83,24 @@ class ReaderStudioPagesRoutesTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([p["id"] for p in response.json], [1, 2, 3])
 
+    def test_add_page_to_published_chapter(self):
+        self.sign_in()
+        image = Image.new("RGB", (24, 32), "blue")
+        stream = io.BytesIO()
+        image.save(stream, format="PNG")
+        response = self.client.post(
+            "/api/reader/chapters/100/pages/add",
+            data={"image": (io.BytesIO(stream.getvalue()), "new-page.png")},
+            content_type="multipart/form-data",
+        )
+        self.assertEqual(response.status_code, 201)
+        with self.connect() as con:
+            rows = con.execute(
+                "SELECT page_number, image_path FROM reader_pages WHERE chapter_id = 100 ORDER BY page_number"
+            ).fetchall()
+        self.assertEqual([row[0] for row in rows], [1, 2, 3, 4])
+        self.assertTrue((self.storage / rows[-1][1]).exists())
+
     def test_reorder_pages(self):
         self.sign_in()
         response = self.client.put(
