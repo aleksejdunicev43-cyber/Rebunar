@@ -510,6 +510,105 @@ async function renderChapterEditForm(container,work,chapter,list,panel,refreshLa
   });
 }
 
+async function renderWebtoonPagesEditor(container,chapter) {
+  container.querySelector('.reader-webtoon-pages-editor')?.remove();
+  const editor=node('section','reader-webtoon-pages-editor');
+  editor.append(node('h4','','Страницы вебтуна'));
+  const feedback=node('p','reader-feedback'); feedback.hidden=true;
+  const pagesList=node('div','reader-webtoon-page-list');
+  editor.append(feedback,pagesList);
+  container.append(editor);
+
+  const loadPages=async()=>{
+    pagesList.replaceChildren(node('p','reader-muted','Загружаем страницы…'));
+    try {
+      const pages=await api.get('/reader/studio/chapters/'+chapter.id+'/pages');
+      pagesList.replaceChildren();
+      if(!pages.length) {
+        pagesList.append(node('p','reader-muted','В этой главе пока нет страниц.'));
+        return;
+      }
+      pages.forEach((page,index)=>{
+        const row=node('div','reader-webtoon-page-row');
+        const preview=node('img','reader-webtoon-page-preview');
+        preview.src=page.image_url;
+        preview.alt='Страница '+page.page_number;
+        preview.loading='lazy';
+        const info=node('div','reader-webtoon-page-info');
+        info.append(node('strong','','Страница '+page.page_number));
+        info.append(node('small','','Порядок отображения в главе'));
+        const actions=node('div','reader-webtoon-page-actions');
+        const moveUp=button('↑','reader-secondary-button',async()=>{
+          const ids=pages.map(item=>item.id);
+          [ids[index-1],ids[index]]=[ids[index],ids[index-1]];
+          await reorder(ids,moveUp);
+        });
+        moveUp.disabled=index===0;
+        moveUp.title='Переместить выше';
+        const moveDown=button('↓','reader-secondary-button',async()=>{
+          const ids=pages.map(item=>item.id);
+          [ids[index],ids[index+1]]=[ids[index+1],ids[index]];
+          await reorder(ids,moveDown);
+        });
+        moveDown.disabled=index===pages.length-1;
+        moveDown.title='Переместить ниже';
+        const replace=button('Заменить','reader-secondary-button',()=>{
+          const input=node('input','reader-field');
+          input.type='file'; input.accept='image/jpeg,image/png,image/webp';
+          input.hidden=true;
+          input.addEventListener('change',async()=>{
+            if(!input.files?.[0])return;
+            const data=new FormData(); data.append('image',input.files[0]);
+            replace.disabled=true;
+            message(feedback,'Заменяем страницу '+page.page_number+'…');
+            try {
+              await api.upload('/reader/pages/'+page.id+'/replace',data);
+              message(feedback,'Страница заменена.');
+              await loadPages();
+            } catch(error) {
+              message(feedback,error.message,true);
+              replace.disabled=false;
+            }
+          });
+          row.append(input);
+          input.click();
+        });
+        const remove=button('Удалить','reader-danger-button reader-danger-button-small',async()=>{
+          if(!window.confirm('Удалить страницу '+page.page_number+'? Остальные страницы сохранятся, их номера обновятся.'))return;
+          remove.disabled=true;
+          try {
+            await api.delete('/reader/pages/'+page.id);
+            message(feedback,'Страница удалена.');
+            await loadPages();
+          } catch(error) {
+            message(feedback,error.message,true);
+            remove.disabled=false;
+          }
+        });
+        remove.disabled=pages.length<=1;
+        actions.append(moveUp,moveDown,replace,remove);
+        row.append(preview,info,actions);
+        pagesList.append(row);
+      });
+    } catch(error) {
+      pagesList.replaceChildren(node('p','reader-feedback is-error',error.message));
+    }
+  };
+  const reorder=async(ids,control)=>{
+    if(control)control.disabled=true;
+    message(feedback,'Сохраняем порядок страниц…');
+    try {
+      await api.put('/reader/chapters/'+chapter.id+'/pages/order',{page_ids:ids});
+      message(feedback,'Порядок страниц сохранён.');
+      await loadPages();
+    } catch(error) {
+      message(feedback,error.message,true);
+      if(control)control.disabled=false;
+    }
+  };
+  await loadPages();
+}
+
 async function loadStudioWorks(list,panel,refreshLanding) {
   try {
     const works = await api.get('/reader/studio/works');
@@ -610,6 +709,9 @@ async function loadStudioWorks(list,panel,refreshLanding) {
           row.append(chapterInfo);
           const chapterActions = node('div','reader-studio-chapter-actions');
           chapterActions.append(button('Изменить','reader-secondary-button reader-danger-button-small',() => renderChapterEditForm(item,work,chapter,list,panel,refreshLanding)));
+          if (work.category === 'webtoon') {
+            chapterActions.append(button('Страницы','reader-secondary-button',() => renderWebtoonPagesEditor(item,chapter)));
+          }
           if (chapter.status !== 'published') {
             chapterActions.append(button('Опубликовать','reader-primary-button reader-publish-chapter-button',async publishEvent => {
               const publishButton = publishEvent?.currentTarget;
