@@ -2,7 +2,7 @@
  * REBUNAR — PROFILE VIEW
  */
 
-import { uploadAvatar, updateProfile } from './api.js';
+import { uploadAvatar, uploadProfileCover, updateProfile } from './api.js';
 import { getUser, setUser } from '../auth/session.js';
 import { avatarMarkup } from '../../shared/avatar.js?v=avatar-outline-20261105-1';
 import { navigate } from '../../app/router.js';
@@ -15,6 +15,7 @@ export function renderProfileScreen(container, user, onLogout) {
   const hasUserId = user.id !== undefined && user.id !== null;
   const userId = hasUserId ? String(user.id) : '—';
   const bio = user.bio || 'Пока нет описания профиля.';
+  const profileCover = user.profile_cover || '';
 
   container.innerHTML = `
     <section class="screen profile-screen">
@@ -35,32 +36,30 @@ export function renderProfileScreen(container, user, onLogout) {
       </div>
 
       <div class="profile-card">
-        <div class="profile-quick-layout">
-          <div class="profile-quick-grid profile-quick-grid-left" aria-label="Быстрые действия профиля">
-            ${renderProfileQuickActions([
-              ["creator","Автор / разработчик","✦"], ["mail","Почта","✉"],
-              ["recent","Последнее чтение","◷"], ["bookmarks","Закладки","☆"],
-              ["notifications","Уведомления","♢"], ["saved","Сохранённое","▣"]
-            ])}
+        <div class="profile-cover${profileCover ? ' has-custom-cover' : ''}" ${profileCover ? `style="--profile-cover-image: url('${escapeHTML(profileCover)}')"` : ''}>
+          <button class="profile-cover-edit" type="button" aria-label="Изменить обложку"><span aria-hidden="true">✎</span> Изменить обложку</button>
+        </div>
+        <input class="profile-cover-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+        <div class="profile-hero">
+          <button class="profile-avatar profile-avatar-button" type="button" aria-label="Аватар профиля">${avatar}</button>
+          <input class="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+          <div class="profile-account-id">
+            <span>ID: ${escapeHTML(userId)}</span>
+            <button class="profile-copy-id" type="button" aria-label="Скопировать ID" title="Скопировать ID" ${hasUserId ? "" : "disabled"}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>
+            </button>
           </div>
-          <div class="profile-quick-center">
-            <button class="profile-avatar profile-avatar-button" type="button" aria-label="Аватар профиля">${avatar}</button>
-            <input class="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-            <div class="profile-account-id">
-              <span>ID: ${escapeHTML(userId)}</span>
-              <button class="profile-copy-id" type="button" aria-label="Скопировать ID" title="Скопировать ID" ${hasUserId ? "" : "disabled"}>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>
-              </button>
-            </div>
-            <div class="profile-identity"><h2>${escapeHTML(displayName)}</h2><p class="profile-username">@${escapeHTML(username)}</p></div>
-          </div>
-          <div class="profile-quick-grid profile-quick-grid-right" aria-label="Разделы аккаунта">
-            ${renderProfileQuickActions([
-              ["users","Все пользователи","♙"], ["edit","Изменить профиль","⚙"],
-              ["stats","Статистика","▥"], ["achievements","Достижения","✧"],
-              ["privacy","Приватность","◇"], ["help","Помощь","?"]
-            ])}
-          </div>
+          <div class="profile-identity"><h2>${escapeHTML(displayName)}</h2><p class="profile-username">@${escapeHTML(username)}</p></div>
+        </div>
+        <div class="profile-quick-grid profile-quick-grid-all" aria-label="Разделы профиля">
+          ${renderProfileQuickActions([
+            ["creator","Автор / разработчик","✦"], ["mail","Почта","✉"],
+            ["recent","Последнее чтение","◷"], ["bookmarks","Закладки","☆"],
+            ["notifications","Уведомления","♢"], ["saved","Сохранённое","▣"],
+            ["users","Все пользователи","♙"], ["edit","Изменить профиль","⚙"],
+            ["stats","Статистика","▥"], ["achievements","Достижения","✧"],
+            ["privacy","Приватность","◇"], ["help","Помощь","?"]
+          ])}
         </div>
         <div class="profile-details">
           <div class="profile-bio">
@@ -115,6 +114,38 @@ export function renderProfileScreen(container, user, onLogout) {
     const file = fileInput.files?.[0];
     if (file) openAvatarEditor(container, file, user, onLogout);
     fileInput.value = '';
+  });
+
+  const coverInput = container.querySelector('.profile-cover-input');
+  container.querySelector('.profile-cover-edit').addEventListener('click', () => coverInput.click());
+  coverInput.addEventListener('change', async () => {
+    const file = coverInput.files?.[0];
+    coverInput.value = '';
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      showProfileToast(container, 'Выбери изображение JPG, PNG или WebP');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showProfileToast(container, 'Размер обложки не должен превышать 5 МБ');
+      return;
+    }
+    const coverButton = container.querySelector('.profile-cover-edit');
+    coverButton.disabled = true;
+    coverButton.textContent = 'Загрузка…';
+    try {
+      const result = await uploadProfileCover(file);
+      const latestUser = getUser() || user;
+      const updatedUser = { ...latestUser, profile_cover: result.profile_cover };
+      setUser(updatedUser);
+      renderProfileScreen(container, updatedUser, onLogout);
+      showProfileToast(container, 'Обложка профиля обновлена');
+    } catch (error) {
+      console.error('Rebunar: ошибка загрузки обложки:', error);
+      coverButton.disabled = false;
+      coverButton.innerHTML = '<span aria-hidden="true">✎</span> Изменить обложку';
+      showProfileToast(container, error.message || 'Не удалось загрузить обложку');
+    }
   });
 }
 
