@@ -678,6 +678,39 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       } catch (error) {
         studioChaptersError = error;
       }
+
+      const publishedChapterCount = studioChapters.filter(chapter => chapter.status === 'published').length;
+      const draftChapterCount = studioChapters.filter(chapter => chapter.status !== 'published').length;
+      const hasCover = Boolean(work.cover_url);
+      const hasPublishedChapter = publishedChapterCount > 0;
+      const canPublishWork = hasCover && hasPublishedChapter && !studioChaptersError;
+
+      const summary = node(
+        'p',
+        'reader-studio-summary',
+        'Главы: ' + publishedChapterCount + ' опубликовано · ' + draftChapterCount + ' черновик' +
+          (draftChapterCount === 1 ? '' : draftChapterCount > 1 && draftChapterCount < 5 ? 'а' : 'ов')
+      );
+      item.append(summary);
+
+      if (work.status === 'draft') {
+        const readiness = node('section', 'reader-publish-readiness');
+        readiness.append(node('strong', '', 'Готовность к публикации'));
+        const checklist = node('div', 'reader-publish-checklist');
+        [
+          [hasCover, 'Обложка произведения загружена'],
+          [hasPublishedChapter, 'Есть хотя бы одна опубликованная глава']
+        ].forEach(([complete, label]) => {
+          const line = node('span', complete ? 'reader-publish-check reader-publish-check-done' : 'reader-publish-check', (complete ? '✓ ' : '○ ') + label);
+          checklist.append(line);
+        });
+        if (studioChaptersError) {
+          checklist.append(node('span', 'reader-publish-check reader-publish-check-warning', 'Не удалось проверить главы. Обнови студию.'));
+        }
+        readiness.append(checklist);
+        item.append(readiness);
+      }
+
       const actions = node('div','reader-studio-actions');
       actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding,list,panel)));
       if (
@@ -718,10 +751,23 @@ async function loadStudioWorks(list,panel,refreshLanding) {
           }
         }));
       }
-      if (work.status === 'draft') actions.append(button('Опубликовать произведение','reader-primary-button',async () => {
-        try { await api.post('/reader/works/'+work.id+'/publish',{}); await loadStudioWorks(list,panel,refreshLanding); }
-        catch(error) { window.alert(error.message); }
-      }));
+      if (work.status === 'draft') {
+        const publishWork = button('Опубликовать произведение','reader-primary-button',async () => {
+          publishWork.disabled = true;
+          try {
+            await api.post('/reader/works/'+work.id+'/publish',{});
+            await loadStudioWorks(list,panel,refreshLanding);
+          } catch(error) {
+            window.alert(error.message);
+            publishWork.disabled = false;
+          }
+        });
+        publishWork.disabled = !canPublishWork;
+        publishWork.title = canPublishWork
+          ? 'Опубликовать произведение'
+          : 'Сначала загрузи обложку и опубликуй хотя бы одну главу';
+        actions.append(publishWork);
+      }
       actions.append(button('Удалить произведение','reader-danger-button',async () => {
         const confirmed = window.confirm('Удалить произведение «'+work.title+'» вместе со всеми главами и изображениями? Это действие нельзя отменить.');
         if (!confirmed) return;
