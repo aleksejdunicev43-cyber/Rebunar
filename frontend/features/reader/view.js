@@ -85,6 +85,59 @@ async function loadCatalog(panel, key, openWork) {
     panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
   }
 }
+
+async function loadLibrary(panel, openWork) {
+  panel.replaceChildren(node('p', 'reader-loading', 'Загружаем библиотеку…'));
+  try {
+    const works = await api.get('/reader/library');
+    panel.replaceChildren();
+    if (!works.length) {
+      const empty = node('div', 'reader-empty-state');
+      empty.append(node('span', 'reader-empty-kicker', 'REBUNAR / LIBRARY'));
+      empty.append(node('h3', '', 'Библиотека пока пуста'));
+      empty.append(node('p', '', 'Добавляй понравившиеся новеллы и вебтуны в библиотеку — они будут собраны здесь.'));
+      panel.append(empty);
+      return;
+    }
+    const toolbar = node('div', 'reader-catalog-toolbar');
+    const search = node('input', 'reader-catalog-search');
+    search.type = 'search';
+    search.placeholder = 'Поиск в моей библиотеке';
+    search.setAttribute('aria-label', 'Поиск в моей библиотеке');
+    toolbar.append(search);
+    panel.append(toolbar);
+    const grid = node('div', 'reader-work-grid');
+    works.forEach(work => {
+      const isNovel = work.category === 'novel';
+      const card = button('', 'reader-work-card' + (isNovel ? ' reader-work-card-novel' : ''), () => openWork(work.id));
+      card.setAttribute('aria-label', work.title);
+      card.dataset.search = [work.title, work.author, work.description].filter(Boolean).join(' ').toLocaleLowerCase('ru');
+      if (work.cover_url) {
+        const cover = node('img', 'reader-work-cover' + (isNovel ? ' reader-work-cover-novel' : ''));
+        cover.src = work.cover_url;
+        cover.alt = 'Обложка: ' + work.title;
+        cover.loading = 'lazy';
+        card.append(cover);
+      } else card.append(node('div', 'reader-work-cover reader-work-cover-empty', 'REBUNAR'));
+      const info = node('span', 'reader-work-info');
+      info.append(node('strong', '', work.title));
+      info.append(node('small', '', 'Автор: ' + (work.author || 'Rebunar')));
+      if (work.description) info.append(node('span', 'reader-work-description', work.description));
+      info.append(node('span', 'reader-work-meta', isNovel ? 'НОВЕЛЛА' : 'ВЕБТУН'));
+      card.append(info);
+      grid.append(card);
+    });
+    panel.append(grid);
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLocaleLowerCase('ru');
+      grid.querySelectorAll('.reader-work-card').forEach(card => {
+        card.hidden = Boolean(query) && !card.dataset.search.includes(query);
+      });
+    });
+  } catch (error) {
+    panel.replaceChildren(node('p', 'reader-feedback is-error', error.message));
+  }
+}
 async function showPublicWork(panel, workId, back) {
   const screen = panel.closest('.reader-screen');
   screen?.classList.remove('reader-reading-mode');
@@ -94,7 +147,8 @@ async function showPublicWork(panel, workId, back) {
     const [work, chapters, catalog] = await Promise.all([
       api.get('/reader/works/' + workId),
       api.get('/reader/works/' + workId + '/chapters'),
-      api.get('/reader/works?category=' + (panel.closest('.reader-screen')?.querySelector('[data-reader-tab="webtoons"].is-active') ? 'webtoon' : 'novel')).catch(() => [])
+      api.get('/reader/works?category=' + (panel.closest('.reader-screen')?.querySelector('[data-reader-tab="webtoons"].is-active') ? 'webtoon' : 'novel')).catch(() => []),
+      api.get('/reader/library').catch(() => [])
     ]);
     panel.replaceChildren();
     const detail = node('section', 'reader-work-detail');
@@ -116,6 +170,30 @@ async function showPublicWork(panel, workId, back) {
     info.append(node('span', 'reader-eyebrow', work.category === 'novel' ? 'REBUNAR / НОВЕЛЛА' : 'REBUNAR / ВЕБТУН'));
     info.append(node('h2', '', work.title));
     info.append(node('small', '', 'Автор: ' + (work.author || 'Не указан')));
+    let isSaved = library.some(item => String(item.id) === String(workId));
+    const libraryButton = button(
+      isSaved ? 'Убрать из библиотеки' : 'Добавить в библиотеку',
+      'reader-secondary-button',
+      async () => {
+        libraryButton.disabled = true;
+        try {
+          if (isSaved) {
+            await api.delete('/reader/works/' + workId + '/library');
+          } else {
+            await api.post('/reader/works/' + workId + '/library', {});
+          }
+          isSaved = !isSaved;
+          libraryButton.textContent = isSaved ? 'Убрать из библиотеки' : 'Добавить в библиотеку';
+          libraryButton.setAttribute('aria-pressed', String(isSaved));
+        } catch (error) {
+          window.alert(error.message);
+        } finally {
+          libraryButton.disabled = false;
+        }
+      }
+    );
+    libraryButton.setAttribute('aria-pressed', String(isSaved));
+    info.append(libraryButton);
     hero.append(info);
     detail.append(hero);
     const tabBar = node('div', 'reader-work-tabs');
@@ -510,13 +588,14 @@ function renderChapterEditor(container,work,refreshLanding) {
 }
 
 export function renderReaderScreen(outlet, params = {}) {
-  const initialCategory = Object.hasOwn(categories, params.category) ? params.category : 'novels';
+  const initialCategory = params.category === 'library' ? 'library' : (Object.hasOwn(categories, params.category) ? params.category : 'novels');
   outlet.innerHTML = [
     '<section class="screen reader-screen">',
     '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Что почитаем?</h1></div></header>',
     '<div class="reader-tabs" role="tablist" aria-label="Категории чтения">',
       '<button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">Aa</span><span class="reader-tab-copy"><strong>Новеллы</strong><small>Текстовые истории</small></span></button>',
       '<button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">▤</span><span class="reader-tab-copy"><strong>Вебтуны</strong><small>Истории в картинках</small></span></button>',
+      '<button class="reader-tab" type="button" role="tab" data-reader-tab="library" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">♡</span><span class="reader-tab-copy"><strong>Библиотека</strong><small>Сохранённые истории</small></span></button>',
     '</div>',
     '<section class="reader-category-panel" id="reader-category-panel" aria-live="polite"></section>',
     '</section>'
@@ -525,13 +604,17 @@ export function renderReaderScreen(outlet, params = {}) {
   const tabs=[...outlet.querySelectorAll('[data-reader-tab]')];
   let active='novels';
   const activateCategory=key=>{
-    if(!categories[key])return;
+    if(!categories[key] && key!=='library')return;
     outlet.querySelector('.reader-screen')?.classList.remove('reader-detail-mode','reader-reading-mode');
     active=key;
     tabs.forEach(tab=>{const on=tab.dataset.readerTab===key;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;});
     panel.replaceChildren();
     const catalog=node('div','reader-catalog-list');
     panel.append(catalog);
+    if(key==='library'){
+      loadLibrary(catalog,id=>showPublicWork(panel,id,()=>activateCategory(key)));
+      return;
+    }
     loadCatalog(catalog,key,id=>showPublicWork(panel,id,()=>activateCategory(key)));
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
