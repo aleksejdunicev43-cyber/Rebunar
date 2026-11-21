@@ -75,6 +75,8 @@
 .reader-status-tag{padding:5px 8px;border:1px solid rgba(255,255,255,.1);border-radius:99px;color:#9db0a6;font-size:9px;font-weight:800}
 .reader-studio-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .reader-chapter-editor{display:grid;gap:10px;margin-top:14px;padding:14px;border:1px solid rgba(75,210,158,.16);border-radius:12px;background:#101615}
+.reader-work-editor{margin-top:12px}
+.reader-work-editor textarea,.reader-chapter-editor textarea{resize:vertical;min-height:110px}
 .reader-chapter-editor h4{margin:0;font-size:14px}
 .reader-studio-work .reader-muted{margin:7px 0 0}
 @media(max-width:600px){.reader-author-cta{align-items:flex-start;flex-direction:column}.reader-author-button{width:100%}.reader-work-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.reader-work-cover{height:190px}.reader-detail-heading{gap:13px}.reader-detail-cover{width:95px;max-height:145px}.reader-studio-heading{flex-direction:column}.reader-studio-heading>.reader-back-button{width:100%}.reader-studio-actions>*{flex:1}.reader-prose{font-size:15px;line-height:1.85}}
