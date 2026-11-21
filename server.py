@@ -449,14 +449,26 @@ def reader_upload_cover(work_id):
     except (UnidentifiedImageError, OSError, ValueError):
         return jsonify({"error": "Файл не является корректным изображением"}), 400
     relative = "covers/" + filename
-    with connect() as con:
-        cur = con.execute("""
-            UPDATE reader_works SET cover_path = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ? AND author_id = ? AND status = 'draft'
-        """, ("/reader-media/" + relative, work_id, session["user_id"]))
-        if not cur.rowcount:
-            (folder / filename).unlink(missing_ok=True)
-            return jsonify({"error": "Черновик не найден или уже опубликован"}), 404
+    old_cover_path = None
+    try:
+        with connect() as con:
+            work = con.execute("""
+                SELECT cover_path FROM reader_works
+                WHERE id = ? AND author_id = ?
+            """, (work_id, session["user_id"])).fetchone()
+            if not work:
+                (folder / filename).unlink(missing_ok=True)
+                return jsonify({"error": "Произведение не найдено"}), 404
+            old_cover_path = work[0]
+            con.execute("""
+                UPDATE reader_works SET cover_path = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND author_id = ?
+            """, ("/reader-media/" + relative, work_id, session["user_id"]))
+    except Exception:
+        (folder / filename).unlink(missing_ok=True)
+        raise
+    if old_cover_path:
+        remove_reader_media([old_cover_path], READER_STORAGE)
     return jsonify({"ok": True, "cover_url": "/reader-media/" + relative})
 
 @app.post("/api/reader/works/<int:work_id>/chapters")
