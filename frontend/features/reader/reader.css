@@ -1199,3 +1199,10 @@
   .reader-webtoon-page-row {grid-template-columns:64px minmax(100px,1fr) auto}
   .reader-webtoon-page-actions {grid-column:auto;justify-content:flex-end}
 }
+
+.reader-webtoon-pages-heading {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.reader-webtoon-pages-heading h4 {margin:0}
+.reader-webtoon-pages-heading .reader-primary-button {min-height:34px;padding:6px 11px;font-size:11px}
+@media(max-width:420px) {
+  .reader-webtoon-pages-heading {align-items:flex-start;flex-direction:column}
+}
