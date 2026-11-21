@@ -1010,17 +1010,16 @@ export function renderReaderScreen(outlet, params = {}) {
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>activateCategory(tab.dataset.readerTab)));
   const refreshLanding=()=>{
-    outlet.querySelector('.reader-studio-panel')?.remove();
-    outlet.querySelector('.reader-hero h1').textContent='Что почитаем?';
-    outlet.querySelector('.reader-tabs').hidden=false;
-    activateCategory(active);
-    outlet.querySelector('.reader-tabs')?.scrollIntoView({behavior:'smooth',block:'start'});
+    renderReaderScreen(outlet,{category:initialCategory});
   };
   if(params.mode==='studio'){
-    outlet.querySelector('.reader-hero h1').textContent='Студия автора';
-    outlet.querySelector('.reader-tabs').hidden=true;
+    const screen=outlet.querySelector('.reader-screen');
+    screen?.classList.add('reader-studio-mode');
+    outlet.querySelector('.reader-hero')?.remove();
+    outlet.querySelector('.reader-tabs')?.remove();
+    panel.remove();
     const studio=node('section','reader-studio-panel');
-    panel.append(studio);
+    screen.append(studio);
     renderStudio(studio,refreshLanding);
   }else{
     activateCategory(initialCategory);
