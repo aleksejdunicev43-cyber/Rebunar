@@ -668,7 +668,7 @@ async function loadStudioWorks(list,panel,refreshLanding) {
         });
         input.click();
       }));
-      actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding)));
+      actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding,list,panel)));
       if (
         work.category === 'novel' &&
         work.title.trim().toLocaleLowerCase() === 'когда тьма пробуждается' &&
@@ -769,43 +769,156 @@ async function loadStudioWorks(list,panel,refreshLanding) {
   } catch(error) { list.append(node('p','reader-feedback is-error',error.message)); }
 }
 
-function renderChapterEditor(container,work,refreshLanding) {
+function renderChapterEditor(container,work,refreshLanding,list,panel) {
   container.querySelector('.reader-chapter-editor')?.remove();
   const form = node('form','reader-chapter-editor');
-  form.append(node('h4','','Новая глава'));
-  const title = node('input','reader-field'); title.placeholder='Название главы'; title.required=true; title.maxLength=160;
-  form.append(title);
+  const heading = node('h4','','Новая глава');
+  const fields = node('div','reader-chapter-editor-fields');
+  const title = node('input','reader-field');
+  title.placeholder='Название главы'; title.required=true; title.maxLength=160;
+  fields.append(title);
   let content=null, pages=null;
   if (work.category === 'novel') {
-    content=node('textarea','reader-field'); content.placeholder='Текст главы…'; content.rows=12; content.maxLength=200000; content.required=true;
-    form.append(content);
+    content=node('textarea','reader-field');
+    content.placeholder='Текст главы…'; content.rows=12; content.maxLength=200000; content.required=true;
+    fields.append(content);
   } else {
     const label=node('label','reader-upload-label','Страницы вебтуна (можно выбрать несколько; порядок — по именам файлов)');
-    pages=node('input','reader-field'); pages.type='file'; pages.accept='image/jpeg,image/png,image/webp'; pages.multiple=true; pages.required=true;
-    label.append(pages); form.append(label);
+    pages=node('input','reader-field');
+    pages.type='file'; pages.accept='image/jpeg,image/png,image/webp'; pages.multiple=true;
+    label.append(pages); fields.append(label);
   }
+
   const feedback=node('p','reader-feedback'); feedback.hidden=true;
-  const submit=node('button','reader-primary-button','Сохранить и опубликовать главу'); submit.type='submit';
-  form.append(feedback,submit);
-  form.addEventListener('submit',async event=>{
-    event.preventDefault(); submit.disabled=true; message(feedback,'Сохраняем главу…');
-    try {
-      const chapter=await api.post('/reader/works/'+work.id+'/chapters',{title:title.value,content:content?.value||''});
-      if (pages) {
-        const selected=[...pages.files].sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
-        for (let i=0;i<selected.length;i++) {
-          message(feedback,'Загружаем страницу '+(i+1)+' из '+selected.length+'…');
-          const data=new FormData(); data.append('image',selected[i]);
-          await api.upload('/reader/chapters/'+chapter.id+'/pages',data);
-        }
-      }
-      await api.post('/reader/chapters/'+chapter.id+'/publish',{});
-      message(feedback,'Глава опубликована!');
-      title.value=''; if(content) content.value=''; if(pages) pages.value='';
-    } catch(error) { message(feedback,error.message,true); }
-    finally { submit.disabled=false; }
-  });
+  const save=node('button','reader-primary-button','Сохранить черновик и открыть предпросмотр');
+  save.type='submit';
+  const preview=node('section','reader-chapter-preview'); preview.hidden=true;
+  form.append(heading,fields,feedback,save,preview);
   container.append(form);
+
+  let chapterId=null;
+  const uploadedFiles=new Set();
+  let pageManagerOpen=false;
+
+  const renderPreview=async()=>{
+    message(feedback,'Загружаем сохранённую главу для предпросмотра…');
+    try {
+      const chapter=await api.get('/reader/studio/chapters/'+chapterId);
+      let pageItems=[];
+      if(work.category==='webtoon') {
+        pageItems=await api.get('/reader/studio/chapters/'+chapterId+'/pages');
+      }
+      preview.replaceChildren();
+      const previewHead=node('div','reader-chapter-preview-heading');
+      previewHead.append(
+        node('span','reader-status-tag','ЧЕРНОВИК'),
+        node('h4','',chapter.title)
+      );
+      preview.append(previewHead);
+      if(work.category==='novel') {
+        const text=node('div','reader-chapter-preview-text',chapter.content||'');
+        preview.append(text);
+      } else {
+        const pageSummary=node('p','reader-muted','Страниц: '+pageItems.length+' · порядок проверен');
+        preview.append(pageSummary);
+        const pageGrid=node('div','reader-chapter-preview-pages');
+        pageItems.forEach(page=>{
+          const figure=node('figure','reader-chapter-preview-page');
+          const image=node('img');
+          image.src=page.image_url;
+          image.alt='Предпросмотр страницы '+page.page_number;
+          image.loading='lazy';
+          figure.append(image,node('figcaption','','Страница '+page.page_number));
+          pageGrid.append(figure);
+        });
+        if(!pageItems.length) pageGrid.append(node('p','reader-feedback is-error','Пока нет загруженных страниц. Добавь хотя бы одну перед публикацией.'));
+        preview.append(pageGrid);
+      }
+      const actions=node('div','reader-chapter-preview-actions');
+      actions.append(button('Вернуться к редактированию','reader-secondary-button',()=>{
+        preview.hidden=true;
+        fields.hidden=false;
+        save.hidden=false;
+        save.textContent='Сохранить изменения и обновить предпросмотр';
+        if(work.category==='webtoon'&&!pageManagerOpen) {
+          pageManagerOpen=true;
+          renderWebtoonPagesEditor(form,{id:chapterId});
+        }
+      }));
+      const publish=button('Опубликовать главу','reader-primary-button',async()=>{
+        publish.disabled=true;
+        message(feedback,'Публикуем главу…');
+        try {
+          await api.post('/reader/chapters/'+chapterId+'/publish',{});
+          message(feedback,'Глава опубликована.');
+          await loadStudioWorks(list,panel,refreshLanding);
+        } catch(error) {
+          message(feedback,error.message,true);
+          publish.disabled=false;
+        }
+      });
+      publish.disabled=work.category==='webtoon'&&pageItems.length===0;
+      actions.append(publish);
+      preview.append(actions);
+      form.querySelector('.reader-webtoon-pages-editor')?.remove();
+      pageManagerOpen=false;
+      fields.hidden=true;
+      save.hidden=true;
+      preview.hidden=false;
+      message(feedback,'Черновик сохранён. Проверь содержимое перед публикацией.');
+    } catch(error) {
+      message(feedback,error.message,true);
+    }
+  };
+
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(!title.value.trim()) {
+      message(feedback,'Укажи название главы.',true);
+      return;
+    }
+    if(work.category==='novel'&&!content.value.trim()) {
+      message(feedback,'Добавь текст главы перед сохранением.',true);
+      return;
+    }
+    const selected=pages?[...pages.files].sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true})): [];
+    if(work.category==='webtoon'&&!chapterId&&!selected.length) {
+      message(feedback,'Выбери хотя бы одну страницу вебтуна.',true);
+      return;
+    }
+    save.disabled=true;
+    try {
+      if(!chapterId) {
+        message(feedback,'Создаём черновик…');
+        const created=await api.post('/reader/works/'+work.id+'/chapters',{
+          title:title.value,
+          content:content?.value||''
+        });
+        chapterId=created.id;
+      } else {
+        message(feedback,'Сохраняем изменения…');
+        await api.put('/reader/chapters/'+chapterId,{
+          title:title.value,
+          content:content?.value||''
+        });
+      }
+      for(let i=0;i<selected.length;i++) {
+        const file=selected[i];
+        const key=[file.name,file.size,file.lastModified].join(':');
+        if(uploadedFiles.has(key)) continue;
+        message(feedback,'Загружаем страницу '+(i+1)+' из '+selected.length+'…');
+        const data=new FormData(); data.append('image',file);
+        await api.upload('/reader/chapters/'+chapterId+'/pages',data);
+        uploadedFiles.add(key);
+      }
+      if(pages) pages.value='';
+      await renderPreview();
+    } catch(error) {
+      message(feedback,error.message,true);
+    } finally {
+      save.disabled=false;
+    }
+  });
 }
 
 export function renderReaderScreen(outlet, params = {}) {

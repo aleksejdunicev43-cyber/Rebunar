@@ -1206,3 +1206,35 @@
 @media(max-width:420px) {
   .reader-webtoon-pages-heading {align-items:flex-start;flex-direction:column}
 }
+
+
+/* Creator Studio: saved chapter preview before publication */
+.reader-chapter-preview {
+  margin-top:16px;
+  padding:16px;
+  border:1px solid rgba(91,207,157,.2);
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(20,34,27,.94),rgba(12,19,16,.98));
+}
+.reader-chapter-preview[hidden] {display:none!important}
+.reader-chapter-preview-heading {display:grid;gap:8px;margin-bottom:14px}
+.reader-chapter-preview-heading h4 {margin:0;color:#e5f4eb;font-size:18px;line-height:1.35}
+.reader-chapter-preview-text {
+  color:#d5e2da;
+  font-size:14px;
+  line-height:1.85;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.reader-chapter-preview-pages {display:grid;gap:14px;max-width:720px;margin:12px auto}
+.reader-chapter-preview-page {margin:0;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#080d0b}
+.reader-chapter-preview-page img {display:block;width:100%;height:auto;max-height:1100px;object-fit:contain}
+.reader-chapter-preview-page figcaption {padding:7px 10px;color:#91a99b;font-size:10px;text-align:center}
+.reader-chapter-preview-actions {display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)}
+.reader-chapter-preview-actions button {min-height:40px}
+.reader-chapter-editor-fields[hidden] {display:none!important}
+@media(max-width:520px) {
+  .reader-chapter-preview {padding:12px}
+  .reader-chapter-preview-actions {display:grid;grid-template-columns:1fr}
+  .reader-chapter-preview-actions button {width:100%}
+}
