@@ -113,6 +113,62 @@ def register_reader_studio_pages_routes(
             "image_url": "/reader-media/" + relative,
         })
 
+    @app.post("/api/reader/chapters/<int:chapter_id>/pages/add")
+    def reader_studio_add_page(chapter_id):
+        auth = reader_user_required()
+        if auth:
+            return auth
+        ensure_reader_tables()
+        file = request.files.get("image")
+        if not file:
+            return jsonify({"error": "Выбери изображение страницы"}), 400
+        raw = file.read(MAX_PAGE_IMAGE + 1)
+        if len(raw) > MAX_PAGE_IMAGE:
+            return jsonify({"error": "Одна страница должна быть не больше 8 МБ"}), 413
+        try:
+            image = Image.open(BytesIO(raw))
+            image = ImageOps.exif_transpose(image)
+            image.load()
+            if image.width * image.height > 40000000:
+                return jsonify({"error": "Слишком большое разрешение изображения"}), 400
+            image.thumbnail((2400, 12000))
+            image = image.convert("RGB")
+            folder = storage / "webtoons"
+            folder.mkdir(parents=True, exist_ok=True)
+            filename = uuid.uuid4().hex + ".webp"
+            image.save(folder / filename, "WEBP", quality=88, method=6)
+        except (UnidentifiedImageError, OSError, ValueError):
+            return jsonify({"error": "Файл не является корректным изображением"}), 400
+
+        relative = "webtoons/" + filename
+        try:
+            with connect() as con:
+                chapter = con.execute("""
+                    SELECT c.id
+                    FROM reader_chapters c
+                    JOIN reader_works w ON w.id = c.work_id
+                    WHERE c.id = ? AND w.author_id = ? AND w.category = 'webtoon'
+                """, (chapter_id, session["user_id"])).fetchone()
+                if not chapter:
+                    (folder / filename).unlink(missing_ok=True)
+                    return jsonify({"error": "Глава вебтуна не найдена"}), 404
+                number = con.execute(
+                    "SELECT COALESCE(MAX(page_number), 0) + 1 FROM reader_pages WHERE chapter_id = ?",
+                    (chapter_id,),
+                ).fetchone()[0]
+                con.execute(
+                    "INSERT INTO reader_pages (chapter_id, page_number, image_path) VALUES (?, ?, ?)",
+                    (chapter_id, number, relative),
+                )
+        except Exception:
+            (folder / filename).unlink(missing_ok=True)
+            raise
+        return jsonify({
+            "ok": True,
+            "page_number": number,
+            "image_url": "/reader-media/" + relative,
+        }), 201
+
     @app.delete("/api/reader/pages/<int:page_id>")
     def reader_studio_delete_page(page_id):
         auth = reader_user_required()
