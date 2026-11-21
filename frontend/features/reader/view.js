@@ -860,6 +860,8 @@ function renderChapterEditor(container,work,refreshLanding,list,panel) {
       publish.disabled=work.category==='webtoon'&&pageItems.length===0;
       actions.append(publish);
       preview.append(actions);
+      form.querySelector('.reader-webtoon-pages-editor')?.remove();
+      pageManagerOpen=false;
       fields.hidden=true;
       save.hidden=true;
       preview.hidden=false;
