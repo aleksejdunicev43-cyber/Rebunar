@@ -649,6 +649,27 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       item.append(node('p','reader-muted',work.category === 'novel' ? 'Новелла' : 'Вебтун'));
       const workActions = node('div','reader-studio-actions');
       workActions.append(button('Редактировать произведение','reader-secondary-button',() => renderWorkEditor(item,work,list,panel,refreshLanding)));
+      workActions.append(button(
+        work.cover_url ? 'Заменить обложку' : 'Загрузить обложку',
+        'reader-secondary-button',
+        () => {
+          const input=node('input','reader-field');
+          input.type='file';
+          input.accept='image/jpeg,image/png,image/webp';
+          input.addEventListener('change',async()=>{
+            if(!input.files[0])return;
+            const data=new FormData();
+            data.append('image',input.files[0]);
+            try {
+              await api.upload('/reader/works/'+work.id+'/cover',data);
+              await loadStudioWorks(list,panel,refreshLanding);
+            } catch(error) {
+              window.alert(error.message);
+            }
+          });
+          input.click();
+        }
+      ));
       item.append(workActions);
       let studioChapters = [];
       let studioChaptersError = null;
@@ -658,16 +679,6 @@ async function loadStudioWorks(list,panel,refreshLanding) {
         studioChaptersError = error;
       }
       const actions = node('div','reader-studio-actions');
-      if (work.status === 'draft') actions.append(button('Загрузить обложку','reader-secondary-button',() => {
-        const input=node('input','reader-field'); input.type='file'; input.accept='image/jpeg,image/png,image/webp';
-        input.addEventListener('change',async()=>{
-          if(!input.files[0])return;
-          const data=new FormData(); data.append('image',input.files[0]);
-          try { await api.upload('/reader/works/'+work.id+'/cover',data); await loadStudioWorks(list,panel,refreshLanding); }
-          catch(error) { window.alert(error.message); }
-        });
-        input.click();
-      }));
       actions.append(button('Добавить главу','reader-secondary-button',() => renderChapterEditor(item,work,refreshLanding,list,panel)));
       if (
         work.category === 'novel' &&
