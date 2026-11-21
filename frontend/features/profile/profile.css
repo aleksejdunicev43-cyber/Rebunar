@@ -1178,6 +1178,7 @@
 .profile-cover-edit:disabled{opacity:.65;cursor:wait}
 .profile-hero{--profile-avatar-size:clamp(112px,30vw,136px);position:relative;z-index:2;display:flex;width:100%;flex-direction:column;align-items:center;gap:9px;margin-top:calc(var(--profile-avatar-size) / -2);text-align:center}
 .profile-hero .profile-avatar-button{width:var(--profile-avatar-size);height:var(--profile-avatar-size);flex:0 0 var(--profile-avatar-size);border:3px solid var(--bg-main);border-radius:19%;background:var(--bg-main);box-shadow:0 10px 30px rgba(0,0,0,.48)}
+.profile-hero .profile-avatar-button{overflow:visible!important}
 .profile-hero .profile-account-id{margin:0;font-size:13px}
 .profile-hero .profile-identity{max-width:100%;margin:0 0 22px;overflow-wrap:anywhere;text-align:center}
 .profile-hero .profile-identity h2{margin:0 0 5px;font-size:clamp(21px,5vw,26px)}
