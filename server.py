@@ -334,6 +334,11 @@ register_reader_library_routes(
 )
 
 
+from reader_studio_edit_routes import register_reader_studio_edit_routes
+
+register_reader_studio_edit_routes(app, connect, ensure_reader_tables, reader_user_required)
+
+
 @app.delete("/api/reader/chapters/<int:chapter_id>")
 def reader_delete_chapter(chapter_id):
     auth = reader_user_required()

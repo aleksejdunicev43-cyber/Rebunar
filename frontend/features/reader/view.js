@@ -144,7 +144,7 @@ async function showPublicWork(panel, workId, back) {
   screen?.classList.add('reader-detail-mode');
   panel.replaceChildren(node('p', 'reader-loading', 'Открываем произведение…'));
   try {
-    const [work, chapters, catalog] = await Promise.all([
+    const [work, chapters, catalog, library] = await Promise.all([
       api.get('/reader/works/' + workId),
       api.get('/reader/works/' + workId + '/chapters'),
       api.get('/reader/works?category=' + (panel.closest('.reader-screen')?.querySelector('[data-reader-tab="webtoons"].is-active') ? 'webtoon' : 'novel')).catch(() => []),
@@ -421,6 +421,95 @@ async function renderStudio(panel, refreshLanding) {
   await loadStudioWorks(worksList,panel,refreshLanding);
 }
 
+function renderWorkEditor(container,work,list,panel,refreshLanding) {
+  container.querySelector('.reader-work-editor')?.remove();
+  const form = node('form','reader-chapter-editor reader-work-editor');
+  form.append(node('h4','','Редактировать произведение'));
+  const title = node('input','reader-field');
+  title.value = work.title || '';
+  title.maxLength = 160;
+  title.required = true;
+  title.setAttribute('aria-label','Название произведения');
+  const description = node('textarea','reader-field');
+  description.value = work.description || '';
+  description.maxLength = 3000;
+  description.rows = 4;
+  description.setAttribute('aria-label','Описание произведения');
+  const feedback = node('p','reader-feedback');
+  feedback.hidden = true;
+  const save = node('button','reader-primary-button','Сохранить изменения');
+  save.type = 'submit';
+  form.append(title,description,feedback,save);
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    save.disabled = true;
+    message(feedback,'Сохраняем изменения…');
+    try {
+      await api.put('/reader/works/'+work.id,{title:title.value,description:description.value});
+      message(feedback,'Изменения сохранены.');
+      await loadStudioWorks(list,panel,refreshLanding);
+    } catch(error) {
+      message(feedback,error.message,true);
+    } finally {
+      save.disabled = false;
+    }
+  });
+  container.append(form);
+}
+
+async function renderChapterEditForm(container,work,chapter,list,panel,refreshLanding) {
+  container.querySelector('.reader-chapter-editor')?.remove();
+  const form = node('form','reader-chapter-editor');
+  form.append(node('h4','','Редактировать главу '+chapter.chapter_number));
+  const feedback = node('p','reader-feedback');
+  feedback.hidden = true;
+  const title = node('input','reader-field');
+  title.placeholder = 'Название главы';
+  title.maxLength = 160;
+  title.required = true;
+  const content = work.category === 'novel' ? node('textarea','reader-field') : null;
+  if (content) {
+    content.placeholder = 'Текст главы…';
+    content.rows = 14;
+    content.maxLength = 200000;
+  } else {
+    form.append(node('p','reader-muted','Страницы вебтуна останутся без изменений. Здесь можно изменить только название главы.'));
+  }
+  const save = node('button','reader-primary-button','Сохранить изменения');
+  save.type = 'submit';
+  form.append(title);
+  if (content) form.append(content);
+  form.append(feedback,save);
+  container.append(form);
+  message(feedback,'Загружаем главу…');
+  save.disabled = true;
+  try {
+    const details = await api.get('/reader/studio/chapters/'+chapter.id);
+    title.value = details.title || '';
+    if (content) content.value = details.content || '';
+    message(feedback,'');
+  } catch(error) {
+    message(feedback,error.message,true);
+    return;
+  } finally {
+    save.disabled = false;
+  }
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    save.disabled = true;
+    message(feedback,'Сохраняем изменения…');
+    try {
+      await api.put('/reader/chapters/'+chapter.id,{title:title.value,content:content?.value||''});
+      message(feedback,'Изменения сохранены. Статус публикации не изменён.');
+      await loadStudioWorks(list,panel,refreshLanding);
+    } catch(error) {
+      message(feedback,error.message,true);
+    } finally {
+      save.disabled = false;
+    }
+  });
+}
+
 async function loadStudioWorks(list,panel,refreshLanding) {
   try {
     const works = await api.get('/reader/studio/works');
@@ -433,6 +522,9 @@ async function loadStudioWorks(list,panel,refreshLanding) {
       title.append(node('span','reader-status-tag',work.status === 'published' ? 'Опубликовано' : 'Черновик'));
       item.append(title);
       item.append(node('p','reader-muted',work.category === 'novel' ? 'Новелла' : 'Вебтун'));
+      const workActions = node('div','reader-studio-actions');
+      workActions.append(button('Редактировать произведение','reader-secondary-button',() => renderWorkEditor(item,work,list,panel,refreshLanding)));
+      item.append(workActions);
       let studioChapters = [];
       let studioChaptersError = null;
       try {
@@ -517,6 +609,7 @@ async function loadStudioWorks(list,panel,refreshLanding) {
           chapterInfo.append(node('small','',chapter.status === 'published' ? 'Опубликована' : 'Черновик'));
           row.append(chapterInfo);
           const chapterActions = node('div','reader-studio-chapter-actions');
+          chapterActions.append(button('Изменить','reader-secondary-button reader-danger-button-small',() => renderChapterEditForm(item,work,chapter,list,panel,refreshLanding)));
           if (chapter.status !== 'published') {
             chapterActions.append(button('Опубликовать','reader-primary-button reader-publish-chapter-button',async publishEvent => {
               const publishButton = publishEvent?.currentTarget;
