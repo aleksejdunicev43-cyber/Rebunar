@@ -1245,3 +1245,53 @@
   .reader-chapter-preview-actions {display:grid;grid-template-columns:1fr}
   .reader-chapter-preview-actions button {width:100%}
 }
+
+
+/* Creator Studio: standalone full-width page with the app's normal page scroll. */
+.reader-screen.reader-studio-mode {
+  width:100%;
+  max-width:none;
+  min-height:100%;
+  margin:0;
+  padding:0 0 48px;
+}
+.reader-screen.reader-studio-mode .reader-studio-panel {
+  width:100%;
+  min-height:calc(100dvh - 190px);
+  margin:0;
+  padding:clamp(18px,3vw,30px);
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.reader-screen.reader-studio-mode .reader-studio-heading {
+  align-items:flex-start;
+  margin:0 0 22px;
+}
+.reader-screen.reader-studio-mode .reader-studio-heading h2 {
+  margin:0 0 8px;
+  font-size:clamp(28px,5vw,38px);
+}
+.reader-screen.reader-studio-mode .reader-create-form {
+  width:100%;
+}
+@media(max-width:600px) {
+  .reader-screen.reader-studio-mode {
+    padding-bottom:36px;
+  }
+  .reader-screen.reader-studio-mode .reader-studio-panel {
+    min-height:calc(100dvh - 170px);
+    padding:18px 16px 32px;
+  }
+  .reader-screen.reader-studio-mode .reader-studio-heading {
+    display:grid;
+    gap:14px;
+  }
+  .reader-screen.reader-studio-mode .reader-studio-heading > button {
+    width:100%;
+  }
+  .reader-screen.reader-studio-mode .reader-create-form {
+    padding:14px;
+  }
+}
