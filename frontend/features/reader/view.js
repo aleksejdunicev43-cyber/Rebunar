@@ -513,7 +513,33 @@ async function renderChapterEditForm(container,work,chapter,list,panel,refreshLa
 async function renderWebtoonPagesEditor(container,chapter) {
   container.querySelector('.reader-webtoon-pages-editor')?.remove();
   const editor=node('section','reader-webtoon-pages-editor');
-  editor.append(node('h4','','Страницы вебтуна'));
+  const heading=node('div','reader-webtoon-pages-heading');
+  heading.append(node('h4','','Страницы вебтуна'));
+  const addInput=node('input','reader-field');
+  addInput.type='file'; addInput.accept='image/jpeg,image/png,image/webp'; addInput.multiple=true; addInput.hidden=true;
+  const addButton=button('Добавить страницу','reader-primary-button',()=>addInput.click());
+  addInput.addEventListener('change',async()=>{
+    const selected=[...addInput.files];
+    if(!selected.length)return;
+    addButton.disabled=true;
+    try {
+      for(let i=0;i<selected.length;i++) {
+        message(feedback,'Добавляем страницу '+(i+1)+' из '+selected.length+'…');
+        const data=new FormData(); data.append('image',selected[i]);
+        await api.upload('/reader/chapters/'+chapter.id+'/pages/add',data);
+      }
+      message(feedback,'Добавлено страниц: '+selected.length);
+      await loadPages();
+    } catch(error) {
+      message(feedback,error.message,true);
+      await loadPages();
+    } finally {
+      addInput.value='';
+      addButton.disabled=false;
+    }
+  });
+  heading.append(addButton,addInput);
+  editor.append(heading);
   const feedback=node('p','reader-feedback'); feedback.hidden=true;
   const pagesList=node('div','reader-webtoon-page-list');
   editor.append(feedback,pagesList);
