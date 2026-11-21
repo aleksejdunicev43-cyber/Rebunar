@@ -1154,3 +1154,48 @@
 .reader-screen:not(.reader-detail-mode):not(.reader-reading-mode) .reader-tab.is-active {
   border: 0 !important;
 }
+
+
+/* Creator Studio: individual webtoon page management */
+.reader-webtoon-pages-editor {
+  margin-top:14px;
+  padding:14px;
+  border:1px solid rgba(91,207,157,.18);
+  border-radius:14px;
+  background:rgba(10,18,15,.72);
+}
+.reader-webtoon-pages-editor h4 {margin:0 0 12px;color:#dff5e9}
+.reader-webtoon-page-list {display:grid;gap:10px}
+.reader-webtoon-page-row {
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  padding:9px;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;
+  background:rgba(255,255,255,.025);
+}
+.reader-webtoon-page-preview {
+  display:block;
+  width:64px;
+  height:84px;
+  border-radius:7px;
+  object-fit:cover;
+  background:#080d0b;
+}
+.reader-webtoon-page-info {display:grid;gap:4px;min-width:0}
+.reader-webtoon-page-info strong {font-size:12px;color:#e6f3ec}
+.reader-webtoon-page-info small {font-size:10px;color:#8da398}
+.reader-webtoon-page-actions {
+  grid-column:1 / -1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.reader-webtoon-page-actions button {min-height:34px;padding:6px 10px;font-size:11px}
+.reader-webtoon-page-actions button:disabled {opacity:.38;cursor:not-allowed}
+@media(min-width:620px) {
+  .reader-webtoon-page-row {grid-template-columns:64px minmax(100px,1fr) auto}
+  .reader-webtoon-page-actions {grid-column:auto;justify-content:flex-end}
+}
