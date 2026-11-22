@@ -90,7 +90,7 @@ export function renderProfileScreen(container, user, onLogout) {
   });
 
   const coverInput = container.querySelector('.profile-cover-input');
-  container.querySelector('.profile-customize-button').addEventListener('click', () => coverInput.click());
+  container.querySelector('.profile-customize-button').addEventListener('click', () => openProfileCustomization(container));
   container.querySelector('[data-profile-control="settings"]').addEventListener('click', () => navigate('settings'));
   container.querySelector('[data-profile-control="info"]').addEventListener('click', () => openProfileInfo(container, user));
   coverInput.addEventListener('change', async () => {
@@ -125,6 +125,63 @@ export function renderProfileScreen(container, user, onLogout) {
 }
 
 
+
+function openProfileCustomization(container) {
+  if (container.querySelector('.profile-customize-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'profile-customize-overlay';
+  overlay.innerHTML = `
+    <section class="profile-customize-sheet" role="dialog" aria-modal="true" aria-labelledby="profile-customize-title">
+      <div class="profile-customize-heading">
+        <div class="profile-customize-heading-copy">
+          <span class="profile-customize-sparkle" aria-hidden="true">✧</span>
+          <div><h2 id="profile-customize-title">Оформление профиля</h2></div>
+        </div>
+        <button class="profile-customize-close" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <p class="profile-customize-description">Выбери предмет — профиль сверху сразу покажет, как это выглядит</p>
+      <div class="profile-customize-tabs" role="tablist" aria-label="Категории оформления">
+        <button class="profile-customize-tab is-active" type="button" role="tab" aria-selected="true" data-customize-tab="avatars">Аватарки</button>
+        <button class="profile-customize-tab" type="button" role="tab" aria-selected="false" data-customize-tab="frames">Рамки</button>
+        <button class="profile-customize-tab" type="button" role="tab" aria-selected="false" data-customize-tab="backgrounds">Фоны</button>
+      </div>
+      <div class="profile-customize-content" role="tabpanel" aria-live="polite">
+        <div class="profile-customize-empty"><span aria-hidden="true">✧</span><strong>Каталог скоро появится</strong><small>Раздел «Аватарки» будет добавлен позже</small></div>
+      </div>
+      <div class="profile-customize-footer">
+        <button class="profile-customize-dismiss" type="button">Закрыть</button>
+      </div>
+    </section>`;
+  container.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('.profile-customize-close').addEventListener('click', close);
+  overlay.querySelector('.profile-customize-dismiss').addEventListener('click', close);
+  overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+  const labels = {
+    avatars: ['Каталог скоро появится', 'Раздел «Аватарки» будет добавлен позже'],
+    frames: ['Рамки скоро появятся', 'Раздел «Рамки» будет добавлен позже'],
+    backgrounds: ['Фоны скоро появятся', 'Раздел «Фоны» будет добавлен позже']
+  };
+  overlay.querySelectorAll('[data-customize-tab]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      overlay.querySelectorAll('[data-customize-tab]').forEach(item => {
+        const active = item === tab;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-selected', String(active));
+      });
+      const [title, description] = labels[tab.dataset.customizeTab];
+      overlay.querySelector('.profile-customize-empty strong').textContent = title;
+      overlay.querySelector('.profile-customize-empty small').textContent = description;
+    });
+  });
+  const onKeydown = event => {
+    if (event.key === 'Escape') {
+      close();
+      document.removeEventListener('keydown', onKeydown);
+    }
+  };
+  document.addEventListener('keydown', onKeydown);
+}
 
 function openProfileInfo(container, user) {
   if (container.querySelector('.profile-info-overlay')) return;
