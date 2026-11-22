@@ -120,7 +120,7 @@ export function renderProfileScreen(container, user, onLogout) {
   const coverInput = container.querySelector('.profile-cover-input');
   container.querySelector('.profile-customize-button').addEventListener('click', () => coverInput.click());
   container.querySelector('[data-profile-control="settings"]').addEventListener('click', () => navigate('settings'));
-  container.querySelector('[data-profile-control="info"]').addEventListener('click', () => window.alert('Профиль Rebunar\nИмя: ' + displayName + '\nЛогин: @' + username + '\nID аккаунта: ' + userId));
+  container.querySelector('[data-profile-control="info"]').addEventListener('click', () => openProfileInfo(container, user));
   coverInput.addEventListener('change', async () => {
     const file = coverInput.files?.[0];
     coverInput.value = '';
@@ -152,6 +152,34 @@ export function renderProfileScreen(container, user, onLogout) {
   });
 }
 
+
+
+function openProfileInfo(container, user) {
+  if (container.querySelector('.profile-info-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'profile-info-overlay';
+  const displayName = user.display_name || user.username || 'Пользователь';
+  const username = user.username || '—';
+  const userId = user.id !== undefined && user.id !== null ? String(user.id) : '—';
+  overlay.innerHTML = `
+    <section class="profile-info-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-info-title">
+      <div class="profile-info-heading">
+        <div><span class="profile-info-kicker">REBUNAR / PROFILE</span><h2 id="profile-info-title">Информация о профиле</h2></div>
+        <button class="profile-info-close" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <p class="profile-info-description">Твой профиль — это твоя личная страница в экосистеме Rebunar.</p>
+      <div class="profile-info-row"><span>Имя</span><strong>${escapeHTML(displayName)}</strong></div>
+      <div class="profile-info-row"><span>Логин</span><strong>@${escapeHTML(username)}</strong></div>
+      <div class="profile-info-row"><span>ID аккаунта</span><strong>${escapeHTML(userId)}</strong></div>
+      <button class="profile-info-done" type="button">Понятно</button>
+    </section>`;
+  container.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('.profile-info-close').addEventListener('click', close);
+  overlay.querySelector('.profile-info-done').addEventListener('click', close);
+  overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+  overlay.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
+}
 
 function renderProfileQuickActions(items) {
   const soon = new Set(['recent','bookmarks','notifications','saved','stats','achievements','privacy','help']);
