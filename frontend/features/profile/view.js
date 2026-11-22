@@ -221,6 +221,7 @@ function openProfileCustomization(container, user, onLogout) {
         const result = await uploadProfileCover(selectedFile);
         const latestUser = getUser() || user;
         const updatedUser = { ...latestUser, profile_cover: result.profile_cover };
+        setUser(updatedUser);
         close();
         renderProfileScreen(container, updatedUser, onLogout);
         showProfileToast(container, 'Фон профиля установлен');
