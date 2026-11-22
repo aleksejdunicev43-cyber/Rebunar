@@ -1217,3 +1217,13 @@
 .profile-info-row span{color:var(--text-muted)}
 .profile-info-row strong{max-width:65%;overflow-wrap:anywhere;text-align:right}
 .profile-info-done{width:100%;min-height:44px;margin-top:14px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));border-radius:11px;color:var(--text-main);background:color-mix(in srgb,var(--accent) 14%,var(--bg-panel));font:inherit;font-weight:800;cursor:pointer}
+
+/* Profile identity: name only; copy controls live in the info dialog */
+.profile-hero .profile-identity{margin:0 0 12px}
+.profile-hero .profile-identity h2{margin:0}
+.profile-info-row{display:grid;grid-template-columns:minmax(54px,auto) minmax(0,1fr) 36px;align-items:center;gap:10px}
+.profile-info-row strong{max-width:none;min-width:0;overflow-wrap:anywhere;text-align:right}
+.profile-info-copy{display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid var(--border);border-radius:10px;color:var(--text-muted);background:var(--bg-main);cursor:pointer;transition:color .18s,border-color .18s,background .18s}
+.profile-info-copy svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.profile-info-copy:hover:not(:disabled){color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg-main))}
+.profile-info-copy:disabled{opacity:.4;cursor:not-allowed}
