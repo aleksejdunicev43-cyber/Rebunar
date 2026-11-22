@@ -90,7 +90,7 @@ export function renderProfileScreen(container, user, onLogout) {
   });
 
   const coverInput = container.querySelector('.profile-cover-input');
-  container.querySelector('.profile-customize-button').addEventListener('click', () => openProfileCustomization(container));
+  container.querySelector('.profile-customize-button').addEventListener('click', () => openProfileCustomization(container, user, onLogout));
   container.querySelector('[data-profile-control="settings"]').addEventListener('click', () => navigate('settings'));
   container.querySelector('[data-profile-control="info"]').addEventListener('click', () => openProfileInfo(container, user));
   coverInput.addEventListener('change', async () => {
@@ -126,7 +126,7 @@ export function renderProfileScreen(container, user, onLogout) {
 
 
 
-function openProfileCustomization(container) {
+function openProfileCustomization(container, user, onLogout) {
   if (container.querySelector('.profile-customize-overlay')) return;
   const overlay = document.createElement('div');
   overlay.className = 'profile-customize-overlay';
@@ -154,8 +154,10 @@ function openProfileCustomization(container) {
     </section>`;
   container.appendChild(overlay);
   let onKeydown = null;
+  let selectedBackgroundUrl = '';
   const close = () => {
     overlay.remove();
+    if (selectedBackgroundUrl) URL.revokeObjectURL(selectedBackgroundUrl);
     if (onKeydown) document.removeEventListener('keydown', onKeydown);
   };
   overlay.querySelector('.profile-customize-close').addEventListener('click', close);
@@ -163,8 +165,73 @@ function openProfileCustomization(container) {
   overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
   const labels = {
     avatars: ['Каталог скоро появится', 'Раздел «Аватарки» будет добавлен позже'],
-    frames: ['Рамки скоро появятся', 'Раздел «Рамки» будет добавлен позже'],
-    backgrounds: ['Фоны скоро появятся', 'Раздел «Фоны» будет добавлен позже']
+    frames: ['Рамки скоро появятся', 'Раздел «Рамки» будет добавлен позже']
+  };
+  const content = overlay.querySelector('.profile-customize-content');
+  const showBackgroundPicker = () => {
+    content.innerHTML = `
+      <div class="profile-background-picker">
+        <input class="profile-background-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+        <div class="profile-background-preview-wrap">
+          <div class="profile-background-preview-placeholder">
+            <span aria-hidden="true">▧</span>
+            <strong>Свой фон профиля</strong>
+            <small>Выбери изображение из галереи телефона</small>
+          </div>
+          <img class="profile-background-preview" alt="Предпросмотр нового фона" hidden>
+        </div>
+        <button class="profile-background-choose" type="button"><span aria-hidden="true">＋</span> Выбрать из галереи</button>
+        <button class="profile-background-apply" type="button" disabled>Установить фон</button>
+        <small class="profile-background-hint">JPG, PNG или WebP · до 5 МБ</small>
+      </div>`;
+    const input = content.querySelector('.profile-background-input');
+    const chooseButton = content.querySelector('.profile-background-choose');
+    const applyButton = content.querySelector('.profile-background-apply');
+    const preview = content.querySelector('.profile-background-preview');
+    const placeholder = content.querySelector('.profile-background-preview-placeholder');
+    let selectedFile = null;
+    chooseButton.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      input.value = '';
+      if (!file) return;
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        showProfileToast(container, 'Выбери изображение JPG, PNG или WebP');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showProfileToast(container, 'Размер фона не должен превышать 5 МБ');
+        return;
+      }
+      if (selectedBackgroundUrl) URL.revokeObjectURL(selectedBackgroundUrl);
+      selectedFile = file;
+      selectedBackgroundUrl = URL.createObjectURL(file);
+      preview.src = selectedBackgroundUrl;
+      preview.hidden = false;
+      placeholder.hidden = true;
+      applyButton.disabled = false;
+      applyButton.textContent = 'Установить фон';
+    });
+    applyButton.addEventListener('click', async () => {
+      if (!selectedFile || applyButton.disabled) return;
+      applyButton.disabled = true;
+      chooseButton.disabled = true;
+      applyButton.textContent = 'Устанавливаем…';
+      try {
+        const result = await uploadProfileCover(selectedFile);
+        const latestUser = getUser() || user;
+        const updatedUser = { ...latestUser, profile_cover: result.profile_cover };
+        close();
+        renderProfileScreen(container, updatedUser, onLogout);
+        showProfileToast(container, 'Фон профиля установлен');
+      } catch (error) {
+        console.error('Rebunar: ошибка установки фона профиля:', error);
+        applyButton.disabled = false;
+        chooseButton.disabled = false;
+        applyButton.textContent = 'Повторить установку';
+        showProfileToast(container, error.message || 'Не удалось установить фон');
+      }
+    });
   };
   overlay.querySelectorAll('[data-customize-tab]').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -173,9 +240,12 @@ function openProfileCustomization(container) {
         item.classList.toggle('is-active', active);
         item.setAttribute('aria-selected', String(active));
       });
+      if (tab.dataset.customizeTab === 'backgrounds') {
+        showBackgroundPicker();
+        return;
+      }
       const [title, description] = labels[tab.dataset.customizeTab];
-      overlay.querySelector('.profile-customize-empty strong').textContent = title;
-      overlay.querySelector('.profile-customize-empty small').textContent = description;
+      content.innerHTML = `<div class="profile-customize-empty"><span aria-hidden="true">✧</span><strong>${title}</strong><small>${description}</small></div>`;
     });
   });
   onKeydown = event => {
