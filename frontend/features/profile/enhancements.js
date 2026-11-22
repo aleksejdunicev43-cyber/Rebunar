@@ -6,12 +6,6 @@ export function enhanceProfileScreen(container, user) {
   const profileCard = container.querySelector('.profile-card');
   if (!details || !profileCard || details.querySelector('.profile-status-card')) return;
 
-  const cover = document.createElement('div');
-  cover.className = 'profile-cover';
-  cover.dataset.theme = 'blackLabel';
-  cover.innerHTML = '<span class="profile-cover-mark">REBUNAR</span><span class="profile-cover-caption">ТВОЯ ИСТОРИЯ. ТВОЙ МИР.</span>';
-  profileCard.insertBefore(cover, profileCard.firstChild);
-
   const status = user?.bio?.trim() ? 'Активен в Rebunar' : 'Новый участник Rebunar';
   const statusCard = document.createElement('div');
   statusCard.className = 'profile-status-card';
