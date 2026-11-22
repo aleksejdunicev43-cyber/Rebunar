@@ -26,13 +26,7 @@ export function renderProfileScreen(container, user, onLogout) {
         <div class="profile-hero">
           <button class="profile-avatar profile-avatar-button" type="button" aria-label="Аватар профиля">${avatar}</button>
           <input class="profile-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-          <div class="profile-account-id">
-            <span>ID: ${escapeHTML(userId)}</span>
-            <button class="profile-copy-id" type="button" aria-label="Скопировать ID" title="Скопировать ID" ${hasUserId ? "" : "disabled"}>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg>
-            </button>
-          </div>
-          <div class="profile-identity"><h2>${escapeHTML(displayName)}</h2><p class="profile-username">@${escapeHTML(username)}</p></div>
+          <div class="profile-identity"><h2>${escapeHTML(displayName)}</h2></div>
           <div class="profile-hero-controls" aria-label="Управление профилем">
             <button class="profile-customize-button" type="button" aria-label="Оформление профиля">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.2 6.2 3.6 3.6M4 20l4.2-1 10.9-10.9a2.55 2.55 0 0 0-3.6-3.6L4.6 15.4 4 20Z"/><path d="M3 21h7"/></svg><span>Оформление</span>
@@ -83,17 +77,6 @@ export function renderProfileScreen(container, user, onLogout) {
   });
   container.querySelector('.profile-logout')
     .addEventListener('click', onLogout);
-
-  container.querySelector('.profile-copy-id')
-    .addEventListener('click', async () => {
-      try {
-        await copyProfileText(userId);
-        showProfileToast(container, 'ID скопирован в буфер обмена');
-      } catch (error) {
-        console.warn('Rebunar: не удалось скопировать ID:', error);
-        showProfileToast(container, 'Не удалось скопировать ID');
-      }
-    });
 
   const avatarButton = container.querySelector('.profile-avatar-button');
   const fileInput = container.querySelector('.profile-avatar-input');
@@ -157,15 +140,26 @@ function openProfileInfo(container, user) {
         <button class="profile-info-close" type="button" aria-label="Закрыть">×</button>
       </div>
       <p class="profile-info-description">Твой профиль — это твоя личная страница в экосистеме Rebunar.</p>
-      <div class="profile-info-row"><span>Имя</span><strong>${escapeHTML(displayName)}</strong></div>
-      <div class="profile-info-row"><span>Логин</span><strong>@${escapeHTML(username)}</strong></div>
-      <div class="profile-info-row"><span>ID аккаунта</span><strong>${escapeHTML(userId)}</strong></div>
+      <div class="profile-info-row"><span>Имя</span><strong>${escapeHTML(displayName)}</strong><button class="profile-info-copy" type="button" data-copy-profile-value="${escapeHTML(displayName)}" aria-label="Скопировать имя" title="Скопировать имя"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
+      <div class="profile-info-row"><span>Логин</span><strong>@${escapeHTML(username)}</strong><button class="profile-info-copy" type="button" data-copy-profile-value="${escapeHTML("@" + username)}" aria-label="Скопировать логин" title="Скопировать логин"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
+      <div class="profile-info-row"><span>ID аккаунта</span><strong>${escapeHTML(userId)}</strong><button class="profile-info-copy" type="button" data-copy-profile-value="${escapeHTML(userId)}" aria-label="Скопировать ID" title="Скопировать ID" ${user.id === undefined || user.id === null ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button></div>
       <button class="profile-info-done" type="button">Понятно</button>
     </section>`;
   container.appendChild(overlay);
   const close = () => overlay.remove();
   overlay.querySelector('.profile-info-close').addEventListener('click', close);
   overlay.querySelector('.profile-info-done').addEventListener('click', close);
+  overlay.querySelectorAll('[data-copy-profile-value]').forEach(button => {
+    button.addEventListener('click', async () => {
+      try {
+        await copyProfileText(button.dataset.copyProfileValue || '');
+        showProfileToast(container, 'Скопировано в буфер обмена');
+      } catch (error) {
+        console.warn('Rebunar: не удалось скопировать данные профиля:', error);
+        showProfileToast(container, 'Не удалось скопировать');
+      }
+    });
+  });
   overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
   overlay.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
 }
