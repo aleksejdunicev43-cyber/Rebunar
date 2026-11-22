@@ -128,6 +128,13 @@ export function renderProfileScreen(container, user, onLogout) {
 
 function openProfileCustomization(container, user, onLogout) {
   if (container.querySelector('.profile-customize-overlay')) return;
+  const profileCover = container.querySelector('.profile-cover');
+  const originalCover = user.profile_cover || '';
+  let selectedBackgroundFile = null;
+  let selectedBackgroundUrl = '';
+  let backgroundSaved = false;
+  let onKeydown = null;
+
   const overlay = document.createElement('div');
   overlay.className = 'profile-customize-overlay';
   overlay.innerHTML = `
@@ -153,9 +160,19 @@ function openProfileCustomization(container, user, onLogout) {
       </div>
     </section>`;
   container.appendChild(overlay);
-  let onKeydown = null;
-  let selectedBackgroundUrl = '';
+
+  const restoreOriginalCover = () => {
+    if (!profileCover || backgroundSaved) return;
+    if (originalCover) {
+      profileCover.classList.add('has-custom-cover');
+      profileCover.style.setProperty('--profile-cover-image', `url("${originalCover}")`);
+    } else {
+      profileCover.classList.remove('has-custom-cover');
+      profileCover.style.removeProperty('--profile-cover-image');
+    }
+  };
   const close = () => {
+    restoreOriginalCover();
     overlay.remove();
     if (selectedBackgroundUrl) URL.revokeObjectURL(selectedBackgroundUrl);
     if (onKeydown) document.removeEventListener('keydown', onKeydown);
@@ -163,23 +180,17 @@ function openProfileCustomization(container, user, onLogout) {
   overlay.querySelector('.profile-customize-close').addEventListener('click', close);
   overlay.querySelector('.profile-customize-dismiss').addEventListener('click', close);
   overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+
+  const content = overlay.querySelector('.profile-customize-content');
   const labels = {
     avatars: ['Каталог скоро появится', 'Раздел «Аватарки» будет добавлен позже'],
     frames: ['Рамки скоро появятся', 'Раздел «Рамки» будет добавлен позже']
   };
-  const content = overlay.querySelector('.profile-customize-content');
+
   const showBackgroundPicker = () => {
     content.innerHTML = `
       <div class="profile-background-picker">
         <input class="profile-background-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
-        <div class="profile-background-preview-wrap">
-          <div class="profile-background-preview-placeholder">
-            <span aria-hidden="true">▧</span>
-            <strong>Свой фон профиля</strong>
-            <small>Выбери изображение из галереи телефона</small>
-          </div>
-          <img class="profile-background-preview" alt="Предпросмотр нового фона" hidden>
-        </div>
         <button class="profile-background-choose" type="button"><span aria-hidden="true">＋</span> Выбрать из галереи</button>
         <button class="profile-background-apply" type="button" disabled>Установить фон</button>
         <small class="profile-background-hint">JPG, PNG или WebP · до 5 МБ</small>
@@ -187,9 +198,13 @@ function openProfileCustomization(container, user, onLogout) {
     const input = content.querySelector('.profile-background-input');
     const chooseButton = content.querySelector('.profile-background-choose');
     const applyButton = content.querySelector('.profile-background-apply');
-    const preview = content.querySelector('.profile-background-preview');
-    const placeholder = content.querySelector('.profile-background-preview-placeholder');
-    let selectedFile = null;
+    const hint = content.querySelector('.profile-background-hint');
+
+    if (selectedBackgroundFile) {
+      applyButton.disabled = false;
+      hint.textContent = 'Предпросмотр показан на профиле';
+    }
+
     chooseButton.addEventListener('click', () => input.click());
     input.addEventListener('change', () => {
       const file = input.files?.[0];
@@ -203,25 +218,30 @@ function openProfileCustomization(container, user, onLogout) {
         showProfileToast(container, 'Размер фона не должен превышать 5 МБ');
         return;
       }
+
       if (selectedBackgroundUrl) URL.revokeObjectURL(selectedBackgroundUrl);
-      selectedFile = file;
+      selectedBackgroundFile = file;
       selectedBackgroundUrl = URL.createObjectURL(file);
-      preview.src = selectedBackgroundUrl;
-      preview.hidden = false;
-      placeholder.hidden = true;
+
+      if (profileCover) {
+        profileCover.classList.add('has-custom-cover');
+        profileCover.style.setProperty('--profile-cover-image', `url("${selectedBackgroundUrl}")`);
+      }
       applyButton.disabled = false;
-      applyButton.textContent = 'Установить фон';
+      hint.textContent = 'Предпросмотр показан на профиле';
     });
+
     applyButton.addEventListener('click', async () => {
-      if (!selectedFile || applyButton.disabled) return;
+      if (!selectedBackgroundFile || applyButton.disabled) return;
       applyButton.disabled = true;
       chooseButton.disabled = true;
       applyButton.textContent = 'Устанавливаем…';
       try {
-        const result = await uploadProfileCover(selectedFile);
+        const result = await uploadProfileCover(selectedBackgroundFile);
         const latestUser = getUser() || user;
         const updatedUser = { ...latestUser, profile_cover: result.profile_cover };
         setUser(updatedUser);
+        backgroundSaved = true;
         close();
         renderProfileScreen(container, updatedUser, onLogout);
         showProfileToast(container, 'Фон профиля установлен');
@@ -234,6 +254,7 @@ function openProfileCustomization(container, user, onLogout) {
       }
     });
   };
+
   overlay.querySelectorAll('[data-customize-tab]').forEach(tab => {
     tab.addEventListener('click', () => {
       overlay.querySelectorAll('[data-customize-tab]').forEach(item => {
@@ -249,6 +270,7 @@ function openProfileCustomization(container, user, onLogout) {
       content.innerHTML = `<div class="profile-customize-empty"><span aria-hidden="true">✧</span><strong>${title}</strong><small>${description}</small></div>`;
     });
   });
+
   onKeydown = event => {
     if (event.key === 'Escape') close();
   };
