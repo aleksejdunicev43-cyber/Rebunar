@@ -1254,3 +1254,18 @@
 @keyframes profileCustomizeSlide{from{transform:translateY(28px);opacity:.7}to{transform:translateY(0);opacity:1}}
 @media(max-width:480px){.profile-customize-sheet{padding:19px 16px max(16px,env(safe-area-inset-bottom));max-height:84dvh}.profile-customize-description{margin-bottom:18px}.profile-customize-tab{min-height:46px;padding:0 16px;font-size:13px}}
 @media(prefers-reduced-motion:reduce){.profile-customize-overlay,.profile-customize-sheet{animation:none}}
+
+/* Profile backgrounds: gallery picker and apply */
+.profile-background-picker{display:flex;flex-direction:column;align-items:stretch;gap:11px;width:100%;max-width:430px;margin:auto}
+.profile-background-preview-wrap{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:16/7;min-height:118px;overflow:hidden;border:1px dashed color-mix(in srgb,var(--accent) 38%,var(--border));border-radius:15px;background:linear-gradient(135deg,var(--bg-panel-2),var(--bg-main))}
+.profile-background-preview-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px;text-align:center}
+.profile-background-preview-placeholder>span{color:var(--accent);font-size:27px}
+.profile-background-preview-placeholder strong{color:var(--text-main);font-size:14px}
+.profile-background-preview-placeholder small{color:var(--text-muted);font-size:11px}
+.profile-background-preview{display:block;width:100%;height:100%;object-fit:cover}
+.profile-background-choose,.profile-background-apply{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));border-radius:12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:opacity .18s,background .18s,border-color .18s}
+.profile-background-choose{color:var(--text-main);background:color-mix(in srgb,var(--accent) 8%,var(--bg-panel))}
+.profile-background-choose>span{color:var(--accent);font-size:19px}
+.profile-background-apply{color:#07130f;background:var(--accent);border-color:var(--accent)}
+.profile-background-apply:disabled,.profile-background-choose:disabled{opacity:.42;cursor:not-allowed}
+.profile-background-hint{color:var(--text-muted);font-size:10px;text-align:center}
