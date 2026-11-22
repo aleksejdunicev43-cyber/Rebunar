@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Prevent overlapping deployments from deleting one another's hashed assets.
+concurrency:
+  group: rebunar-production-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
