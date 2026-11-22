@@ -153,7 +153,11 @@ function openProfileCustomization(container) {
       </div>
     </section>`;
   container.appendChild(overlay);
-  const close = () => overlay.remove();
+  let onKeydown = null;
+  const close = () => {
+    overlay.remove();
+    if (onKeydown) document.removeEventListener('keydown', onKeydown);
+  };
   overlay.querySelector('.profile-customize-close').addEventListener('click', close);
   overlay.querySelector('.profile-customize-dismiss').addEventListener('click', close);
   overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
@@ -174,11 +178,8 @@ function openProfileCustomization(container) {
       overlay.querySelector('.profile-customize-empty small').textContent = description;
     });
   });
-  const onKeydown = event => {
-    if (event.key === 'Escape') {
-      close();
-      document.removeEventListener('keydown', onKeydown);
-    }
+  onKeydown = event => {
+    if (event.key === 'Escape') close();
   };
   document.addEventListener('keydown', onKeydown);
 }
