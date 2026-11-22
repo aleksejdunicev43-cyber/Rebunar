@@ -25,3 +25,9 @@ export async function changePassword(currentPassword, newPassword) {
     new_password: newPassword
   });
 }
+
+export async function uploadProfileCover(file) {
+  const formData = new FormData();
+  formData.append('cover', file, file.name || 'profile-cover');
+  return api.post('/profile/cover', formData);
+}

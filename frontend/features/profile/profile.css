@@ -1131,8 +1131,7 @@
 @media(max-width:380px){.profile-quick-icon svg{width:17px;height:17px}}
 
 
-/* PROFILE POLISH — remove redundant cover and make room for avatar frames */
-.profile-cover { display: none !important; }
+/* PROFILE POLISH — preserve avatar frame overflow. */
 .profile-quick-grid-right {
   grid-template-rows: repeat(3, minmax(58px, auto));
   align-content: center;
@@ -1166,3 +1165,30 @@
     height: 84px;
   }
 }
+
+
+/* REBUNAR — FULL-BLEED MOBILE PROFILE COVER */
+.profile-screen{width:100%;max-width:none;margin:0;padding:0 16px 42px;box-sizing:border-box}
+.profile-heading{margin:0 -16px 16px;padding:12px 16px;box-sizing:border-box}
+.profile-card{width:100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.profile-cover{position:relative;width:100vw;height:clamp(156px,42vw,220px);margin-left:calc(50% - 50vw);overflow:hidden;background-color:#09090d;background-image:radial-gradient(circle at 50% 42%,rgba(205,26,53,.66) 0 12%,rgba(110,8,28,.24) 22%,transparent 38%),linear-gradient(180deg,rgba(15,5,13,.05),rgba(5,7,9,.2) 70%,#0b0d10 100%),linear-gradient(115deg,#090b11 0%,#35101d 48%,#090b11 100%);background-size:cover;background-position:center}
+.profile-cover::before{position:absolute;inset:0;content:"";background:linear-gradient(180deg,rgba(0,0,0,.05) 45%,rgba(5,7,9,.62) 100%);pointer-events:none}
+.profile-cover.has-custom-cover{background-image:var(--profile-cover-image)}
+.profile-cover-edit{position:absolute;right:14px;bottom:14px;z-index:1;display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:7px 11px;color:#f2f5f4;background:rgba(5,12,10,.72);border:1px solid rgba(51,205,151,.45);border-radius:9px;font:inherit;font-size:11px;font-weight:700;backdrop-filter:blur(8px);cursor:pointer}
+.profile-cover-edit:disabled{opacity:.65;cursor:wait}
+.profile-hero{--profile-avatar-size:clamp(112px,30vw,136px);position:relative;z-index:2;display:flex;width:100%;flex-direction:column;align-items:center;gap:9px;margin-top:calc(var(--profile-avatar-size) / -2);text-align:center}
+.profile-hero .profile-avatar-button{width:var(--profile-avatar-size);height:var(--profile-avatar-size);flex:0 0 var(--profile-avatar-size);border:3px solid var(--bg-main);border-radius:19%;background:var(--bg-main);box-shadow:0 10px 30px rgba(0,0,0,.48)}
+.profile-hero .profile-avatar-button{overflow:visible!important}
+.profile-hero .profile-account-id{margin:0;font-size:13px}
+.profile-hero .profile-identity{max-width:100%;margin:0 0 22px;overflow-wrap:anywhere;text-align:center}
+.profile-hero .profile-identity h2{margin:0 0 5px;font-size:clamp(21px,5vw,26px)}
+.profile-hero .profile-username{font-size:14px}
+.profile-quick-grid-all{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;width:100%;margin:0 0 22px}
+.profile-quick-grid-all .profile-quick-action{min-height:78px;padding:9px 5px;gap:6px;border-radius:12px;font-size:clamp(9px,2.7vw,12px);overflow-wrap:normal;word-break:normal}
+.profile-quick-grid-all .profile-quick-icon{width:29px;height:29px}
+.profile-quick-grid-all .profile-quick-icon svg{width:21px;height:21px}
+.profile-details{margin-top:4px}
+.profile-details .profile-bio{min-height:90px}
+@media(min-width:761px){.profile-screen{max-width:980px;margin:0 auto}.profile-cover{height:250px}.profile-hero{--profile-avatar-size:148px}.profile-quick-grid-all{gap:12px}.profile-quick-grid-all .profile-quick-action{min-height:88px;font-size:13px}}
+@media(max-width:480px){.profile-screen{padding-right:14px;padding-left:14px}.profile-heading{margin-right:-14px;margin-left:-14px;padding-right:14px;padding-left:14px}.profile-cover{height:184px}.profile-hero{--profile-avatar-size:clamp(112px,31vw,128px)}.profile-quick-grid-all{gap:7px}.profile-quick-grid-all .profile-quick-action{min-height:76px;padding:8px 3px;font-size:10px}}
+@media(max-width:360px){.profile-quick-grid-all{gap:6px}.profile-quick-grid-all .profile-quick-action{min-height:72px;font-size:9px}}

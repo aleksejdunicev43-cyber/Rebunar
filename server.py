@@ -88,6 +88,10 @@ def init_db():
             )
         """)
 
+        user_columns = {row[1] for row in con.execute("PRAGMA table_info(users)")}
+        if "profile_cover" not in user_columns:
+            con.execute("ALTER TABLE users ADD COLUMN profile_cover TEXT")
+
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS profile_progress (
@@ -795,7 +799,7 @@ def login():
         con.row_factory = sqlite3.Row
         user = con.execute(
             """
-            SELECT u.id, u.username, u.password, u.display_name, u.bio, u.avatar
+            SELECT u.id, u.username, u.password, u.display_name, u.bio, u.avatar, u.profile_cover
             FROM users u
             WHERE u.username = ?
             """,
@@ -825,7 +829,8 @@ def login():
         "username": user["username"],
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
-        "avatar": user["avatar"] or ""
+        "avatar": user["avatar"] or "",
+        "profile_cover": user["profile_cover"] or ""
     }), 200
 
 
@@ -885,7 +890,7 @@ def me():
     with connect() as con:
         con.row_factory = sqlite3.Row
         user = con.execute(
-            """SELECT u.id, u.username, u.display_name, u.bio, u.avatar
+            """SELECT u.id, u.username, u.display_name, u.bio, u.avatar, u.profile_cover
                FROM users u
                WHERE u.id = ?""",
             (session["user_id"],)
@@ -901,7 +906,8 @@ def me():
         "username": user["username"],
         "display_name": user["display_name"] or "",
         "bio": user["bio"] or "",
-        "avatar": user["avatar"] or ""
+        "avatar": user["avatar"] or "",
+        "profile_cover": user["profile_cover"] or ""
     }), 200
 
 
@@ -1018,7 +1024,7 @@ def get_public_user_profile(profile_user_id):
         con.row_factory = sqlite3.Row
         row = con.execute("""
             SELECT
-                u.id, u.username, u.display_name, u.avatar, u.bio,
+                u.id, u.username, u.display_name, u.avatar, u.bio, u.profile_cover,
                 EXISTS(
                     SELECT 1 FROM user_presence p
                     WHERE p.user_id = u.id
@@ -1036,6 +1042,7 @@ def get_public_user_profile(profile_user_id):
         "username": row["username"],
         "display_name": row["display_name"] or row["username"],
         "avatar": row["avatar"] or "",
+        "profile_cover": row["profile_cover"] or "",
         "bio": row["bio"] or "",
         "online": bool(row["online"]),
         "is_me": row["id"] == session["user_id"]
@@ -1118,6 +1125,51 @@ def get_profile_avatar(filename):
         return jsonify({"error": "Фотография не найдена"}), 404
 
     return send_from_directory(BASE / "uploads" / "avatars", filename)
+
+
+@app.post("/api/profile/cover")
+def upload_profile_cover():
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+
+    file = request.files.get("cover")
+    if not file:
+        return jsonify({"error": "Изображение обложки не выбрано"}), 400
+
+    data = file.read(5 * 1024 * 1024 + 1)
+    if len(data) > 5 * 1024 * 1024:
+        return jsonify({"error": "Размер обложки не должен превышать 5 МБ"}), 413
+
+    if data.startswith(b"\xff\xd8\xff"):
+        extension = ".jpg"
+    elif data.startswith(b"\x89PNG\r\n\x1a\n"):
+        extension = ".png"
+    elif len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        extension = ".webp"
+    else:
+        return jsonify({"error": "Ожидается изображение JPEG, PNG или WebP"}), 400
+
+    folder = BASE / "uploads" / "profile_covers"
+    folder.mkdir(parents=True, exist_ok=True)
+    filename = uuid.uuid4().hex + extension
+    (folder / filename).write_bytes(data)
+    cover_url = "/uploads/profile-covers/" + filename
+
+    with connect() as con:
+        con.execute(
+            "UPDATE users SET profile_cover = ? WHERE id = ?",
+            (cover_url, session["user_id"])
+        )
+
+    return jsonify({"ok": True, "profile_cover": cover_url}), 200
+
+
+@app.get("/uploads/profile-covers/<filename>")
+def get_profile_cover(filename):
+    if Path(filename).name != filename:
+        return jsonify({"error": "Обложка не найдена"}), 404
+
+    return send_from_directory(BASE / "uploads" / "profile_covers", filename)
 
 
 @app.post("/api/logout")
