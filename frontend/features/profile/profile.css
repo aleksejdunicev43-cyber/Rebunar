@@ -1192,3 +1192,16 @@
 @media(min-width:761px){.profile-screen{max-width:980px;margin:0 auto}.profile-cover{height:250px}.profile-hero{--profile-avatar-size:148px}.profile-quick-grid-all{gap:12px}.profile-quick-grid-all .profile-quick-action{min-height:88px;font-size:13px}}
 @media(max-width:480px){.profile-screen{padding-right:14px;padding-left:14px}.profile-heading{margin-right:-14px;margin-left:-14px;padding-right:14px;padding-left:14px}.profile-cover{height:184px}.profile-hero{--profile-avatar-size:clamp(112px,31vw,128px)}.profile-quick-grid-all{gap:7px}.profile-quick-grid-all .profile-quick-action{min-height:76px;padding:8px 3px;font-size:10px}}
 @media(max-width:360px){.profile-quick-grid-all{gap:6px}.profile-quick-grid-all .profile-quick-action{min-height:72px;font-size:9px}}
+
+/* REBUNAR — PROFILE ACTIONS UNDER IDENTITY */
+.profile-hero .profile-identity{margin-bottom:12px}
+.profile-hero-controls{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin:0 0 24px}
+.profile-customize-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:174px;min-height:54px;padding:0 22px;border:1px solid color-mix(in srgb,var(--accent) 42%,var(--border));border-radius:999px;color:var(--text-main);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 13%,var(--bg-panel)),var(--bg-panel-2));font:inherit;font-size:15px;font-weight:800;box-shadow:0 5px 16px rgba(0,0,0,.28);cursor:pointer;transition:transform .18s,border-color .18s,background .18s}
+.profile-customize-button svg{width:21px;height:21px;flex:0 0 21px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-customize-button:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--bg-panel))}
+.profile-customize-button:active,.profile-hero-icon-button:active{transform:scale(.96)}
+.profile-customize-button:disabled{opacity:.65;cursor:wait}
+.profile-hero-icon-button{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;padding:0;border:1px solid var(--border);border-radius:50%;color:var(--text-main);background:linear-gradient(145deg,var(--bg-panel-2),var(--bg-panel));box-shadow:0 5px 16px rgba(0,0,0,.28);font:inherit;font-size:23px;font-weight:700;cursor:pointer;transition:transform .18s,border-color .18s,color .18s}
+.profile-hero-icon-button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.profile-hero-icon-button:hover{border-color:var(--accent);color:var(--accent)}
+@media(max-width:380px){.profile-hero-controls{gap:8px}.profile-customize-button{min-width:0;min-height:50px;padding:0 17px;font-size:14px}.profile-hero-icon-button{flex-basis:50px;width:50px;height:50px}}
