@@ -28,16 +28,10 @@ export function renderProfileScreen(container, user, onLogout) {
           <h1>Профиль</h1>
         </div>
 
-        <button class="profile-settings-button" type="button"
-          data-route="settings" aria-label="Настройки"
-          title="Настройки">
-          <span class="profile-settings-gear" aria-hidden="true">⚙</span>
-        </button>
       </div>
 
       <div class="profile-card">
         <div class="profile-cover${profileCover ? ' has-custom-cover' : ''}" ${profileCover ? `style="--profile-cover-image: url('${escapeHTML(profileCover)}')"` : ''}>
-          <button class="profile-cover-edit" type="button" aria-label="Изменить обложку"><span aria-hidden="true">✎</span> Изменить обложку</button>
         </div>
         <input class="profile-cover-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
         <div class="profile-hero">
@@ -50,6 +44,13 @@ export function renderProfileScreen(container, user, onLogout) {
             </button>
           </div>
           <div class="profile-identity"><h2>${escapeHTML(displayName)}</h2><p class="profile-username">@${escapeHTML(username)}</p></div>
+          <div class="profile-hero-controls" aria-label="Управление профилем">
+            <button class="profile-customize-button" type="button" aria-label="Оформление профиля">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.2 6.2 3.6 3.6M4 20l4.2-1 10.9-10.9a2.55 2.55 0 0 0-3.6-3.6L4.6 15.4 4 20Z"/><path d="M3 21h7"/></svg><span>Оформление</span>
+            </button>
+            <button class="profile-hero-icon-button" type="button" data-profile-control="settings" aria-label="Настройки"><span aria-hidden="true">⚙</span></button>
+            <button class="profile-hero-icon-button" type="button" data-profile-control="info" aria-label="Информация"><span aria-hidden="true">i</span></button>
+          </div>
         </div>
         <div class="profile-quick-grid profile-quick-grid-all" aria-label="Разделы профиля">
           ${renderProfileQuickActions([
@@ -117,7 +118,9 @@ export function renderProfileScreen(container, user, onLogout) {
   });
 
   const coverInput = container.querySelector('.profile-cover-input');
-  container.querySelector('.profile-cover-edit').addEventListener('click', () => coverInput.click());
+  container.querySelector('.profile-customize-button').addEventListener('click', () => coverInput.click());
+  container.querySelector('[data-profile-control="settings"]').addEventListener('click', () => navigate('settings'));
+  container.querySelector('[data-profile-control="info"]').addEventListener('click', () => window.alert('Профиль Rebunar\nИмя: ' + displayName + '\nЛогин: @' + username + '\nID аккаунта: ' + userId));
   coverInput.addEventListener('change', async () => {
     const file = coverInput.files?.[0];
     coverInput.value = '';
@@ -130,7 +133,7 @@ export function renderProfileScreen(container, user, onLogout) {
       showProfileToast(container, 'Размер обложки не должен превышать 5 МБ');
       return;
     }
-    const coverButton = container.querySelector('.profile-cover-edit');
+    const coverButton = container.querySelector('.profile-customize-button');
     coverButton.disabled = true;
     coverButton.textContent = 'Загрузка…';
     try {
@@ -143,7 +146,7 @@ export function renderProfileScreen(container, user, onLogout) {
     } catch (error) {
       console.error('Rebunar: ошибка загрузки обложки:', error);
       coverButton.disabled = false;
-      coverButton.innerHTML = '<span aria-hidden="true">✎</span> Изменить обложку';
+      coverButton.textContent = 'Оформление';
       showProfileToast(container, error.message || 'Не удалось загрузить обложку');
     }
   });
