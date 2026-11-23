@@ -1642,3 +1642,118 @@
 @media(prefers-reduced-motion:reduce){
   .profile-customize-overlay .profile-customize-tab{transition:none !important}
 }
+
+
+/* REBUNAR — REFERENCE-ALIGNED PROFILE CUSTOMIZATION SHEET */
+.profile-customize-sheet{
+  max-height:min(70dvh,620px) !important;
+  padding:22px 20px max(18px,env(safe-area-inset-bottom)) !important;
+  border-radius:28px 28px 0 0 !important;
+}
+.profile-customize-sheet::before{display:none !important;content:none !important}
+.profile-customize-sparkle{
+  flex:0 0 34px !important;
+  width:34px !important;
+  height:34px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font-size:29px !important;
+}
+.profile-customize-heading-copy{gap:11px !important}
+.profile-customize-description{
+  margin:10px 0 18px !important;
+  font-size:14px !important;
+  line-height:1.5 !important;
+}
+.profile-customize-overlay .profile-customize-tabs{
+  display:flex !important;
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:5px !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:48px !important;
+  box-sizing:border-box !important;
+  padding:4px 7px !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  border:1px solid var(--border) !important;
+  border-radius:999px !important;
+  background:var(--bg-main) !important;
+  box-shadow:none !important;
+  scrollbar-width:none !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+}
+.profile-customize-overlay .profile-customize-tabs::-webkit-scrollbar{display:none !important}
+.profile-customize-overlay .profile-customize-tab{
+  position:relative !important;
+  display:inline-flex !important;
+  flex:0 0 auto !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:auto !important;
+  min-width:max-content !important;
+  min-height:39px !important;
+  height:39px !important;
+  margin:0 !important;
+  padding:0 15px 1px !important;
+  border:0 !important;
+  border-radius:999px !important;
+  color:var(--text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  font:inherit !important;
+  font-size:14px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  scroll-snap-align:center;
+  transition:color .18s ease !important;
+}
+.profile-customize-overlay .profile-customize-tab::after{display:none !important;content:none !important}
+.profile-customize-overlay .profile-customize-tab.is-active{
+  color:var(--accent) !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.profile-customize-overlay .profile-customize-tab:active{transform:none !important}
+.profile-customize-overlay .profile-customize-content{
+  display:grid !important;
+  flex:0 0 148px !important;
+  width:100% !important;
+  height:148px !important;
+  min-height:148px !important;
+  max-height:148px !important;
+  box-sizing:border-box !important;
+  place-items:center !important;
+  padding:10px 8px !important;
+  overflow:auto !important;
+}
+.profile-customize-overlay .profile-customize-empty{
+  width:100% !important;
+  max-width:390px !important;
+  padding:16px 12px !important;
+}
+.profile-customize-footer{flex:0 0 auto !important;padding-top:14px !important}
+@media(max-width:480px){
+  .profile-customize-sheet{
+    max-height:min(72dvh,660px) !important;
+    padding:19px 16px max(16px,env(safe-area-inset-bottom)) !important;
+  }
+  .profile-customize-description{margin:10px 0 16px !important;font-size:13px !important}
+  .profile-customize-overlay .profile-customize-tabs{min-height:46px !important;gap:2px !important;padding:3px 5px !important}
+  .profile-customize-overlay .profile-customize-tab{min-height:38px !important;height:38px !important;padding:0 13px !important;font-size:13px !important}
+  .profile-customize-overlay .profile-customize-content{
+    flex-basis:148px !important;height:148px !important;min-height:148px !important;max-height:148px !important;
+    padding:8px 4px !important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .profile-customize-overlay .profile-customize-tab{transition:none !important}
+}
