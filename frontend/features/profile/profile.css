@@ -1502,3 +1502,56 @@
   .profile-customize-tab-label{font-size:12px}
   .profile-customize-tab-caption{font-size:8px}
 }
+
+
+/* FINAL OVERRIDE — consistent geometry for all three category tiles */
+.profile-customize-overlay .profile-customize-tabs{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  align-items:stretch !important;
+  gap:10px !important;
+  width:100% !important;
+  padding:0 !important;
+  overflow:visible !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.profile-customize-overlay .profile-customize-tab{
+  display:flex !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:88px !important;
+  height:88px !important;
+  flex:initial !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:9px 4px !important;
+  overflow:hidden !important;
+  border:1px solid var(--border) !important;
+  border-radius:14px !important;
+  color:var(--text-muted) !important;
+  background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.012)) !important;
+  box-shadow:none !important;
+  white-space:normal !important;
+}
+.profile-customize-overlay .profile-customize-tab::after{display:none !important}
+.profile-customize-overlay .profile-customize-tab.is-active{
+  border-color:color-mix(in srgb,var(--accent) 62%,var(--border)) !important;
+  color:var(--text-main) !important;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--accent) 19%,var(--bg-panel)),color-mix(in srgb,var(--accent) 7%,var(--bg-panel))) !important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 12%,transparent),0 4px 14px rgba(0,0,0,.16) !important;
+}
+@media(max-width:480px){
+  .profile-customize-overlay .profile-customize-tabs{gap:8px !important}
+  .profile-customize-overlay .profile-customize-tab{
+    min-height:82px !important;
+    height:82px !important;
+    border-radius:13px !important;
+  }
+}
