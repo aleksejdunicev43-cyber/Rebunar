@@ -148,9 +148,15 @@ function openProfileCustomization(container, user, onLogout) {
       </div>
       <p class="profile-customize-description">Выбери предмет — профиль сверху сразу покажет, как это выглядит</p>
       <div class="profile-customize-tabs" role="tablist" aria-label="Категории оформления">
-        <button class="profile-customize-tab is-active" type="button" role="tab" aria-selected="true" data-customize-tab="avatars">Аватарки</button>
-        <button class="profile-customize-tab" type="button" role="tab" aria-selected="false" data-customize-tab="frames">Рамки</button>
-        <button class="profile-customize-tab" type="button" role="tab" aria-selected="false" data-customize-tab="backgrounds">Фоны</button>
+        <button class="profile-customize-tab is-active" type="button" role="tab" aria-selected="true" data-customize-tab="avatars">
+          <span class="profile-customize-tab-icon" aria-hidden="true">◉</span><span class="profile-customize-tab-label">Аватарки</span><span class="profile-customize-tab-caption">Образ профиля</span>
+        </button>
+        <button class="profile-customize-tab" type="button" role="tab" aria-selected="false" data-customize-tab="frames">
+          <span class="profile-customize-tab-icon" aria-hidden="true">▣</span><span class="profile-customize-tab-label">Рамки</span><span class="profile-customize-tab-caption">Детали образа</span>
+        </button>
+        <button class="profile-customize-tab" type="button" role="tab" aria-selected="false" data-customize-tab="backgrounds">
+          <span class="profile-customize-tab-icon" aria-hidden="true">▧</span><span class="profile-customize-tab-label">Фоны</span><span class="profile-customize-tab-caption">Атмосфера</span>
+        </button>
       </div>
       <div class="profile-customize-content" role="tabpanel" aria-live="polite">
         <div class="profile-customize-empty"><span aria-hidden="true">✧</span><strong>Каталог скоро появится</strong><small>Раздел «Аватарки» будет добавлен позже</small></div>
