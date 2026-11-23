@@ -1263,3 +1263,16 @@
 .profile-background-apply{color:#07130f;background:var(--accent);border-color:var(--accent)}
 .profile-background-apply:disabled,.profile-background-choose:disabled{opacity:.42;cursor:not-allowed}
 .profile-background-hint{color:var(--text-muted);font-size:10px;text-align:center}
+
+
+/* REBUNAR — COMPACT PROFILE HERO CONTROLS */
+.profile-hero-controls{gap:9px;margin-bottom:20px}
+.profile-customize-button{min-width:156px;min-height:46px;padding:0 17px;gap:8px;font-size:13px;border-radius:14px;box-shadow:0 3px 11px rgba(0,0,0,.22)}
+.profile-customize-button svg{width:18px;height:18px;flex-basis:18px}
+.profile-hero-icon-button{flex:0 0 46px;width:46px;height:46px;border-radius:14px;font-size:20px;box-shadow:0 3px 11px rgba(0,0,0,.22)}
+.profile-hero-icon-button svg{width:19px;height:19px}
+@media(max-width:380px){
+  .profile-hero-controls{gap:8px}
+  .profile-customize-button{min-width:144px;min-height:44px;padding:0 13px;font-size:12px}
+  .profile-hero-icon-button{flex-basis:44px;width:44px;height:44px;font-size:19px}
+}
