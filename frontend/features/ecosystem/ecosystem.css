@@ -13,3 +13,25 @@
 @media (max-width: 900px) { .ecosystem-card-grid { grid-template-columns: 1fr; } }
 
 .ecosystem-subtitle { margin: -4px 0 10px; color: var(--accent); font-size: 15px; font-weight: 750; }
+
+
+/* Store: lightweight web-app directory */
+.ecosystem-store-screen { gap: 18px; }
+.ecosystem-store-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 4px 2px; }
+.ecosystem-store-toolbar strong, .ecosystem-store-toolbar small { display:block; }
+.ecosystem-store-toolbar strong { font-size:16px; }
+.ecosystem-store-toolbar small { margin-top:4px; color:var(--text-muted); font-size:12px; }
+.ecosystem-store-count { color:var(--accent); font-size:12px; font-weight:850; letter-spacing:.12em; }
+.ecosystem-app-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr)); gap:14px; }
+.ecosystem-app-card { display:grid; grid-template-columns:62px minmax(0,1fr); align-items:center; gap:12px; padding:16px; border:1px solid var(--border); border-radius:15px; background:var(--bg-panel-2); }
+.ecosystem-app-icon { display:grid; place-items:center; width:58px; height:58px; border-radius:17px; color:#fff; background:var(--ecosystem-app-color); box-shadow:0 5px 16px #0003; }
+.ecosystem-app-icon span { font-size:30px; font-weight:850; }
+.ecosystem-app-info { min-width:0; }
+.ecosystem-app-category { color:var(--accent); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.ecosystem-app-info h2 { margin:4px 0; font-size:17px; }
+.ecosystem-app-info p { margin:0; color:var(--text-muted); font-size:12px; line-height:1.45; }
+.ecosystem-app-add { grid-column:1/-1; min-height:42px; border:1px solid color-mix(in srgb,var(--accent) 55%,var(--border)); border-radius:10px; color:var(--text-main); background:color-mix(in srgb,var(--accent) 13%,var(--bg-panel)); font:inherit; font-size:13px; font-weight:750; cursor:pointer; }
+.ecosystem-app-add:disabled { opacity:.65; cursor:default; }
+.ecosystem-app-preview { grid-column:1/-1; justify-self:center; color:var(--text-muted); font-size:12px; text-decoration:none; }
+.ecosystem-app-preview:hover { color:var(--accent); }
+.ecosystem-store-note { margin:0; color:var(--text-muted); font-size:12px; line-height:1.5; }
