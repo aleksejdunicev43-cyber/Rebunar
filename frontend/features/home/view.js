@@ -87,7 +87,10 @@ export function renderHomeScreen(outlet) {
   const shell = outlet.closest('.app-shell');
   shell?.classList.add('home-workspace-active');
 
-  outlet.innerHTML = `
+  outlet.innerHTML = '';
+  const host = shell || outlet;
+  host.querySelector(':scope > .home-workspace')?.remove();
+  host.insertAdjacentHTML('beforeend', `
     <section class="home-workspace" aria-label="Главный экран Rebunar">
       <img class="home-wallpaper-image" alt="" aria-hidden="true" hidden>
       <input class="home-wallpaper-input" type="file"
@@ -95,9 +98,9 @@ export function renderHomeScreen(outlet) {
         aria-label="Выбрать обои из галереи">
       <div class="home-wallpaper-status" role="status" aria-live="polite"></div>
     </section>
-  `;
+  `);
 
-  const workspace = outlet.querySelector('.home-workspace');
+  const workspace = host.querySelector(':scope > .home-workspace');
   const fileInput = workspace.querySelector('.home-wallpaper-input');
   let holdTimer = null;
   let holdTriggered = false;

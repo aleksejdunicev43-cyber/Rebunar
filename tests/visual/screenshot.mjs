@@ -79,6 +79,59 @@ try {
     report.authenticated = true;
     await page.waitForTimeout(1500);
 
+    // Install a synthetic wallpaper in this isolated test browser so the
+    // production test verifies the real persisted-image rendering path.
+    await page.evaluate(async () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 390;
+      canvas.height = 844;
+      const context = canvas.getContext('2d');
+      const gradient = context.createLinearGradient(0, 0, 390, 844);
+      gradient.addColorStop(0, '#ff3b72');
+      gradient.addColorStop(1, '#2b55ff');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 390, 844);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const request = indexedDB.open('rebunar-home-workspace', 1);
+      const db = await new Promise((resolve, reject) => {
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains('wallpapers')) request.result.createObjectStore('wallpapers');
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction('wallpapers', 'readwrite');
+        transaction.objectStore('wallpapers').put(blob, 'home');
+        transaction.oncomplete = resolve;
+        transaction.onerror = () => reject(transaction.error);
+      });
+      db.close();
+    });
+    await page.reload({ waitUntil: 'networkidle' });
+    await page.waitForSelector('.home-workspace .home-wallpaper-image:not([hidden])', { timeout: 15000 });
+    const wallpaperGeometry = await page.locator('.home-wallpaper-image').evaluate(image => {
+      const rect = image.getBoundingClientRect();
+      return {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        objectFit: getComputedStyle(image).objectFit,
+      };
+    });
+    report.wallpaperGeometry = wallpaperGeometry;
+    const wallpaperHitTarget = await page.evaluate(() => {
+      const target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+      return target?.closest('.home-workspace') ? 'home-workspace' : (target?.className || target?.tagName || 'none');
+    });
+    report.wallpaperHitTarget = wallpaperHitTarget;
+    if (wallpaperHitTarget !== 'home-workspace') throw new Error('Home workspace cannot receive long-press input: ' + wallpaperHitTarget);
+    if (wallpaperGeometry.width !== wallpaperGeometry.viewportWidth ||
+        wallpaperGeometry.height !== wallpaperGeometry.viewportHeight ||
+        wallpaperGeometry.objectFit !== 'fill') {
+      throw new Error('Wallpaper does not fill the viewport: ' + JSON.stringify(wallpaperGeometry));
+    }
     await screenshot('02-home-mobile');
     await openRoute('profile', '03-profile-mobile', '.header-profile-button');
     await openRoute('users', '04-users-mobile', '.profile-users-button');
@@ -88,6 +141,15 @@ try {
     // Дополнительные десктопные снимки ключевых экранов.
     await page.setViewportSize({ width: 1440, height: 1000 });
     await openRoute('home', '07-home-desktop');
+    await page.waitForSelector('.home-workspace .home-wallpaper-image:not([hidden])', { timeout: 15000 });
+    const desktopWallpaper = await page.locator('.home-wallpaper-image').evaluate(image => {
+      const rect = image.getBoundingClientRect();
+      return { width: Math.round(rect.width), height: Math.round(rect.height), viewportWidth: window.innerWidth, viewportHeight: window.innerHeight };
+    });
+    report.desktopWallpaperGeometry = desktopWallpaper;
+    if (desktopWallpaper.width !== desktopWallpaper.viewportWidth || desktopWallpaper.height !== desktopWallpaper.viewportHeight) {
+      throw new Error('Desktop wallpaper does not fill the viewport: ' + JSON.stringify(desktopWallpaper));
+    }
     await openRoute('profile', '08-profile-desktop', '.header-profile-button');
   } else {
     report.notes.push('Не заданы GitHub Secrets REBUNAR_TEST_USERNAME и REBUNAR_TEST_PASSWORD. Сделан снимок экрана входа; приватные разделы пропущены без создания или изменения аккаунтов.');
