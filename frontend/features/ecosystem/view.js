@@ -116,6 +116,12 @@ export function renderEcosystemScreen(outlet, key) {
         <p class="ecosystem-store-note">Приложения открываются на своих официальных сайтах. Rebunar сохраняет только ярлык, а не устанавливает APK и не скачивает файлы.</p>
       </section>
     `;
+    outlet.querySelectorAll('[data-open-app]').forEach(button => button.addEventListener('click', () => {
+      const app = section.apps.find(item => item.id === button.dataset.openApp);
+      if (!app) return;
+      if (window.AndroidBrowser?.open) window.AndroidBrowser.open(app.url, app.name);
+      else window.open(app.url, '_blank', 'noopener,noreferrer');
+    }));
     outlet.querySelectorAll('[data-add-app]').forEach(button => button.addEventListener('click', () => {
       const app = section.apps.find(item => item.id === button.dataset.addApp);
       if (!app) return;
