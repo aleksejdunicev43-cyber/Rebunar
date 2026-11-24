@@ -134,7 +134,8 @@ try {
 
     // Дополнительные десктопные снимки ключевых экранов.
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.waitForTimeout(400);
+    await openRoute('home', '07-home-desktop');
+    await page.waitForSelector('.home-workspace .home-wallpaper-image:not([hidden])', { timeout: 15000 });
     const desktopWallpaper = await page.locator('.home-wallpaper-image').evaluate(image => {
       const rect = image.getBoundingClientRect();
       return { width: Math.round(rect.width), height: Math.round(rect.height), viewportWidth: window.innerWidth, viewportHeight: window.innerHeight };
@@ -143,7 +144,6 @@ try {
     if (desktopWallpaper.width !== desktopWallpaper.viewportWidth || desktopWallpaper.height !== desktopWallpaper.viewportHeight) {
       throw new Error('Desktop wallpaper does not fill the viewport: ' + JSON.stringify(desktopWallpaper));
     }
-    await openRoute('home', '07-home-desktop');
     await openRoute('profile', '08-profile-desktop', '.header-profile-button');
   } else {
     report.notes.push('Не заданы GitHub Secrets REBUNAR_TEST_USERNAME и REBUNAR_TEST_PASSWORD. Сделан снимок экрана входа; приватные разделы пропущены без создания или изменения аккаунтов.');
