@@ -383,17 +383,20 @@ function renderHomeAppLauncher(workspace) {
       edgeTimer=null;
       const next=currentPage+direction;
       if(direction>0 && next>=layout.pages.length) {
-        if(!pageHasApps(currentPage) || !ensurePage(next)) return;
+        const sourcePage=activeDrag?.zone==='grid'?layout.pages[activeDrag.page]:null;
+        if(!pageHasApps(currentPage) || (sourcePage && sourcePage.filter(Boolean).length<=1) || !ensurePage(next)) return;
       }
       if(next>=0 && next<layout.pages.length) showPage(next);
     },420);
   };
   launcher.addEventListener('pointerdown', event => {
-    if(event.pointerType==='touch') swipeStart={x:event.clientX,y:event.clientY};
+    if(event.pointerType==='touch') {
+      swipeStart={x:event.clientX,y:event.clientY};
+      try { launcher.setPointerCapture(event.pointerId); } catch {}
+    }
     const button=event.target.closest('.home-app-button');
     if(!button) return;
     if(event.button!==undefined && event.button!==0) return;
-    try { launcher.setPointerCapture(event.pointerId); } catch {}
     const slot=button.closest('.home-app-slot');
     const rect=button.getBoundingClientRect();
     const startPoint={x:event.clientX,y:event.clientY};
