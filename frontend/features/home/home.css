@@ -298,3 +298,66 @@
   .home-workspace-active .header-actions .header-icon-button { flex-basis: 32px; width: 32px; }
   .home-workspace-active .mobile-navigation .nav-item { font-size: 9px; }
 }
+
+
+/* Full-screen wallpaper editor shown after choosing a photo. */
+.wallpaper-editor {
+  position: fixed; z-index: 1000; inset: 0; display: flex;
+  align-items: center; justify-content: center; width: 100%;
+  height: 100vh; height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
+  overflow: auto; background: rgba(2, 9, 6, .96); color: #effff4;
+  overscroll-behavior: contain;
+}
+.wallpaper-editor-panel {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  width: min(100%, 520px); max-height: 100%; margin: auto;
+}
+.wallpaper-editor-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; width: 100%; min-height: 44px;
+}
+.wallpaper-editor-header strong { color: #effff4; font-size: 15px; font-weight: 700; }
+.wallpaper-editor-header button, .wallpaper-editor-controls button {
+  min-height: 40px; padding: 0 13px; border: 1px solid rgba(128,255,183,.25);
+  border-radius: 11px; background: rgba(24,63,43,.72); color: #eafff1;
+  font: inherit; font-size: 13px; font-weight: 600; touch-action: manipulation;
+}
+.wallpaper-editor-header .wallpaper-editor-apply {
+  border-color: rgba(121,239,168,.55); background: #17683d; color: #fff;
+}
+.wallpaper-editor-preview-wrap {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 0; flex: 1 1 auto;
+}
+.wallpaper-editor-preview {
+  position: relative; width: auto; height: min(62dvh, 680px);
+  max-width: 100%; max-height: 62dvh; aspect-ratio: 9 / 16;
+  overflow: hidden; border: 1px solid rgba(173,255,202,.42);
+  border-radius: 14px; background: #071b15;
+  box-shadow: 0 14px 50px rgba(0,0,0,.48); touch-action: none;
+}
+.wallpaper-editor-source {
+  position: absolute; top: 50%; left: 50%; display: block;
+  max-width: none; max-height: none; object-fit: fill;
+  transform-origin: center center; pointer-events: none; user-select: none;
+}
+.wallpaper-editor-guide {
+  position: absolute; inset: 0; border: 1px solid rgba(255,255,255,.22);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.16); pointer-events: none;
+}
+.wallpaper-editor-tools { width: 100%; text-align: center; }
+.wallpaper-editor-tools p {
+  margin: 0 0 10px; color: rgba(234,255,241,.72);
+  font-size: 12px; line-height: 1.4;
+}
+.wallpaper-editor-controls {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;
+}
+.wallpaper-editor-controls button { min-width: 42px; font-size: 18px; }
+.wallpaper-editor-controls button[data-action="reset"] { font-size: 12px; }
+@media (max-height: 620px) {
+  .wallpaper-editor-panel { gap: 8px; }
+  .wallpaper-editor-preview { height: 52dvh; max-height: 52dvh; }
+  .wallpaper-editor-tools p { margin-bottom: 6px; }
+}
