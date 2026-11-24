@@ -44,7 +44,6 @@ export function renderProfileScreen(container, user, onLogout) {
         </div>
         <div class="profile-quick-grid profile-quick-grid-all" aria-label="Основные разделы профиля">
           ${renderProfileQuickActions([
-            ["creator","Кабинет автора","✦"],
             ["recent","Читалка","◷"],
             ["library","Библиотека","▣"],
             ["achievements","Достижения","✧"],
@@ -66,8 +65,7 @@ export function renderProfileScreen(container, user, onLogout) {
     button.addEventListener('click', () => {
       const action = button.dataset.profileAction;
       if (button.disabled) return;
-      if (action === 'creator') openCreatorChoice(container);
-      else if (action === 'recent') navigate('reader');
+      if (action === 'recent') navigate('reader');
       else if (action === 'library') navigate('favorites');
       else if (action === 'stats') navigate('statistics');
       else if (action === 'achievements') {
@@ -347,7 +345,7 @@ function renderProfileQuickActions(items) {
   }).join('');
 }
 
-function openCreatorChoice(container) {
+export function openCreatorChoice(container) {
   const overlay=document.createElement('div');
   overlay.className='profile-creator-overlay';
   overlay.innerHTML=[
