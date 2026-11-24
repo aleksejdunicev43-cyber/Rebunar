@@ -41,6 +41,7 @@ class MainActivity : Activity() {
     private lateinit var browserPanel: LinearLayout
     private lateinit var browserWebView: WebView
     private lateinit var browserAddress: TextView
+    private var browserPopupWebView: WebView? = null
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var hasEnteredForeground = false
 
@@ -412,9 +413,80 @@ class MainActivity : Activity() {
             }
             override fun onPageFinished(view: WebView?, url: String?) {
                 browserAddress.text = url ?: ""
+                CookieManager.getInstance().flush()
             }
             override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: android.net.http.SslError?) {
                 handler?.cancel()
+            }
+        }
+        browserWebView.webChromeClient = object : WebChromeClient() {
+            override fun onCreateWindow(
+                view: WebView?,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: android.os.Message?
+            ): Boolean {
+                // OAuth providers and some sites open sign-in in a separate window.
+                // Keep that window inside Rebunar instead of leaving a blank page.
+                if (!isUserGesture || browserPopupWebView != null || resultMsg == null) return false
+                val popup = WebView(this@MainActivity).apply {
+                    setBackgroundColor(Color.rgb(8, 9, 10))
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.loadsImagesAutomatically = true
+                    settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                    settings.javaScriptCanOpenWindowsAutomatically = true
+                    settings.setSupportMultipleWindows(true)
+                }
+                CookieManager.getInstance().setAcceptThirdPartyCookies(popup, true)
+                popup.webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView?,
+                        request: WebResourceRequest?
+                    ): Boolean {
+                        val uri = request?.url ?: return true
+                        return uri.scheme != "https" && uri.scheme != "http"
+                    }
+                    override fun onPageStarted(
+                        view: WebView?,
+                        url: String?,
+                        favicon: android.graphics.Bitmap?
+                    ) {
+                        browserAddress.text = url ?: ""
+                    }
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        browserAddress.text = url ?: ""
+                        CookieManager.getInstance().flush()
+                    }
+                    override fun onReceivedSslError(
+                        view: WebView?,
+                        handler: SslErrorHandler?,
+                        error: android.net.http.SslError?
+                    ) {
+                        handler?.cancel()
+                    }
+                }
+                popup.webChromeClient = object : WebChromeClient() {
+                    override fun onCloseWindow(window: WebView?) {
+                        closeBrowserPopup()
+                    }
+                }
+                browserPopupWebView = popup
+                browserWebView.visibility = View.GONE
+                panel.addView(popup, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+                ))
+                val transport = resultMsg.obj as? WebView.WebViewTransport ?: run {
+                    closeBrowserPopup()
+                    return false
+                }
+                transport.webView = popup
+                resultMsg.sendToTarget()
+                return true
+            }
+
+            override fun onCloseWindow(window: WebView?) {
+                closeBrowserPopup()
             }
         }
         panel.addView(toolbar, LinearLayout.LayoutParams(
@@ -424,6 +496,15 @@ class MainActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
         ))
         return panel
+    }
+
+    private fun closeBrowserPopup() {
+        val popup = browserPopupWebView ?: return
+        browserPopupWebView = null
+        popup.stopLoading()
+        (popup.parent as? ViewGroup)?.removeView(popup)
+        popup.destroy()
+        if (::browserWebView.isInitialized) browserWebView.visibility = View.VISIBLE
     }
 
     private fun openInternalBrowser(rawUrl: String, title: String) {
@@ -436,6 +517,7 @@ class MainActivity : Activity() {
     }
 
     private fun closeInternalBrowser() {
+        closeBrowserPopup()
         browserWebView.stopLoading()
         browserWebView.loadUrl("about:blank")
         browserPanel.visibility = View.GONE
@@ -488,6 +570,11 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         filePathCallback?.onReceiveValue(null)
         filePathCallback = null
+        if (::browserPopupWebView.isInitialized) closeBrowserPopup()
+        if (::browserWebView.isInitialized) {
+            browserWebView.stopLoading()
+            browserWebView.destroy()
+        }
         if (::webView.isInitialized) {
             webView.stopLoading()
             webView.destroy()
