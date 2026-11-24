@@ -44,7 +44,7 @@ export function renderProfileScreen(container, user, onLogout) {
         <div class="profile-quick-grid profile-quick-grid-all" aria-label="Основные разделы профиля">
           ${renderProfileQuickActions([
             ["creator","Кабинет автора","✦"],
-            ["recent","Последнее чтение","◷"],
+            ["recent","Читалка","◷"],
             ["library","Библиотека","▣"],
             ["achievements","Достижения","✧"],
             ["stats","Статистика","▥"]
