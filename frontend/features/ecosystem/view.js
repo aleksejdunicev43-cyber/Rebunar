@@ -87,6 +87,7 @@ export function renderEcosystemScreen(outlet, key) {
         <span class="ecosystem-status">${section.status}</span>
       </header>
       ${key === 'search' ? '<button class="ecosystem-users-link" type="button" data-open-users><span>♙</span><span><strong>Все пользователи</strong><small>Найти участников и открыть их профили</small></span><span aria-hidden="true">›</span></button>' : ''}
+      ${key === 'notifications' ? '<button class="ecosystem-users-link" type="button" data-open-mail><span>✉</span><span><strong>Почта Rebunar</strong><small>Письма платформы, новости и награды</small></span><span aria-hidden="true">›</span></button>' : ''}
       <div class="ecosystem-card-grid">
         ${section.cards.map(([title, description], index) => `
           <article class="ecosystem-card">
@@ -100,4 +101,5 @@ export function renderEcosystemScreen(outlet, key) {
     </section>
   `;
   outlet.querySelector('[data-open-users]')?.addEventListener('click', () => navigate('users'));
+  outlet.querySelector('[data-open-mail]')?.addEventListener('click', () => navigate('mail'));
 }
