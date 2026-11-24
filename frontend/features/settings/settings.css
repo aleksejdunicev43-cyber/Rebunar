@@ -755,3 +755,24 @@ button.settings-item:hover {
 .matrix-optional-note strong {
   color: var(--text-main, #edf0f3);
 }
+
+
+/* SETTINGS SECTIONS AND UNAVAILABLE CONTROLS */
+.settings-section{margin:4px 0 12px}
+.settings-section h2{margin:0 0 5px;color:var(--text-main);font-size:16px}
+.settings-section p{margin:0;color:var(--text-muted);font-size:12px}
+.settings-item-disabled{display:flex;align-items:center;cursor:default;user-select:none}
+.settings-item-disabled .settings-item-content{min-width:0}
+.settings-item-disabled .settings-status{flex:0 0 auto}
+.ecosystem-users-link{
+  display:flex;align-items:center;gap:14px;width:100%;margin:0 0 20px;padding:16px;
+  color:var(--text-main);text-align:left;background:var(--bg-panel);
+  border:1px solid var(--border);border-radius:14px;font:inherit;cursor:pointer;
+}
+.ecosystem-users-link>span:first-child{display:grid;place-items:center;flex:0 0 42px;height:42px;
+  color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg-panel));border-radius:11px;font-size:23px}
+.ecosystem-users-link>span:nth-child(2){display:grid;gap:4px;flex:1;min-width:0}
+.ecosystem-users-link strong{font-size:14px}
+.ecosystem-users-link small{color:var(--text-muted);font-size:12px}
+.ecosystem-users-link>span:last-child{color:var(--text-muted);font-size:24px}
+.ecosystem-users-link:hover{border-color:var(--accent);background:var(--bg-panel-2)}
