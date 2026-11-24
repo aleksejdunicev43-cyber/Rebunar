@@ -96,15 +96,24 @@ export function renderHomeScreen(outlet) {
       <input class="home-wallpaper-input" type="file"
         accept="image/jpeg,image/png,image/webp,image/avif"
         aria-label="Выбрать обои из галереи">
+      <button class="home-wallpaper-picker" type="button" hidden>
+        <span aria-hidden="true">▧</span>
+        <span>Выбрать фото</span>
+      </button>
       <div class="home-wallpaper-status" role="status" aria-live="polite"></div>
     </section>
   `);
 
   const workspace = host.querySelector(':scope > .home-workspace');
   const fileInput = workspace.querySelector('.home-wallpaper-input');
+  const pickerButton = workspace.querySelector('.home-wallpaper-picker');
   let holdTimer = null;
   let holdTriggered = false;
   let pointerStart = null;
+
+  const hidePicker = () => {
+    pickerButton.hidden = true;
+  };
 
   const clearHold = () => {
     if (holdTimer) window.clearTimeout(holdTimer);
@@ -120,7 +129,12 @@ export function renderHomeScreen(outlet) {
     pointerStart = { x: event.clientX, y: event.clientY };
     holdTimer = window.setTimeout(() => {
       holdTriggered = true;
-      fileInput.click();
+      const bounds = workspace.getBoundingClientRect();
+      const left = Math.min(Math.max(event.clientX - bounds.left, 18), bounds.width - 150);
+      const top = Math.min(Math.max(event.clientY - bounds.top, 18), bounds.height - 58);
+      pickerButton.style.left = `${left}px`;
+      pickerButton.style.top = `${top}px`;
+      pickerButton.hidden = false;
     }, 550);
   });
 
@@ -135,9 +149,20 @@ export function renderHomeScreen(outlet) {
     workspace.addEventListener(type, clearHold);
   });
 
+  pickerButton.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    hidePicker();
+    // The gallery opens from this explicit tap, preserving Android's user gesture.
+    fileInput.click();
+  });
+
   workspace.addEventListener('contextmenu', event => event.preventDefault());
 
   workspace.addEventListener('click', event => {
+    if (!event.target.closest('.home-wallpaper-picker') && !pickerButton.hidden) {
+      hidePicker();
+    }
     if (holdTriggered) {
       event.preventDefault();
       event.stopPropagation();
