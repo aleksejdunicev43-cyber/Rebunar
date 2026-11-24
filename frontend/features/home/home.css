@@ -1,17 +1,92 @@
-/* REBUNAR — HOME WORKSPACE FOUNDATION */
-.home-workspace-active .app-header,
-.home-workspace-active .sidebar,
-.home-workspace-active .context-panel { display: none !important; }
+/* REBUNAR — SMARTPHONE HOME SCREEN */
+.home-workspace-active .app-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
 
+/* Permanent top system bar: profile, Rebunar wordmark, search and notifications. */
+.home-workspace-active .app-header {
+  position: relative;
+  inset: auto;
+  z-index: 20;
+  display: grid !important;
+  flex: 0 0 58px;
+  width: 100%;
+  min-height: 58px;
+  height: 58px;
+  padding: 0 10px;
+  overflow: visible;
+  border: 0;
+  border-bottom: 1px solid rgba(207,255,226,.14);
+  border-radius: 0;
+  background: rgba(7, 18, 13, .96);
+  box-shadow: 0 3px 16px rgba(0,0,0,.2);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.home-workspace-active .header-brand {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  padding-left: 2px;
+}
+.home-workspace-active .header-profile-button {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid rgba(128,255,183,.28);
+  border-radius: 14px;
+  background: rgba(23,75,48,.35);
+  box-shadow: none;
+}
+.home-workspace-active .header-profile-button .rb-avatar {
+  --rb-avatar-size: 42px;
+  width: 100%;
+  height: 100%;
+}
+.home-workspace-active .app-wordmark {
+  display: flex;
+  padding: 0 100px;
+  color: #eafff1;
+  font-size: clamp(14px, 2vw, 19px);
+  letter-spacing: .2em;
+  text-shadow: 0 0 14px rgba(55,220,125,.18);
+}
+.home-workspace-active .header-actions {
+  right: 8px;
+  z-index: 3;
+  gap: 3px;
+}
+.home-workspace-active .header-actions .header-icon-button {
+  color: rgba(235,255,243,.9);
+  background: transparent;
+}
+
+/* Hide side columns: the wallpaper belongs to the full central phone canvas. */
 .home-workspace-active .app-layout {
   display: flex;
   flex: 1 1 auto;
   width: 100%;
   max-width: none;
+  min-width: 0;
   min-height: 0;
+  gap: 0;
   margin: 0;
   padding: 0;
   overflow: hidden;
+}
+.home-workspace-active .sidebar,
+.home-workspace-active .context-panel {
+  display: none !important;
 }
 .home-workspace-active .main-content {
   display: flex;
@@ -19,6 +94,7 @@
   width: 100%;
   min-width: 0;
   min-height: 0;
+  margin: 0;
   padding: 0;
   overflow: hidden;
   border: 0;
@@ -28,305 +104,136 @@
 .home-workspace-active #screen-outlet {
   display: flex;
   flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
 }
-.home-workspace-active .mobile-navigation {
-  flex: 0 0 auto;
-  border-top: 1px solid rgba(255,255,255,.1);
-  background: rgba(10, 17, 15, .82);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-}
 
 .home-workspace {
-  --home-wallpaper-image: none;
   position: relative;
   isolation: isolate;
   display: flex;
   flex: 1 1 auto;
-  flex-direction: column;
-  justify-content: space-between;
   width: 100%;
   min-width: 0;
-  min-height: 100%;
-  padding: clamp(18px, 4vw, 34px);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
-  color: #f3fff8;
   background-color: #071b15;
   background-image:
-    linear-gradient(180deg, rgba(3, 12, 9, .36), rgba(3, 12, 9, .12) 42%, rgba(3, 12, 9, .58)),
-    var(--home-wallpaper-image),
-    radial-gradient(ellipse at 50% 36%, rgba(36, 150, 100, .28), transparent 56%),
+    linear-gradient(rgba(3,12,9,.08), rgba(3,12,9,.08)),
+    var(--home-wallpaper-image, none),
+    radial-gradient(ellipse at 50% 40%, rgba(36,150,100,.28), transparent 58%),
     linear-gradient(145deg, #102e22, #07130f 72%);
-  background-position: center;
+  background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.home-workspace.has-wallpaper {
+  background-size: cover;
+  background-position: center center;
 }
 .home-workspace::after {
   position: absolute;
   z-index: -1;
   inset: 0;
-  border: 1px solid rgba(255,255,255,.06);
+  border: 0;
   content: "";
   pointer-events: none;
 }
-.home-workspace-top,
-.home-workspace-bottom {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-.home-workspace-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: rgba(244,255,248,.9);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .2em;
-  text-shadow: 0 2px 12px rgba(0,0,0,.35);
-}
-.home-workspace-mark {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border: 1px solid rgba(121,255,184,.48);
-  border-radius: 11px;
-  background: rgba(17, 75, 49, .58);
-  color: #8bffc0;
-  font-size: 16px;
-  letter-spacing: 0;
-  box-shadow: 0 0 22px rgba(44, 221, 132, .14);
-}
-.home-wallpaper-controls { display: flex; align-items: center; gap: 8px; }
-.home-wallpaper-button,
-.home-wallpaper-reset {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid rgba(207,255,226,.2);
-  border-radius: 999px;
-  background: rgba(5, 22, 15, .52);
-  color: #effff5;
-  font-size: 12px;
-  font-weight: 700;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-.home-wallpaper-button:active,
-.home-wallpaper-reset:active { transform: scale(.97); }
-.home-wallpaper-button svg {
-  width: 17px;
-  height: 17px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.home-wallpaper-reset { color: #d8f5e3; }
-.home-wallpaper-input { display: none; }
-.home-workspace-center {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1 1 auto;
-  min-height: 150px;
+.home-wallpaper-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
   pointer-events: none;
 }
-.home-workspace-empty-mark {
-  display: grid;
-  width: clamp(78px, 16vw, 116px);
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid rgba(205,255,225,.16);
-  border-radius: 30%;
-  background: rgba(8, 37, 24, .22);
-  box-shadow: 0 16px 60px rgba(0,0,0,.12), inset 0 0 34px rgba(112,255,170,.045);
-  backdrop-filter: blur(8px);
-}
-.home-workspace-empty-mark span {
-  width: 28%;
-  aspect-ratio: 1;
-  border: 1px solid rgba(158,255,194,.45);
-  border-radius: 50%;
-  box-shadow: 0 0 30px rgba(86,255,159,.24);
-}
-.home-workspace-caption {
-  margin: 18px 0 0;
-  color: rgba(239,255,246,.7);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .24em;
-  text-shadow: 0 2px 12px rgba(0,0,0,.5);
-}
-.home-workspace-bottom { align-items: flex-end; }
 .home-wallpaper-status {
-  max-width: min(420px, 75%);
-  margin: 0;
-  color: rgba(238,255,245,.72);
-  font-size: 11px;
-  line-height: 1.5;
-  text-shadow: 0 2px 12px rgba(0,0,0,.5);
-}
-.home-wallpaper-status.is-error { color: #ffb4b4; }
-.home-workspace-version {
-  color: rgba(238,255,245,.48);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .16em;
-  white-space: nowrap;
-}
-@media (max-width: 760px) {
-  .home-workspace-active .app-shell {
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-  }
-  .home-workspace-active .app-layout { padding: 0; }
-  .home-workspace-active .main-content { min-height: 0; }
-  .home-workspace {
-    min-height: 0;
-    padding: max(18px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom));
-  }
-  .home-workspace-brand { font-size: 10px; }
-  .home-wallpaper-button,
-  .home-wallpaper-reset { min-height: 38px; padding: 0 12px; }
-  .home-workspace-bottom { align-items: flex-end; }
-}
-
-.home-workspace-active .mobile-navigation {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(255,255,255,.1);
-  background: rgba(10, 17, 15, .82);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-}
-.home-workspace-active .mobile-navigation .nav-item {
-  flex: 1 1 0;
-  max-width: 180px;
-  min-width: 0;
-  min-height: 54px;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  color: rgba(231,255,241,.72);
-}
-.home-workspace-active .mobile-navigation .nav-item.is-active {
-  color: #7af0aa;
-  background: rgba(74, 224, 139, .1);
-  border-color: transparent;
-}
-
-
-/* HOME WORKSPACE POLISH: retain profile access and honor hidden wallpaper controls. */
-.home-workspace-active .app-shell {
-  position: relative;
-  width: 100vw;
-  max-width: none;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  margin: 0;
-  overflow: hidden;
-}
-.home-workspace-active .app-header {
   position: absolute;
-  inset: 0 0 auto;
-  z-index: 25;
-  display: block !important;
-  width: 100%;
-  height: 0;
-  min-height: 0;
-  padding: 0;
-  overflow: visible;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-.home-workspace-active .header-brand {
-  position: absolute;
-  top: clamp(18px, 4vw, 34px);
-  left: clamp(18px, 4vw, 34px);
+  right: 14px;
+  bottom: 12px;
+  left: 14px;
   z-index: 2;
-}
-.home-workspace-active .header-profile-button {
-  width: 44px;
-  height: 44px;
-  flex-basis: 44px;
-  border: 1px solid rgba(207,255,226,.3);
-  border-radius: 14px;
-  background: rgba(5,22,15,.62);
-  box-shadow: 0 4px 18px rgba(0,0,0,.2);
+  width: fit-content;
+  max-width: calc(100% - 28px);
+  margin: 0 auto;
+  padding: 7px 12px;
+  border: 1px solid rgba(220,255,232,.14);
+  border-radius: 999px;
+  background: rgba(4,18,11,.72);
+  color: rgba(239,255,246,.9);
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
-.home-workspace-active .header-profile-button .rb-avatar {
-  --rb-avatar-size: 44px;
-  width: 100%;
-  height: 100%;
-}
-.home-workspace-active .app-wordmark,
-.home-workspace-active .header-actions,
-.home-workspace-active .home-workspace-brand {
-  display: none !important;
-}
-.home-workspace-active .home-wallpaper-reset[hidden] {
-  display: none !important;
-}
+.home-wallpaper-status:empty { display: none; }
+.home-wallpaper-status.is-error { color: #ffb4b4; }
 
-
-/* Keep the workspace edge-to-edge while the profile avatar floats above it. */
-.home-workspace-active .app-header {
-  flex: 0 0 0 !important;
-  height: 0 !important;
-  min-height: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-.home-workspace-active .app-layout {
-  flex: 1 1 auto;
+/* Permanent bottom navigation bar, separate from the wallpaper area. */
+.home-workspace-active .mobile-navigation {
+  position: relative;
+  inset: auto;
+  z-index: 30;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-around;
+  gap: 3px;
   width: 100%;
-  max-width: none;
-  gap: 0;
   margin: 0;
-  padding: 0 !important;
-}
-.home-workspace-active .main-content {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0 !important;
-}
-.home-workspace-active #screen-outlet,
-.home-workspace-active .home-workspace {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
-.home-workspace-active .home-workspace {
-  height: 100%;
+  padding: 6px 5px calc(6px + env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 1px solid rgba(207,255,226,.14);
   border-radius: 0;
+  background: rgba(7,18,13,.96);
+  box-shadow: 0 -4px 18px rgba(0,0,0,.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.home-workspace-active .mobile-navigation .nav-item {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px 2px;
+  color: rgba(231,255,241,.7);
+  font-size: 10px;
+}
+.home-workspace-active .mobile-navigation .nav-item .nav-icon {
+  flex: 0 0 21px;
+  width: 21px;
+  height: 21px;
+}
+.home-workspace-active .mobile-navigation .nav-item.is-active {
+  color: #79efa8;
+  background: rgba(74,224,139,.1);
+  border-color: transparent;
+}
+.home-workspace-active .mobile-navigation .mobile-more-menu {
+  bottom: calc(100% + 8px);
 }
 
+@media (min-width: 761px) {
+  .home-workspace-active .app-header { flex-basis: 66px; height: 66px; min-height: 66px; padding: 0 22px; }
+  .home-workspace-active .header-profile-button { flex-basis: 46px; width: 46px; height: 46px; }
+  .home-workspace-active .header-profile-button .rb-avatar { --rb-avatar-size: 46px; }
+  .home-workspace-active .mobile-navigation { display: none !important; }
+}
 
-.home-workspace-active .home-wallpaper-controls {
-  margin-left: auto;
+@media (max-width: 390px) {
+  .home-workspace-active .app-wordmark { padding: 0 86px; font-size: 13px; letter-spacing: .14em; }
+  .home-workspace-active .header-actions .header-icon-button { flex-basis: 32px; width: 32px; }
+  .home-workspace-active .mobile-navigation .nav-item { font-size: 9px; }
 }

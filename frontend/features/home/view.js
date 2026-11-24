@@ -80,60 +80,60 @@ export function renderHomeScreen(outlet) {
 
   outlet.innerHTML = `
     <section class="home-workspace" aria-label="Главный экран Rebunar">
-      <div class="home-workspace-glow" aria-hidden="true"></div>
-      <div class="home-workspace-top">
-        <div class="home-workspace-brand">
-          <span class="home-workspace-mark">R</span>
-          <span>REBUNAR</span>
-        </div>
-        <div class="home-wallpaper-controls">
-          <button type="button" class="home-wallpaper-button" data-action="choose-wallpaper">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12" r="3.5"/></svg>
-            <span>Обои</span>
-          </button>
-          <button type="button" class="home-wallpaper-reset" data-action="reset-wallpaper" hidden>Сбросить</button>
-        </div>
-      </div>
-
-      <input class="home-wallpaper-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif" aria-label="Выбрать изображение для обоев">
-
-      <div class="home-workspace-center">
-        <div class="home-workspace-empty-mark" aria-hidden="true"><span></span></div>
-        <p class="home-workspace-caption">ТВОЁ ПРОСТРАНСТВО</p>
-      </div>
-
-      <div class="home-workspace-bottom">
-        <p class="home-wallpaper-status" role="status">Установи собственные обои и создай свой экран Rebunar.</p>
-        <span class="home-workspace-version">REBUNAR HOME</span>
+      <input class="home-wallpaper-input" type="file"
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        aria-label="Выбрать обои из галереи">
+      <div class="home-wallpaper-status" role="status" aria-live="polite"></div>
+      <div class="home-wallpaper-hint" aria-hidden="true">
+        Удерживайте экран, чтобы изменить обои
       </div>
     </section>
   `;
 
   const workspace = outlet.querySelector('.home-workspace');
   const fileInput = workspace.querySelector('.home-wallpaper-input');
+  let holdTimer = null;
+  let holdTriggered = false;
+  let pointerStart = null;
 
-  workspace.addEventListener('click', async event => {
-    const button = event.target.closest('[data-action]');
-    if (!button) return;
+  const clearHold = () => {
+    if (holdTimer) window.clearTimeout(holdTimer);
+    holdTimer = null;
+    pointerStart = null;
+  };
 
-    if (button.dataset.action === 'choose-wallpaper') {
+  workspace.addEventListener('pointerdown', event => {
+    if (event.target.closest('button, input, a')) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    clearHold();
+    holdTriggered = false;
+    pointerStart = { x: event.clientX, y: event.clientY };
+    holdTimer = window.setTimeout(() => {
+      holdTriggered = true;
       fileInput.click();
-      return;
-    }
+    }, 550);
+  });
 
-    if (button.dataset.action === 'reset-wallpaper') {
-      button.disabled = true;
-      try {
-        await deleteWallpaper();
-        applyWallpaper(workspace, null);
-        showWallpaperMessage(workspace, 'Обои сброшены. Можно выбрать другое изображение.');
-      } catch (error) {
-        showWallpaperMessage(workspace, error.message || 'Не удалось сбросить обои.', true);
-      } finally {
-        button.disabled = false;
-      }
+  workspace.addEventListener('pointermove', event => {
+    if (!pointerStart) return;
+    if (Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 12) {
+      clearHold();
     }
   });
+
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => {
+    workspace.addEventListener(type, clearHold);
+  });
+
+  workspace.addEventListener('contextmenu', event => event.preventDefault());
+
+  workspace.addEventListener('click', event => {
+    if (holdTriggered) {
+      event.preventDefault();
+      event.stopPropagation();
+      holdTriggered = false;
+    }
+  }, true);
 
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
@@ -153,7 +153,7 @@ export function renderHomeScreen(outlet) {
     try {
       await writeWallpaper(file);
       applyWallpaper(workspace, file);
-      showWallpaperMessage(workspace, 'Обои установлены и сохранены на этом устройстве.');
+      showWallpaperMessage(workspace, 'Обои установлены.');
     } catch (error) {
       showWallpaperMessage(workspace, error.message || 'Не удалось сохранить изображение.', true);
     } finally {
