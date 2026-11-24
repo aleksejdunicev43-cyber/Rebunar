@@ -22,6 +22,7 @@ def register_community_routes(app, connect, base):
         slug = request.args.get("community")
         sql = """
             SELECT posts.id, posts.title, posts.body, posts.created_at,
+                   posts.user_id AS owner_id,
                    users.username AS author,
                    users.avatar AS avatar,
                    communities.slug AS community_slug,
@@ -38,7 +39,57 @@ def register_community_routes(app, connect, base):
         with connect() as con:
             con.row_factory = sqlite3.Row
             rows = con.execute(sql, params).fetchall()
-            return jsonify([dict(r) for r in rows])
+            current_user_id = session.get("user_id")
+            posts = []
+            for row in rows:
+                post = dict(row)
+                owner_id = post.pop("owner_id", None)
+                post["is_owner"] = current_user_id is not None and owner_id == current_user_id
+                posts.append(post)
+            return jsonify(posts)
+
+    @app.put("/api/posts/<int:post_id>")
+    def update_post(post_id):
+        if "user_id" not in session:
+            return jsonify({"error": "Войди в аккаунт, чтобы редактировать публикацию"}), 401
+
+        data = request.get_json(silent=True) or {}
+        title = str(data.get("title", "")).strip()[:200]
+        body = str(data.get("text", "")).strip()[:10000]
+        if not title and not body:
+            return jsonify({"error": "Публикация не может быть пустой"}), 400
+
+        with connect() as con:
+            post = con.execute(
+                "SELECT user_id FROM posts WHERE id = ?", (post_id,)
+            ).fetchone()
+            if post is None:
+                return jsonify({"error": "Публикация не найдена"}), 404
+            if post[0] != session["user_id"]:
+                return jsonify({"error": "Можно редактировать только свои публикации"}), 403
+            con.execute(
+                "UPDATE posts SET title = ?, body = ? WHERE id = ?",
+                (title, body, post_id)
+            )
+
+        return jsonify({"id": post_id, "title": title, "text": body})
+
+    @app.delete("/api/posts/<int:post_id>")
+    def delete_post(post_id):
+        if "user_id" not in session:
+            return jsonify({"error": "Войди в аккаунт, чтобы удалить публикацию"}), 401
+
+        with connect() as con:
+            post = con.execute(
+                "SELECT user_id FROM posts WHERE id = ?", (post_id,)
+            ).fetchone()
+            if post is None:
+                return jsonify({"error": "Публикация не найдена"}), 404
+            if post[0] != session["user_id"]:
+                return jsonify({"error": "Можно удалять только свои публикации"}), 403
+            con.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+
+        return jsonify({"deleted": True, "id": post_id})
 
     @app.post("/api/posts")
     def create_post():
