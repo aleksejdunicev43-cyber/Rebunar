@@ -25,7 +25,7 @@
   border: 0;
   border-bottom: 1px solid rgba(207,255,226,.14);
   border-radius: 0;
-  background: rgba(7, 18, 13, .96);
+  background: rgba(7, 18, 13, .58);
   box-shadow: 0 3px 16px rgba(0,0,0,.2);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -73,6 +73,8 @@
 
 /* Hide side columns: the wallpaper belongs to the full central phone canvas. */
 .home-workspace-active .app-layout {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1 1 auto;
   width: 100%;
@@ -111,11 +113,15 @@
 }
 
 .home-workspace {
-  position: relative;
+  position: fixed;
+  z-index: 0;
+  inset: 0;
   isolation: isolate;
   display: flex;
   flex: 1 1 auto;
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   min-width: 0;
   min-height: 0;
   margin: 0;
@@ -193,7 +199,7 @@
   border: 0;
   border-top: 1px solid rgba(207,255,226,.14);
   border-radius: 0;
-  background: rgba(7,18,13,.96);
+  background: rgba(7,18,13,.58);
   box-shadow: 0 -4px 18px rgba(0,0,0,.18);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
