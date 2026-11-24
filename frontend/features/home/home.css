@@ -233,3 +233,60 @@
   background: rgba(74, 224, 139, .1);
   border-color: transparent;
 }
+
+
+/* HOME WORKSPACE POLISH: retain profile access and honor hidden wallpaper controls. */
+.home-workspace-active .app-shell {
+  position: relative;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+.home-workspace-active .app-header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 25;
+  display: block !important;
+  width: 100%;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-workspace-active .header-brand {
+  position: absolute;
+  top: clamp(18px, 4vw, 34px);
+  left: clamp(18px, 4vw, 34px);
+  z-index: 2;
+}
+.home-workspace-active .header-profile-button {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+  border: 1px solid rgba(207,255,226,.3);
+  border-radius: 14px;
+  background: rgba(5,22,15,.62);
+  box-shadow: 0 4px 18px rgba(0,0,0,.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.home-workspace-active .header-profile-button .rb-avatar {
+  --rb-avatar-size: 44px;
+  width: 100%;
+  height: 100%;
+}
+.home-workspace-active .app-wordmark,
+.home-workspace-active .header-actions,
+.home-workspace-active .home-workspace-brand {
+  display: none !important;
+}
+.home-workspace-active .home-wallpaper-reset[hidden] {
+  display: none !important;
+}
