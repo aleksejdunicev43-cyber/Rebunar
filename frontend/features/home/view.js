@@ -58,6 +58,16 @@ async function deleteWallpaper() {
 function applyWallpaper(workspace, blob) {
   if (wallpaperUrl) URL.revokeObjectURL(wallpaperUrl);
   wallpaperUrl = blob ? URL.createObjectURL(blob) : null;
+  const image = workspace.querySelector('.home-wallpaper-image');
+  if (image) {
+    if (wallpaperUrl) {
+      image.src = wallpaperUrl;
+      image.hidden = false;
+    } else {
+      image.removeAttribute('src');
+      image.hidden = true;
+    }
+  }
   if (wallpaperUrl) {
     workspace.style.setProperty('--home-wallpaper-image', `url("${wallpaperUrl}")`);
     workspace.classList.add('has-wallpaper');
@@ -79,6 +89,7 @@ export function renderHomeScreen(outlet) {
 
   outlet.innerHTML = `
     <section class="home-workspace" aria-label="Главный экран Rebunar">
+      <img class="home-wallpaper-image" alt="" aria-hidden="true" hidden>
       <input class="home-wallpaper-input" type="file"
         accept="image/jpeg,image/png,image/webp,image/avif"
         aria-label="Выбрать обои из галереи">
