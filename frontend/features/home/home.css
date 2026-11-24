@@ -325,3 +325,8 @@
   height: 100%;
   border-radius: 0;
 }
+
+
+.home-workspace-active .home-wallpaper-controls {
+  margin-left: auto;
+}
