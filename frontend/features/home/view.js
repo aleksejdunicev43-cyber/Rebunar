@@ -283,6 +283,7 @@ function renderHomeAppLauncher(workspace) {
   const layout = loadHomeAppLayout();
   const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS].map(app => [app.id, app]));
   let holdTimer = null;
+  let pendingStart = null;
   let activeDrag = null;
   let suppressClick = false;
 
@@ -322,6 +323,7 @@ function renderHomeAppLauncher(workspace) {
   const clearDrag = () => {
     if (holdTimer) clearTimeout(holdTimer);
     holdTimer = null;
+    pendingStart = null;
     if (activeDrag?.button) {
       activeDrag.button.classList.remove('is-dragging');
       activeDrag.button.style.position = '';
@@ -343,7 +345,9 @@ function renderHomeAppLauncher(workspace) {
     const id = button.dataset.appId;
     const rect = button.getBoundingClientRect();
     const start = {x:event.clientX, y:event.clientY};
+    pendingStart = start;
     holdTimer = window.setTimeout(() => {
+      pendingStart = null;
       activeDrag = {button, id, zone:slot.dataset.zone, index:Number(slot.dataset.index), start, rect, x:start.x, y:start.y};
       button.classList.add('is-dragging');
       button.style.position = 'fixed';
@@ -362,13 +366,9 @@ function renderHomeAppLauncher(workspace) {
       activeDrag.y = event.clientY;
       activeDrag.button.style.transform = 'translate(' + (event.clientX - activeDrag.start.x) + 'px,' + (event.clientY - activeDrag.start.y) + 'px) scale(1.08)';
       event.preventDefault();
-    } else if (holdTimer) {
-      const button = event.target.closest('.home-app-button');
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        const delta = Math.hypot(event.clientX - rect.left - rect.width/2, event.clientY - rect.top - rect.height/2);
-        if (delta > 14) { clearTimeout(holdTimer); holdTimer = null; }
-      }
+    } else if (holdTimer && pendingStart) {
+      const delta = Math.hypot(event.clientX - pendingStart.x, event.clientY - pendingStart.y);
+      if (delta > 14) { clearTimeout(holdTimer); holdTimer = null; pendingStart = null; }
     }
   }, {passive:false});
 
