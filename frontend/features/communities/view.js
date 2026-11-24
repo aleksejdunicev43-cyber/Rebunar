@@ -8,6 +8,13 @@ const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[char]);
 
+const postActionsMarkup = post => post.is_owner ? `
+  <div class="creator-post-actions">
+    <button type="button" data-edit-post="${Number(post.id)}">Редактировать</button>
+    <button type="button" data-delete-post="${Number(post.id)}">Удалить</button>
+  </div>
+` : '';
+
 const formatDate = value => {
   if (!value) return '';
   const date = new Date(value.includes?.('Z') ? value : value.replace(' ', 'T') + 'Z');
@@ -116,6 +123,7 @@ export async function renderCommunitiesScreen(outlet) {
           <span>REBUNAR / CREATOR SPACE</span>
           <button class="creator-support-button" disabled title="Платежи подключим после юридической и технической подготовки">♡ Поддержать автора · скоро</button>
         </div>
+        ${postActionsMarkup(post)}
       </article>
     `).join('');
   }
@@ -163,6 +171,45 @@ export async function renderCommunitiesScreen(outlet) {
   });
 
   content.addEventListener('click', async event => {
+    const editButton = event.target.closest('[data-edit-post]');
+    const deleteButton = event.target.closest('[data-delete-post]');
+
+    if (editButton) {
+      const post = postsCache.find(item => Number(item.id) === Number(editButton.dataset.editPost));
+      if (!post) return;
+      const title = window.prompt('Заголовок публикации', post.title || '');
+      if (title === null) return;
+      const text = window.prompt('Текст публикации', post.body || '');
+      if (text === null) return;
+      editButton.disabled = true;
+      try {
+        await requestJSON('/api/posts/' + post.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, text })
+        });
+        await load();
+      } catch (error) {
+        window.alert(error.message);
+        editButton.disabled = false;
+      }
+      return;
+    }
+
+    if (deleteButton) {
+      const postId = Number(deleteButton.dataset.deletePost);
+      if (!window.confirm('Удалить эту публикацию? Это действие нельзя отменить.')) return;
+      deleteButton.disabled = true;
+      try {
+        await requestJSON('/api/posts/' + postId, { method: 'DELETE' });
+        await load();
+      } catch (error) {
+        window.alert(error.message);
+        deleteButton.disabled = false;
+      }
+      return;
+    }
+
     const button = event.target.closest('[data-open-group]');
     if (!button) return;
     const slug = button.dataset.openGroup;
