@@ -106,6 +106,68 @@ class CommunityRoutesTests(unittest.TestCase):
         other_group = self.client.get("/api/posts?community=anime")
         self.assertEqual(other_group.get_json(), [])
 
+    def test_author_can_edit_own_post(self):
+        self.sign_in()
+        created = self.client.post(
+            "/api/posts",
+            json={"title": "Черновик", "text": "Старый текст"}
+        )
+        post_id = created.get_json()["id"]
+
+        updated = self.client.put(
+            f"/api/posts/{post_id}",
+            json={"title": "Готово", "text": "Новый текст"}
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.get_json()["title"], "Готово")
+        self.assertEqual(updated.get_json()["text"], "Новый текст")
+        self.assertEqual(self.client.get("/api/posts").get_json()[0]["body"], "Новый текст")
+
+    def test_other_user_cannot_edit_or_delete_post(self):
+        self.sign_in()
+        created = self.client.post(
+            "/api/posts",
+            json={"title": "Чужая запись", "text": "Текст"}
+        )
+        post_id = created.get_json()["id"]
+        with self.client.session_transaction() as session:
+            session["user_id"] = 2
+            session["username"] = "other"
+
+        self.assertEqual(
+            self.client.put(f"/api/posts/{post_id}", json={"title": "Взлом", "text": "x"}).status_code,
+            403
+        )
+        self.assertEqual(self.client.delete(f"/api/posts/{post_id}").status_code, 403)
+        self.assertEqual(self.client.get("/api/posts").get_json()[0]["title"], "Чужая запись")
+
+    def test_post_edit_and_delete_require_login(self):
+        self.sign_in()
+        created = self.client.post(
+            "/api/posts",
+            json={"title": "Моя запись", "text": "Текст"}
+        )
+        post_id = created.get_json()["id"]
+        with self.client.session_transaction() as session:
+            session.clear()
+        self.assertEqual(
+            self.client.put(f"/api/posts/{post_id}", json={"title": "x", "text": ""}).status_code,
+            401
+        )
+        self.assertEqual(self.client.delete(f"/api/posts/{post_id}").status_code, 401)
+
+    def test_empty_edit_is_rejected_and_missing_post_is_not_found(self):
+        self.sign_in()
+        self.assertEqual(
+            self.client.put("/api/posts/999", json={"title": "", "text": " "}).status_code,
+            400
+        )
+        self.assertEqual(
+            self.client.put("/api/posts/999", json={"title": "Есть текст", "text": ""}).status_code,
+            404
+        )
+        self.assertEqual(self.client.delete("/api/posts/999").status_code, 404)
+
     def test_membership_join_is_idempotent_and_leave_works(self):
         self.sign_in()
 
