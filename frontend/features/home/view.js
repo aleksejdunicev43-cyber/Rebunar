@@ -1,91 +1,167 @@
 /**
- * REBUNAR — HOME SCREEN
- * Главная — личный центр экосистемы, а не вторая лента контента.
+ * REBUNAR — HOME WORKSPACE
+ * Чистый домашний экран с пользовательскими обоями.
  */
 
-import { getUser } from '../auth/session.js';
+const DB_NAME = 'rebunar-home-workspace';
+const STORE_NAME = 'wallpapers';
+const WALLPAPER_KEY = 'home';
+let wallpaperUrl = null;
 
-const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-})[char]);
+function openWallpaperDB() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) {
+      reject(new Error('Хранилище обоев недоступно в этом браузере.'));
+      return;
+    }
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Не удалось открыть хранилище обоев.'));
+  });
+}
+
+async function readWallpaper() {
+  const db = await openWallpaperDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const request = transaction.objectStore(STORE_NAME).get(WALLPAPER_KEY);
+    request.onsuccess = () => { db.close(); resolve(request.result || null); };
+    request.onerror = () => { db.close(); reject(request.error); };
+  });
+}
+
+async function writeWallpaper(blob) {
+  const db = await openWallpaperDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    transaction.objectStore(STORE_NAME).put(blob, WALLPAPER_KEY);
+    transaction.oncomplete = () => { db.close(); resolve(); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
+    transaction.onabort = () => { db.close(); reject(transaction.error || new Error('Сохранение отменено.')); };
+  });
+}
+
+async function deleteWallpaper() {
+  const db = await openWallpaperDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    transaction.objectStore(STORE_NAME).delete(WALLPAPER_KEY);
+    transaction.oncomplete = () => { db.close(); resolve(); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
+  });
+}
+
+function applyWallpaper(workspace, blob) {
+  if (wallpaperUrl) URL.revokeObjectURL(wallpaperUrl);
+  wallpaperUrl = blob ? URL.createObjectURL(blob) : null;
+  if (wallpaperUrl) {
+    workspace.style.setProperty('--home-wallpaper-image', `url("${wallpaperUrl}")`);
+    workspace.classList.add('has-wallpaper');
+  } else {
+    workspace.style.removeProperty('--home-wallpaper-image');
+    workspace.classList.remove('has-wallpaper');
+  }
+  workspace.querySelector('[data-action="reset-wallpaper"]').hidden = !blob;
+}
+
+function showWallpaperMessage(workspace, message, isError = false) {
+  const status = workspace.querySelector('.home-wallpaper-status');
+  status.textContent = message;
+  status.classList.toggle('is-error', isError);
+}
 
 export function renderHomeScreen(outlet) {
-  const user = getUser() || {};
-  const name = user.display_name || user.username || 'участник Rebunar';
+  const shell = outlet.closest('.app-shell');
+  shell?.classList.add('home-workspace-active');
 
   outlet.innerHTML = `
-    <section class="screen home-screen">
-      <header class="home-intro">
-        <span class="home-eyebrow">REBUNAR / ЛИЧНОЕ ПРОСТРАНСТВО</span>
-        <h1>С возвращением, ${escapeHTML(name)}!</h1>
-        <p>Твоя точка входа в чтение, цифровые товары и общение. Здесь — быстрые действия и важные обновления, а не дублирующаяся лента.</p>
-      </header>
+    <section class="home-workspace" aria-label="Главный экран Rebunar">
+      <div class="home-workspace-glow" aria-hidden="true"></div>
+      <div class="home-workspace-top">
+        <div class="home-workspace-brand">
+          <span class="home-workspace-mark">R</span>
+          <span>REBUNAR</span>
+        </div>
+        <div class="home-wallpaper-controls">
+          <button type="button" class="home-wallpaper-button" data-action="choose-wallpaper">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h2l1.5-2h5L16 5h2a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><circle cx="12" cy="12" r="3.5"/></svg>
+            <span>Обои</span>
+          </button>
+          <button type="button" class="home-wallpaper-reset" data-action="reset-wallpaper" hidden>Сбросить</button>
+        </div>
+      </div>
 
-      <section class="home-start-section" aria-labelledby="home-start-title">
-        <div class="home-section-heading">
-          <div>
-            <span class="home-section-kicker">БЫСТРЫЙ СТАРТ</span>
-            <h2 id="home-start-title">Чем займёмся?</h2>
-          </div>
-        </div>
-        <div class="home-action-grid">
-          <button type="button" class="home-action-card home-action-card--primary" data-route="reader">
-            <span class="home-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 5.5v16.5M8 7h8M8 11h8"/></svg>
-            </span>
-            <span class="home-action-title">Открыть читалку</span>
-            <span class="home-action-description">Новеллы и вебтуны в одном месте</span>
-            <span class="home-action-arrow" aria-hidden="true">→</span>
-          </button>
-          <button type="button" class="home-action-card" data-route="store">
-            <span class="home-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M3 9h18l-1.5 12h-15z"/><path d="M5 9 7 3h10l2 6M9 9v3m6-3v3"/></svg>
-            </span>
-            <span class="home-action-title">Открыть магазин</span>
-            <span class="home-action-description">Игры, программы и цифровые товары</span>
-            <span class="home-action-arrow" aria-hidden="true">→</span>
-          </button>
-          <button type="button" class="home-action-card" data-route="communities">
-            <span class="home-action-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </span>
-            <span class="home-action-title">Открыть сообщества</span>
-            <span class="home-action-description">Обсуждения, публикации и авторы</span>
-            <span class="home-action-arrow" aria-hidden="true">→</span>
-          </button>
-        </div>
-      </section>
+      <input class="home-wallpaper-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif" aria-label="Выбрать изображение для обоев">
 
-      <section class="home-personal-section" aria-labelledby="home-personal-title">
-        <div class="home-section-heading">
-          <div>
-            <span class="home-section-kicker">ТВОЯ АКТИВНОСТЬ</span>
-            <h2 id="home-personal-title">Личное пространство</h2>
-          </div>
-        </div>
-        <div class="home-personal-list">
-          <button type="button" class="home-personal-link" data-route="messages">
-            <span class="home-personal-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M20 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-4.7A8.4 8.4 0 0 1 4 12.5 8.5 8.5 0 0 1 8.7 4.9 8.4 8.4 0 0 1 12.5 4h.5a8.5 8.5 0 0 1 7 7.5z"/></svg>
-            </span>
-            <span><strong>Сообщения</strong><small>Личные и групповые чаты</small></span>
-            <span class="home-personal-arrow" aria-hidden="true">›</span>
-          </button>
-          <button type="button" class="home-personal-link" data-route="notifications">
-            <span class="home-personal-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-3-3-9"/><path d="M10 21h4"/></svg>
-            </span>
-            <span><strong>Уведомления</strong><small>Ответы, упоминания и события</small></span>
-            <span class="home-personal-arrow" aria-hidden="true">›</span>
-          </button>
-        </div>
-        <p class="home-profile-note">Профиль и официальная почта Rebunar всегда доступны через твою аватарку в верхней панели.</p>
-      </section>
+      <div class="home-workspace-center">
+        <div class="home-workspace-empty-mark" aria-hidden="true"><span></span></div>
+        <p class="home-workspace-caption">ТВОЁ ПРОСТРАНСТВО</p>
+      </div>
 
-      <footer class="home-footer">
-        <span>REBUNAR</span>
-        <p>Одна платформа — читать, покупать и общаться.</p>
-      </footer>
+      <div class="home-workspace-bottom">
+        <p class="home-wallpaper-status" role="status">Установи собственные обои и создай свой экран Rebunar.</p>
+        <span class="home-workspace-version">REBUNAR HOME</span>
+      </div>
     </section>
   `;
+
+  const workspace = outlet.querySelector('.home-workspace');
+  const fileInput = workspace.querySelector('.home-wallpaper-input');
+
+  workspace.addEventListener('click', async event => {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+
+    if (button.dataset.action === 'choose-wallpaper') {
+      fileInput.click();
+      return;
+    }
+
+    if (button.dataset.action === 'reset-wallpaper') {
+      button.disabled = true;
+      try {
+        await deleteWallpaper();
+        applyWallpaper(workspace, null);
+        showWallpaperMessage(workspace, 'Обои сброшены. Можно выбрать другое изображение.');
+      } catch (error) {
+        showWallpaperMessage(workspace, error.message || 'Не удалось сбросить обои.', true);
+      } finally {
+        button.disabled = false;
+      }
+    }
+  });
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/avif'].includes(file.type)) {
+      showWallpaperMessage(workspace, 'Выбери изображение JPG, PNG, WebP или AVIF.', true);
+      fileInput.value = '';
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      showWallpaperMessage(workspace, 'Изображение слишком большое. Максимальный размер — 12 МБ.', true);
+      fileInput.value = '';
+      return;
+    }
+
+    showWallpaperMessage(workspace, 'Сохраняю обои…');
+    try {
+      await writeWallpaper(file);
+      applyWallpaper(workspace, file);
+      showWallpaperMessage(workspace, 'Обои установлены и сохранены на этом устройстве.');
+    } catch (error) {
+      showWallpaperMessage(workspace, error.message || 'Не удалось сохранить изображение.', true);
+    } finally {
+      fileInput.value = '';
+    }
+  });
+
+  readWallpaper()
+    .then(blob => { if (blob) applyWallpaper(workspace, blob); })
+    .catch(error => showWallpaperMessage(workspace, error.message || 'Не удалось загрузить сохранённые обои.', true));
 }
