@@ -8,7 +8,7 @@ import { initNavigation } from '../layout/navigation.js?v=responsive-navigation-
 import { initializeAuth, getUser, clearUser } from '../features/auth/session.js';
 import { renderAuthScreen } from '../features/auth/view.js';
 import { logout } from '../features/auth/api.js';
-import { renderProfileScreen } from '../features/profile/view.js?v=avatar-system-20261104-6';
+import { renderProfileScreen, openProfileEditor } from '../features/profile/view.js?v=avatar-system-20261104-6';
 import { enhanceProfileScreen } from '../features/profile/enhancements.js?v=avatar-system-20261104-6';
 import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
@@ -118,6 +118,7 @@ for (const [path, title] of Object.entries(screens)) {
       const user = getUser();
       renderProfileScreen(outlet, user, handleLogout);
       enhanceProfileScreen(outlet, user);
+      if (params.editProfile) openProfileEditor(outlet, user, handleLogout);
       return;
     }
     if (path === 'settings') return renderSettingsScreen(outlet);
