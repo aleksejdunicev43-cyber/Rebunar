@@ -72,8 +72,7 @@
 }
 
 /* Hide side columns: the wallpaper belongs to the full central phone canvas. */
-.home-workspace-active .app-layout {
-  display: flex;
+.home-workspace-active .app-layout {\n  position: relative;\n  z-index: 1;\n  display: flex;
   flex: 1 1 auto;
   width: 100%;
   max-width: none;
@@ -110,9 +109,7 @@
   overflow: hidden;
 }
 
-.home-workspace {
-  position: relative;
-  isolation: isolate;
+.home-workspace {\n  position: fixed;\n  z-index: 0;\n  inset: 0;\n  isolation: isolate;
   display: flex;
   flex: 1 1 auto;
   width: 100%;
