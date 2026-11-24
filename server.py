@@ -1519,6 +1519,9 @@ def message_history():
 
 
 
+# Initialize and migrate the SQLite schema when the WSGI server imports this module.
+# PythonAnywhere imports the application instead of executing this file as __main__.
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(host="127.0.0.1", port=5002, debug=False)
