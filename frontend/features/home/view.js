@@ -1,3 +1,5 @@
+import { navigate } from '../../app/router.js';
+
 /**
  * REBUNAR — HOME WORKSPACE
  * Чистый домашний экран с пользовательскими обоями.
@@ -196,6 +198,213 @@ function openWallpaperEditor(file, workspace) {
   });
 }
 
+
+const HOME_APPS = [
+  {id:'games',name:'Игры',icon:'🎮',color:'#315b47',route:'store'},
+  {id:'video',name:'Видео',icon:'▶',color:'#74434c',route:'creators'},
+  {id:'music',name:'Музыка',icon:'♫',color:'#554b7a',route:null},
+  {id:'books',name:'Книги',icon:'📚',color:'#66533b',route:'reader'},
+  {id:'chats',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
+  {id:'store',name:'Магазин',icon:'◈',color:'#6b4c37',route:'store'},
+  {id:'anime',name:'Аниме',icon:'✦',color:'#67466f',route:null},
+  {id:'communities',name:'Сообщества',icon:'♧',color:'#38634d',route:'communities'},
+  {id:'photos',name:'Фото',icon:'▧',color:'#5c5275',route:'favorites'},
+  {id:'files',name:'Файлы',icon:'▤',color:'#4a6170',route:null},
+  {id:'maps',name:'Карты',icon:'⌖',color:'#456b58',route:null},
+  {id:'browser',name:'Браузер',icon:'◎',color:'#3d6274',route:null},
+  {id:'news',name:'Новости',icon:'▥',color:'#66503d',route:'notifications'},
+  {id:'users',name:'Люди',icon:'♙',color:'#536b54',route:'users'},
+  {id:'profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'},
+  {id:'mail',name:'Почта',icon:'✉',color:'#4c6377',route:'mail'},
+  {id:'search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
+  {id:'alerts',name:'Уведомления',icon:'♢',color:'#765448',route:'notifications'},
+  {id:'stats',name:'Статистика',icon:'▥',color:'#405e78',route:'statistics'},
+  {id:'settings',name:'Настройки',icon:'⚙',color:'#52665a',route:'settings'},
+  {id:'creator',name:'Авторы',icon:'✎',color:'#76516b',route:'creators'},
+  {id:'reader',name:'Читалка',icon:'▣',color:'#5c6141',route:'reader'},
+  {id:'favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
+  {id:'social',name:'Лента',icon:'⌁',color:'#3e6a63',route:'communities'},
+  {id:'cloud',name:'Облако',icon:'☁',color:'#526b7a',route:null},
+  {id:'calendar',name:'Календарь',icon:'▦',color:'#6a5842',route:null},
+  {id:'wallet',name:'Кошелёк',icon:'◇',color:'#536b49',route:null},
+  {id:'translate',name:'Переводчик',icon:'文',color:'#4d5d7b',route:null},
+  {id:'camera',name:'Камера',icon:'◉',color:'#68516a',route:null},
+  {id:'more',name:'Ещё',icon:'＋',color:'#426b52',route:'settings'}
+];
+const HOME_DOCK_DEFAULT = ['home','messages','search','favorites','profile'];
+const HOME_DOCK_APPS = [
+  {id:'home',name:'Главная',icon:'⌂',color:'#286b48',route:'home'},
+  {id:'messages',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
+  {id:'search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
+  {id:'favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
+  {id:'profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
+];
+const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
+
+function loadHomeAppLayout() {
+  const gridDefault = HOME_APPS.map(app => app.id);
+  try {
+    const saved = JSON.parse(localStorage.getItem(HOME_LAYOUT_KEY) || 'null');
+    if (saved && Array.isArray(saved.grid) && Array.isArray(saved.dock)) {
+      const all = new Set([...gridDefault, ...HOME_DOCK_DEFAULT]);
+      const grid = Array.from({length:30}, (_, i) => all.has(saved.grid[i]) ? saved.grid[i] : null);
+      const dock = Array.from({length:5}, (_, i) => all.has(saved.dock[i]) ? saved.dock[i] : null);
+      const seen = new Set();
+      for (const id of [...grid, ...dock]) {
+        if (id && seen.has(id)) {
+          const index = grid.indexOf(id);
+          if (index >= 0) grid[index] = null;
+        } else if (id) seen.add(id);
+      }
+      const placed = new Set([...grid, ...dock].filter(Boolean));
+      const missing = [...gridDefault, ...HOME_DOCK_DEFAULT].filter(id => !placed.has(id));
+      for (const id of missing) {
+        const emptyGrid = grid.indexOf(null);
+        if (emptyGrid >= 0) grid[emptyGrid] = id;
+        else {
+          const emptyDock = dock.indexOf(null);
+          if (emptyDock >= 0) dock[emptyDock] = id;
+        }
+      }
+      return {grid, dock};
+    }
+  } catch {}
+  return {grid:gridDefault, dock:HOME_DOCK_DEFAULT.slice()};
+}
+
+function renderHomeAppLauncher(workspace) {
+  const launcher = document.createElement('section');
+  launcher.className = 'home-app-launcher';
+  launcher.setAttribute('aria-label', 'Приложения');
+  launcher.innerHTML = '<div class="home-app-grid" aria-label="Сетка приложений"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
+  workspace.appendChild(launcher);
+  const grid = launcher.querySelector('.home-app-grid');
+  const dock = launcher.querySelector('.home-app-dock');
+  const layout = loadHomeAppLayout();
+  const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS].map(app => [app.id, app]));
+  let holdTimer = null;
+  let activeDrag = null;
+  let suppressClick = false;
+
+  const save = () => {
+    try { localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout)); } catch {}
+  };
+
+  const createSlot = (zone, index, id) => {
+    const slot = document.createElement('div');
+    slot.className = 'home-app-slot' + (id ? '' : ' is-empty');
+    slot.dataset.zone = zone;
+    slot.dataset.index = String(index);
+    if (!id) {
+      slot.setAttribute('aria-label', 'Свободное место');
+      return slot;
+    }
+    const app = appById.get(id);
+    if (!app) return slot;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'home-app-button';
+    button.dataset.appId = id;
+    button.style.setProperty('--app-icon-color', app.color);
+    button.setAttribute('aria-label', app.name);
+    button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span>';
+    button.querySelector('.home-app-icon').textContent = app.icon;
+    button.querySelector('.home-app-name').textContent = app.name;
+    slot.appendChild(button);
+    return slot;
+  };
+
+  const paint = () => {
+    grid.replaceChildren(...layout.grid.map((id, index) => createSlot('grid', index, id)));
+    dock.replaceChildren(...layout.dock.map((id, index) => createSlot('dock', index, id)));
+  };
+
+  const clearDrag = () => {
+    if (holdTimer) clearTimeout(holdTimer);
+    holdTimer = null;
+    if (activeDrag?.button) {
+      activeDrag.button.classList.remove('is-dragging');
+      activeDrag.button.style.position = '';
+      activeDrag.button.style.left = '';
+      activeDrag.button.style.top = '';
+      activeDrag.button.style.width = '';
+      activeDrag.button.style.transform = '';
+      activeDrag.button.style.pointerEvents = '';
+    }
+    launcher.classList.remove('is-dragging');
+    activeDrag = null;
+  };
+
+  launcher.addEventListener('pointerdown', event => {
+    const button = event.target.closest('.home-app-button');
+    if (!button || event.button !== undefined && event.button !== 0) return;
+    const slot = button.closest('.home-app-slot');
+    const id = button.dataset.appId;
+    const rect = button.getBoundingClientRect();
+    const start = {x:event.clientX, y:event.clientY};
+    holdTimer = window.setTimeout(() => {
+      activeDrag = {button, id, zone:slot.dataset.zone, index:Number(slot.dataset.index), start, rect, x:start.x, y:start.y};
+      button.classList.add('is-dragging');
+      button.style.position = 'fixed';
+      button.style.left = rect.left + 'px';
+      button.style.top = rect.top + 'px';
+      button.style.width = rect.width + 'px';
+      button.style.pointerEvents = 'none';
+      button.style.zIndex = '120';
+      launcher.classList.add('is-dragging');
+    }, 320);
+  });
+
+  launcher.addEventListener('pointermove', event => {
+    if (activeDrag) {
+      activeDrag.x = event.clientX;
+      activeDrag.y = event.clientY;
+      activeDrag.button.style.transform = 'translate(' + (event.clientX - activeDrag.start.x) + 'px,' + (event.clientY - activeDrag.start.y) + 'px) scale(1.08)';
+      event.preventDefault();
+    } else if (holdTimer) {
+      const button = event.target.closest('.home-app-button');
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        const delta = Math.hypot(event.clientX - rect.left - rect.width/2, event.clientY - rect.top - rect.height/2);
+        if (delta > 14) { clearTimeout(holdTimer); holdTimer = null; }
+      }
+    }
+  }, {passive:false});
+
+  const finishDrag = event => {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    if (!activeDrag) return;
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.home-app-slot');
+    if (target) {
+      const from = layout[activeDrag.zone];
+      const to = layout[target.dataset.zone];
+      const targetIndex = Number(target.dataset.index);
+      const fromIndex = from.indexOf(activeDrag.id);
+      if (fromIndex >= 0 && targetIndex >= 0 && targetIndex < to.length) {
+        [from[fromIndex], to[targetIndex]] = [to[targetIndex], from[fromIndex]];
+        save();
+      }
+    }
+    suppressClick = true;
+    clearDrag();
+    paint();
+    window.setTimeout(() => { suppressClick = false; }, 450);
+  };
+  launcher.addEventListener('pointerup', finishDrag);
+  launcher.addEventListener('pointercancel', finishDrag);
+
+  launcher.addEventListener('click', event => {
+    const button = event.target.closest('.home-app-button');
+    if (!button) return;
+    if (suppressClick) { event.preventDefault(); event.stopPropagation(); return; }
+    const app = appById.get(button.dataset.appId);
+    if (app?.route) navigate(app.route);
+    else showWallpaperMessage(workspace, 'Это приложение появится в Rebunar позже.');
+  });
+
+  paint();
+}
+
 export function renderHomeScreen(outlet) {
   const shell = outlet.closest('.app-shell');
   shell?.classList.add('home-workspace-active');
@@ -218,6 +427,7 @@ export function renderHomeScreen(outlet) {
   `);
 
   const workspace = host.querySelector(':scope > .home-workspace');
+  renderHomeAppLauncher(workspace);
   const fileInput = workspace.querySelector('.home-wallpaper-input');
   const pickerButton = workspace.querySelector('.home-wallpaper-picker');
   let holdTimer = null;
