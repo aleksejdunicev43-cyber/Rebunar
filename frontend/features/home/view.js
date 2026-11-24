@@ -65,7 +65,6 @@ function applyWallpaper(workspace, blob) {
     workspace.style.removeProperty('--home-wallpaper-image');
     workspace.classList.remove('has-wallpaper');
   }
-  workspace.querySelector('[data-action="reset-wallpaper"]').hidden = !blob;
 }
 
 function showWallpaperMessage(workspace, message, isError = false) {
@@ -84,9 +83,6 @@ export function renderHomeScreen(outlet) {
         accept="image/jpeg,image/png,image/webp,image/avif"
         aria-label="Выбрать обои из галереи">
       <div class="home-wallpaper-status" role="status" aria-live="polite"></div>
-      <div class="home-wallpaper-hint" aria-hidden="true">
-        Удерживайте экран, чтобы изменить обои
-      </div>
     </section>
   `;
 
