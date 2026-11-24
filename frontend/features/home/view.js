@@ -240,6 +240,7 @@ const HOME_DOCK_APPS = [
   {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
 ];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
+const HOME_MAX_PAGES = 10;
 
 function loadHomeAppLayout() {
   const gridDefault = HOME_APPS.map(app => app.id);
@@ -249,7 +250,7 @@ function loadHomeAppLayout() {
       const pages = Array.isArray(saved.pages) ? saved.pages
         : Array.isArray(saved.grid) ? [saved.grid] : [gridDefault];
       const all = new Set([...gridDefault, ...HOME_DOCK_DEFAULT]);
-      const normalized = pages.map(page => Array.from({length:30}, (_, i) => all.has(page?.[i]) ? page[i] : null));
+      const normalized = pages.slice(0, HOME_MAX_PAGES).map(page => Array.from({length:30}, (_, i) => all.has(page?.[i]) ? page[i] : null));
       if (!normalized.length) normalized.push(Array(30).fill(null));
       const dock = Array.from({length:5}, (_, i) => all.has(saved.dock[i]) ? saved.dock[i] : null);
       const seen = new Set();
@@ -271,6 +272,7 @@ function loadHomeAppLayout() {
         if (pageIndex < 0) { normalized.push(Array(30).fill(null)); pageIndex=normalized.length-1; }
         normalized[pageIndex][normalized[pageIndex].indexOf(null)] = id;
       }
+      while (normalized.length > 1 && !normalized[normalized.length - 1].some(Boolean)) normalized.pop();
       return {pages:normalized, dock};
     }
   } catch {}
@@ -297,6 +299,7 @@ function renderHomeAppLauncher(workspace) {
   let suppressClick = false;
   let swipeStart = null;
 
+  const pageHasApps = index => Boolean(layout.pages[index]?.some(Boolean));
   const save = () => {
     try { localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout)); } catch {}
   };
@@ -349,8 +352,14 @@ function renderHomeAppLauncher(workspace) {
     showPage(currentPage);
   };
   const ensurePage = index => {
-    while(layout.pages.length<=index) layout.pages.push(Array(30).fill(null));
-    if(layout.pages.length>index) { paint(); save(); }
+    if(index < 0 || index >= HOME_MAX_PAGES) return false;
+    while(layout.pages.length<=index) {
+      const previous=layout.pages[layout.pages.length-1];
+      if(!previous?.some(Boolean)) return false;
+      layout.pages.push(Array(30).fill(null));
+    }
+    paint(); save();
+    return true;
   };
   const clearEdgeTimer = () => {
     if(edgeTimer) clearTimeout(edgeTimer);
@@ -373,18 +382,21 @@ function renderHomeAppLauncher(workspace) {
     edgeTimer=window.setTimeout(()=>{
       edgeTimer=null;
       const next=currentPage+direction;
-      if(direction>0) ensurePage(next);
+      if(direction>0 && next>=layout.pages.length) {
+        const sourcePage=activeDrag?.zone==='grid'?layout.pages[activeDrag.page]:null;
+        if(!pageHasApps(currentPage) || (sourcePage && sourcePage.filter(Boolean).length<=1) || !ensurePage(next)) return;
+      }
       if(next>=0 && next<layout.pages.length) showPage(next);
     },420);
   };
   launcher.addEventListener('pointerdown', event => {
-    const button=event.target.closest('.home-app-button');
-    if(!button) {
-      if(event.pointerType==='touch') swipeStart={x:event.clientX,y:event.clientY};
-      return;
+    if(event.pointerType==='touch') {
+      swipeStart={x:event.clientX,y:event.clientY};
+      try { launcher.setPointerCapture(event.pointerId); } catch {}
     }
+    const button=event.target.closest('.home-app-button');
+    if(!button) return;
     if(event.button!==undefined && event.button!==0) return;
-    try { launcher.setPointerCapture(event.pointerId); } catch {}
     const slot=button.closest('.home-app-slot');
     const rect=button.getBoundingClientRect();
     const startPoint={x:event.clientX,y:event.clientY};
@@ -420,9 +432,14 @@ function renderHomeAppLauncher(workspace) {
     if(!activeDrag) {
       if(swipeStart) {
         const dx=event.clientX-swipeStart.x, dy=event.clientY-swipeStart.y;
-        if(Math.abs(dx)>58 && Math.abs(dx)>Math.abs(dy)*1.25) {
-          if(dx<0) { if(currentPage===layout.pages.length-1) ensurePage(layout.pages.length); showPage(currentPage+1); }
-          else showPage(currentPage-1);
+        if(Math.abs(dx)>32 && Math.abs(dx)>Math.abs(dy)*1.15) {
+          if(dx<0) {
+            const next=currentPage+1;
+            if(next<layout.pages.length) showPage(next);
+            else if(pageHasApps(currentPage) && ensurePage(next)) showPage(next);
+          } else showPage(currentPage-1);
+          suppressClick=true;
+          window.setTimeout(()=>{suppressClick=false;},450);
         }
         swipeStart=null;
       }
@@ -441,14 +458,14 @@ function renderHomeAppLauncher(workspace) {
       }
     } else if(event.clientX>launcher.getBoundingClientRect().right-34) {
       const next=currentPage+1;
-      ensurePage(next);
-      const targetPage=layout.pages[next];
-      const empty=targetPage.indexOf(null);
-      if(empty>=0) {
-        const from=activeDrag.zone==='dock'?layout.dock:layout.pages[activeDrag.page];
+      const from=activeDrag.zone==='dock'?layout.dock:layout.pages[activeDrag.page];
+      const sourcePage=activeDrag.zone==='grid'?layout.pages[activeDrag.page]:null;
+      const sourceCount=sourcePage?sourcePage.filter(Boolean).length:Infinity;
+      if((next<layout.pages.length || (pageHasApps(currentPage) && ensurePage(next))) && sourceCount>1) {
+        const targetPage=layout.pages[next];
+        const empty=targetPage.indexOf(null);
         const index=from.indexOf(activeDrag.id);
-        if(index>=0){from[index]=null;targetPage[empty]=activeDrag.id;save();}
-        currentPage=next;
+        if(empty>=0 && index>=0){from[index]=null;targetPage[empty]=activeDrag.id;save();currentPage=next;}
       }
     }
     suppressClick=true;
