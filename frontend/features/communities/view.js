@@ -13,6 +13,12 @@ const postActionsMarkup = post => post.is_owner ? `
     <button type="button" data-edit-post="${Number(post.id)}">Редактировать</button>
     <button type="button" data-delete-post="${Number(post.id)}">Удалить</button>
   </div>
+  <form class="creator-post-edit" data-edit-form="${Number(post.id)}" hidden>
+    <label>Заголовок<input data-edit-title maxlength="200" value="${escapeHTML(post.title || '')}"></label>
+    <label>Текст<textarea data-edit-text maxlength="10000" rows="5">${escapeHTML(post.body || '')}</textarea></label>
+    <div><button type="button" data-save-post="${Number(post.id)}">Сохранить</button><button type="button" data-cancel-post="${Number(post.id)}">Отмена</button></div>
+    <span data-edit-status role="status"></span>
+  </form>
 ` : '';
 
 const formatDate = value => {
@@ -172,16 +178,32 @@ export async function renderCommunitiesScreen(outlet) {
 
   content.addEventListener('click', async event => {
     const editButton = event.target.closest('[data-edit-post]');
+    const saveButton = event.target.closest('[data-save-post]');
+    const cancelButton = event.target.closest('[data-cancel-post]');
     const deleteButton = event.target.closest('[data-delete-post]');
 
     if (editButton) {
-      const post = postsCache.find(item => Number(item.id) === Number(editButton.dataset.editPost));
-      if (!post) return;
-      const title = window.prompt('Заголовок публикации', post.title || '');
-      if (title === null) return;
-      const text = window.prompt('Текст публикации', post.body || '');
-      if (text === null) return;
-      editButton.disabled = true;
+      const form = content.querySelector('[data-edit-form="' + editButton.dataset.editPost + '"]');
+      if (form) form.hidden = !form.hidden;
+      return;
+    }
+
+    if (cancelButton) {
+      const form = content.querySelector('[data-edit-form="' + cancelButton.dataset.cancelPost + '"]');
+      if (form) form.hidden = true;
+      return;
+    }
+
+    if (saveButton) {
+      const post = postsCache.find(item => Number(item.id) === Number(saveButton.dataset.savePost));
+      const form = content.querySelector('[data-edit-form="' + saveButton.dataset.savePost + '"]');
+      if (!post || !form) return;
+      const title = form.querySelector('[data-edit-title]').value.trim();
+      const text = form.querySelector('[data-edit-text]').value.trim();
+      const status = form.querySelector('[data-edit-status]');
+      if (!title && !text) { status.textContent = 'Публикация не может быть пустой.'; return; }
+      saveButton.disabled = true;
+      status.textContent = 'Сохраняем…';
       try {
         await requestJSON('/api/posts/' + post.id, {
           method: 'PUT',
@@ -190,8 +212,8 @@ export async function renderCommunitiesScreen(outlet) {
         });
         await load();
       } catch (error) {
-        window.alert(error.message);
-        editButton.disabled = false;
+        status.textContent = error.message;
+        saveButton.disabled = false;
       }
       return;
     }
@@ -228,7 +250,7 @@ export async function renderCommunitiesScreen(outlet) {
           <span>Участников: ${Number(membership.count) || 0}</span>
           <button id="community-join">${membership.joined ? 'Покинуть сообщество' : 'Вступить'}</button>
         </div>
-        ${posts.length ? posts.map(post => `<article class="creator-post"><div class="creator-post-top">${avatarMarkup(post, { size: 'community' })}<div class="creator-author"><strong>${escapeHTML(post.author || 'Автор')}</strong><span>${escapeHTML(formatDate(post.created_at))}</span></div></div><h2>${escapeHTML(post.title || 'Публикация')}</h2><p class="creator-post-body">${escapeHTML(post.body || '')}</p></article>`).join('') : '<div class="community-empty">Здесь пока нет публикаций.</div>'}
+        ${posts.length ? posts.map(post => `<article class="creator-post"><div class="creator-post-top">${avatarMarkup(post, { size: 'community' })}<div class="creator-author"><strong>${escapeHTML(post.author || 'Автор')}</strong><span>${escapeHTML(formatDate(post.created_at))}</span></div></div><h2>${escapeHTML(post.title || 'Публикация')}</h2><p class="creator-post-body">${escapeHTML(post.body || '')}</p>${postActionsMarkup(post)}</article>`).join('') : '<div class="community-empty">Здесь пока нет публикаций.</div>'}
       `;
       content.querySelector('#community-back').addEventListener('click', () => renderFeed(postsCache));
       content.querySelector('#community-join').addEventListener('click', async event => {
