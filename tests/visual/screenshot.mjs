@@ -121,6 +121,12 @@ try {
       };
     });
     report.wallpaperGeometry = wallpaperGeometry;
+    const wallpaperHitTarget = await page.evaluate(() => {
+      const target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+      return target?.closest('.home-workspace') ? 'home-workspace' : (target?.className || target?.tagName || 'none');
+    });
+    report.wallpaperHitTarget = wallpaperHitTarget;
+    if (wallpaperHitTarget !== 'home-workspace') throw new Error('Home workspace cannot receive long-press input: ' + wallpaperHitTarget);
     if (wallpaperGeometry.width !== wallpaperGeometry.viewportWidth ||
         wallpaperGeometry.height !== wallpaperGeometry.viewportHeight ||
         wallpaperGeometry.objectFit !== 'fill') {
