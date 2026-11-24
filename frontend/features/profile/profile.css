@@ -1757,3 +1757,49 @@
 @media(prefers-reduced-motion:reduce){
   .profile-customize-overlay .profile-customize-tab{transition:none !important}
 }
+
+
+/* REBUNAR — OVAL ACTIVE PILL INSIDE THE CATEGORY TRACK */
+.profile-customize-overlay .profile-customize-tabs{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:stretch !important;
+  gap:4px !important;
+  padding:5px !important;
+  overflow-x:auto !important;
+  border:1px solid var(--border) !important;
+  border-radius:999px !important;
+  background:var(--bg-main) !important;
+}
+.profile-customize-overlay .profile-customize-tab{
+  flex:1 0 auto !important;
+  min-width:0 !important;
+  min-height:38px !important;
+  height:38px !important;
+  padding:0 16px !important;
+  border:0 !important;
+  border-radius:999px !important;
+  color:var(--text-muted) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  transition:background-color .2s ease,color .2s ease,box-shadow .2s ease !important;
+}
+.profile-customize-overlay .profile-customize-tab.is-active{
+  color:#07150f !important;
+  background:var(--accent) !important;
+  border:0 !important;
+  border-radius:999px !important;
+  box-shadow:0 2px 12px color-mix(in srgb,var(--accent) 22%,transparent) !important;
+}
+.profile-customize-overlay .profile-customize-tab::after{display:none !important;content:none !important}
+@media(max-width:480px){
+  .profile-customize-overlay .profile-customize-tabs{gap:3px !important;padding:4px !important}
+  .profile-customize-overlay .profile-customize-tab{
+    flex:1 0 auto !important;
+    min-height:38px !important;height:38px !important;
+    padding:0 12px !important;font-size:13px !important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .profile-customize-overlay .profile-customize-tab{transition:none !important}
+}
