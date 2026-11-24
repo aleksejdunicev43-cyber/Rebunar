@@ -143,8 +143,10 @@
   cursor: default;
 }
 .home-workspace.has-wallpaper {
-  background-size: cover;
+  /* The selected photo fills the complete display, including the areas behind both bars. */
+  background-size: auto, 100% 100%, cover, cover;
   background-position: center center;
+  background-repeat: no-repeat;
 }
 .home-workspace::after {
   position: absolute;
