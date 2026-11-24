@@ -380,6 +380,12 @@ export function openProfileEditor(container, user, onLogout) {
           aria-label="Закрыть">×</button>
       </div>
 
+      <div class="profile-editor-avatar-row">
+        <div><strong>Аватар профиля</strong><small>Фотография, которая отображается рядом с твоим именем</small></div>
+        <button class="profile-editor-avatar-change" type="button">Изменить аватар</button>
+        <input class="profile-editor-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+      </div>
+
       <div class="profile-editor-fields">
 
         <label class="profile-editor-field">
@@ -433,6 +439,14 @@ export function openProfileEditor(container, user, onLogout) {
   `;
 
   container.appendChild(overlay);
+
+  const avatarInput = overlay.querySelector('.profile-editor-avatar-input');
+  overlay.querySelector('.profile-editor-avatar-change').addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', () => {
+    const file = avatarInput.files?.[0];
+    avatarInput.value = '';
+    if (file) openAvatarEditor(container, file, user, onLogout);
+  });
 
   const displayNameInput =
     overlay.querySelector('.profile-editor-display-name');
