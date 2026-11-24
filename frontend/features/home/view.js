@@ -174,7 +174,10 @@ function openWallpaperEditor(file, workspace) {
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = '#071b15';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const fit = Math.max(rect.width / source.naturalWidth, rect.height / source.naturalHeight);
+        const rotated = Math.abs(rotation % 180) === 90;
+        const fit = rotated
+          ? Math.max(rect.width / source.naturalHeight, rect.height / source.naturalWidth)
+          : Math.max(rect.width / source.naturalWidth, rect.height / source.naturalHeight);
         ctx.save();
         ctx.translate(canvas.width / 2 + offsetX * ratio, canvas.height / 2 + offsetY * ratio);
         ctx.rotate(rotation * Math.PI / 180);
