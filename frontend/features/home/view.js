@@ -231,13 +231,13 @@ const HOME_APPS = [
   {id:'camera',name:'Камера',icon:'◉',color:'#68516a',route:null},
   {id:'more',name:'Ещё',icon:'＋',color:'#426b52',route:'settings'}
 ];
-const HOME_DOCK_DEFAULT = ['home','messages','search','favorites','profile'];
+const HOME_DOCK_DEFAULT = ['dock-home','dock-messages','dock-search','dock-favorites','dock-profile'];
 const HOME_DOCK_APPS = [
-  {id:'home',name:'Главная',icon:'⌂',color:'#286b48',route:'home'},
-  {id:'messages',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
-  {id:'search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
-  {id:'favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
-  {id:'profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
+  {id:'dock-home',name:'Главная',icon:'⌂',color:'#286b48',route:'home'},
+  {id:'dock-messages',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
+  {id:'dock-search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
+  {id:'dock-favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
+  {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
 ];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
 
@@ -338,6 +338,7 @@ function renderHomeAppLauncher(workspace) {
   launcher.addEventListener('pointerdown', event => {
     const button = event.target.closest('.home-app-button');
     if (!button || event.button !== undefined && event.button !== 0) return;
+    try { launcher.setPointerCapture(event.pointerId); } catch {}
     const slot = button.closest('.home-app-slot');
     const id = button.dataset.appId;
     const rect = button.getBoundingClientRect();
