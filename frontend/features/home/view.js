@@ -498,7 +498,10 @@ function renderHomeAppLauncher(workspace) {
     if(!button) return;
     if(suppressClick){event.preventDefault();event.stopPropagation();return;}
     const app=appById.get(button.dataset.appId);
-    if(app?.url) window.open(app.url, '_blank', 'noopener,noreferrer');
+    if(app?.url) {
+      if (window.AndroidBrowser?.open) window.AndroidBrowser.open(app.url, app.name);
+      else window.open(app.url, '_blank', 'noopener,noreferrer');
+    }
     else if(app?.route) navigate(app.route);
     else showWallpaperMessage(workspace,'Это приложение появится в Rebunar позже.');
   });
