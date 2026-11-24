@@ -6,6 +6,7 @@ import { uploadAvatar, uploadProfileCover, updateProfile } from './api.js';
 import { getUser, setUser } from '../auth/session.js';
 import { avatarMarkup } from '../../shared/avatar.js?v=avatar-outline-20261105-1';
 import { navigate } from '../../app/router.js';
+import { enhanceProfileScreen } from './enhancements.js';
 
 export function renderProfileScreen(container, user, onLogout) {
   const avatar = avatarMarkup(user, { size: 'profile', label: 'Аватар профиля' });
@@ -35,22 +36,22 @@ export function renderProfileScreen(container, user, onLogout) {
             <button class="profile-hero-icon-button" type="button" data-profile-control="info" aria-label="Информация"><span aria-hidden="true">i</span></button>
           </div>
         </div>
-        <div class="profile-quick-grid profile-quick-grid-all" aria-label="Разделы профиля">
-          ${renderProfileQuickActions([
-            ["creator","Автор / разработчик","✦"], ["mail","Почта","✉"],
-            ["recent","Последнее чтение","◷"], ["bookmarks","Закладки","☆"],
-            ["notifications","Уведомления","♢"], ["saved","Сохранённое","▣"],
-            ["users","Все пользователи","♙"], ["edit","Изменить профиль","⚙"],
-            ["stats","Статистика","▥"], ["achievements","Достижения","✧"],
-            ["privacy","Приватность","◇"], ["help","Помощь","?"]
-          ])}
-        </div>
         <div class="profile-details">
           <div class="profile-bio">
             <span>О себе</span>
             <p>${escapeHTML(bio)}</p>
           </div>
         </div>
+        <div class="profile-quick-grid profile-quick-grid-all" aria-label="Основные разделы профиля">
+          ${renderProfileQuickActions([
+            ["creator","Кабинет автора","✦"],
+            ["recent","Читалка","◷"],
+            ["library","Библиотека","▣"],
+            ["achievements","Достижения","✧"],
+            ["stats","Статистика","▥"]
+          ])}
+        </div>
+        <div class="profile-activity" aria-label="Статус и достижения"></div>
 
 
         <button class="profile-logout" type="button">
@@ -66,13 +67,13 @@ export function renderProfileScreen(container, user, onLogout) {
       const action = button.dataset.profileAction;
       if (button.disabled) return;
       if (action === 'creator') openCreatorChoice(container);
-      else if (action === 'mail') navigate('mail');
-      else if (action === 'users') navigate('users');
-      else if (action === 'recent' || action === 'bookmarks') navigate('reader');
-      else if (action === 'myworks' || action === 'drafts') navigate('reader', { mode: 'studio' });
-      else if (action === 'edit') openProfileEditor(container, user, onLogout);
-      else if (action === 'settings') navigate('settings');
-      else if (action === 'avatar') fileInput.click();
+      else if (action === 'recent') navigate('reader');
+      else if (action === 'library') navigate('favorites');
+      else if (action === 'stats') navigate('statistics');
+      else if (action === 'achievements') {
+        const achievements = container.querySelector('.profile-achievements-card');
+        achievements?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     });
   });
   container.querySelector('.profile-logout')
@@ -122,6 +123,8 @@ export function renderProfileScreen(container, user, onLogout) {
       showProfileToast(container, error.message || 'Не удалось загрузить обложку');
     }
   });
+
+  enhanceProfileScreen(container, user);
 }
 
 
@@ -316,7 +319,7 @@ function openProfileInfo(container, user) {
 }
 
 function renderProfileQuickActions(items) {
-  const soon = new Set(['recent','bookmarks','notifications','saved','stats','achievements','privacy','help']);
+  const soon = new Set([]);
   const icons = {
     creator: '<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15Z"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
@@ -326,6 +329,7 @@ function renderProfileQuickActions(items) {
     drafts: '<path d="m4 16.5-.8 4.3 4.3-.8L19 8.5 15.5 5 4 16.5Z"/><path d="m13.8 6.7 3.5 3.5"/>',
     notifications: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/>',
     saved: '<path d="M5 4h14v16l-7-4-7 4V4Z"/><path d="m9 9 2 2 4-4"/>',
+    library: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 5.5v16.5M8 7h8M8 11h8"/>',
     users: '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
     edit: '<path d="M12 20h9"/><path d="m16.5 3.5 4 4L9 19l-5 1 1-5 11.5-11.5Z"/>',
     settings: '<circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.4-2.4 1.4-1.1a7 7 0 0 1 0-1.8l-1.4-1.1 1.4-2.4 1.7.6a8 8 0 0 1 1.5-.9l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.4 2.4-1.4 1.1a7 7 0 0 1 0 1.8Z"/>',
@@ -361,7 +365,7 @@ function openCreatorChoice(container) {
 }
 
 
-function openProfileEditor(container, user, onLogout) {
+export function openProfileEditor(container, user, onLogout) {
   const overlay = document.createElement('div');
   overlay.className = 'profile-editor-overlay';
 
@@ -377,6 +381,12 @@ function openProfileEditor(container, user, onLogout) {
         <h2 id="profile-editor-title">Редактирование профиля</h2>
         <button class="profile-editor-close" type="button"
           aria-label="Закрыть">×</button>
+      </div>
+
+      <div class="profile-editor-avatar-row">
+        <div><strong>Аватар профиля</strong><small>Фотография, которая отображается рядом с твоим именем</small></div>
+        <button class="profile-editor-avatar-change" type="button">Изменить аватар</button>
+        <input class="profile-editor-avatar-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
 
       <div class="profile-editor-fields">
@@ -432,6 +442,14 @@ function openProfileEditor(container, user, onLogout) {
   `;
 
   container.appendChild(overlay);
+
+  const avatarInput = overlay.querySelector('.profile-editor-avatar-input');
+  overlay.querySelector('.profile-editor-avatar-change').addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', () => {
+    const file = avatarInput.files?.[0];
+    avatarInput.value = '';
+    if (file) openAvatarEditor(container, file, user, onLogout);
+  });
 
   const displayNameInput =
     overlay.querySelector('.profile-editor-display-name');
