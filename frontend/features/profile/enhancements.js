@@ -2,7 +2,7 @@
  * REBUNAR — PROFILE STATUS / XP / ACHIEVEMENTS / CUSTOMIZATION
  */
 export function enhanceProfileScreen(container, user) {
-  const details = container.querySelector('.profile-details');
+  const details = container.querySelector('.profile-activity');
   const profileCard = container.querySelector('.profile-card');
   if (!details || !profileCard || details.querySelector('.profile-status-card')) return;
 
