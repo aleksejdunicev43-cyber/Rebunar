@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.CookieManager
+import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -37,6 +38,9 @@ class MainActivity : Activity() {
     private lateinit var webView: WebView
     private lateinit var progress: ProgressBar
     private lateinit var errorPanel: LinearLayout
+    private lateinit var browserPanel: LinearLayout
+    private lateinit var browserWebView: WebView
+    private lateinit var browserAddress: TextView
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var hasEnteredForeground = false
 
@@ -113,6 +117,11 @@ class MainActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         ))
+        browserPanel = buildBrowserPanel()
+        content.addView(browserPanel, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ))
 
         root.addView(progress, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, dp(3)
@@ -146,6 +155,13 @@ class MainActivity : Activity() {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, false)
         }
+
+        webView.addJavascriptInterface(object {
+            @JavascriptInterface
+            fun open(url: String, title: String?) {
+                runOnUiThread { openInternalBrowser(url, title.orEmpty()) }
+            }
+        }, "AndroidBrowser")
 
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
@@ -342,6 +358,89 @@ class MainActivity : Activity() {
         }
     }
 
+
+    private fun buildBrowserPanel(): LinearLayout {
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.rgb(8, 9, 10))
+            visibility = View.GONE
+        }
+        val toolbar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(6), dp(5), dp(6), dp(5))
+            setBackgroundColor(Color.rgb(17, 21, 19))
+        }
+        fun toolButton(label: String, action: () -> Unit): Button =
+            Button(this).apply {
+                text = label
+                isAllCaps = false
+                textSize = 13f
+                minWidth = dp(42)
+                setPadding(dp(4), 0, dp(4), 0)
+                setOnClickListener { action() }
+            }
+        toolbar.addView(toolButton("‹") { if (browserWebView.canGoBack()) browserWebView.goBack() })
+        toolbar.addView(toolButton("›") { if (browserWebView.canGoForward()) browserWebView.goForward() })
+        browserAddress = TextView(this).apply {
+            text = "https://"
+            textSize = 12f
+            setTextColor(Color.LTGRAY)
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
+            setPadding(dp(8), 0, dp(8), 0)
+        }
+        toolbar.addView(browserAddress, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        toolbar.addView(toolButton("↻") { browserWebView.reload() })
+        toolbar.addView(toolButton("✕") { closeInternalBrowser() })
+        browserWebView = WebView(this).apply {
+            setBackgroundColor(Color.rgb(8, 9, 10))
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.loadsImagesAutomatically = true
+            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            settings.javaScriptCanOpenWindowsAutomatically = false
+            settings.setSupportMultipleWindows(false)
+        }
+        browserWebView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val uri = request?.url ?: return true
+                return uri.scheme != "https" && uri.scheme != "http"
+            }
+            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                browserAddress.text = url ?: ""
+            }
+            override fun onPageFinished(view: WebView?, url: String?) {
+                browserAddress.text = url ?: ""
+            }
+            override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: android.net.http.SslError?) {
+                handler?.cancel()
+            }
+        }
+        panel.addView(toolbar, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(48)
+        ))
+        panel.addView(browserWebView, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+        ))
+        return panel
+    }
+
+    private fun openInternalBrowser(rawUrl: String, title: String) {
+        val uri = runCatching { Uri.parse(rawUrl) }.getOrNull() ?: return
+        if (uri.scheme != "https" && uri.scheme != "http") return
+        if (uri.host.isNullOrBlank()) return
+        browserAddress.text = title.ifBlank { uri.host ?: rawUrl }
+        browserPanel.visibility = View.VISIBLE
+        browserWebView.loadUrl(uri.toString())
+    }
+
+    private fun closeInternalBrowser() {
+        browserWebView.stopLoading()
+        browserWebView.loadUrl("about:blank")
+        browserPanel.visibility = View.GONE
+    }
+
     private fun refreshPage() {
         errorPanel.visibility = View.GONE
         if (webView.url.isNullOrBlank()) webView.loadUrl(APP_URL) else webView.reload()
@@ -377,7 +476,9 @@ class MainActivity : Activity() {
     }
 
     override fun onBackPressed() {
-        if (::webView.isInitialized && webView.canGoBack()) {
+        if (::browserPanel.isInitialized && browserPanel.visibility == View.VISIBLE) {
+            if (browserWebView.canGoBack()) browserWebView.goBack() else closeInternalBrowser()
+        } else if (::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
         } else {
             super.onBackPressed()
