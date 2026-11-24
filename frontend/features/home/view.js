@@ -240,6 +240,14 @@ const HOME_DOCK_APPS = [
   {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
 ];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
+const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
+
+function loadCustomHomeApps() {
+  try {
+    const apps = JSON.parse(localStorage.getItem(HOME_CUSTOM_APPS_KEY) || '[]');
+    return Array.isArray(apps) ? apps.filter(app => app && typeof app.id === 'string' && typeof app.url === 'string') : [];
+  } catch { return []; }
+}
 const HOME_MAX_PAGES = 10;
 
 function loadHomeAppLayout() {
@@ -249,7 +257,8 @@ function loadHomeAppLayout() {
     if (saved && Array.isArray(saved.dock)) {
       const pages = Array.isArray(saved.pages) ? saved.pages
         : Array.isArray(saved.grid) ? [saved.grid] : [gridDefault];
-      const all = new Set([...gridDefault, ...HOME_DOCK_DEFAULT]);
+      const customIds = loadCustomHomeApps().map(app => app.id);
+      const all = new Set([...gridDefault, ...HOME_DOCK_DEFAULT, ...customIds]);
       const normalized = pages.slice(0, HOME_MAX_PAGES).map(page => Array.from({length:30}, (_, i) => all.has(page?.[i]) ? page[i] : null));
       if (!normalized.length) normalized.push(Array(30).fill(null));
       const dock = Array.from({length:5}, (_, i) => all.has(saved.dock[i]) ? saved.dock[i] : null);
@@ -266,7 +275,7 @@ function loadHomeAppLayout() {
         else if (dock[i]) seen.add(dock[i]);
       }
       const placed = new Set([...normalized.flat(), ...dock].filter(Boolean));
-      const missing = [...gridDefault, ...HOME_DOCK_DEFAULT].filter(id => !placed.has(id));
+      const missing = [...gridDefault, ...HOME_DOCK_DEFAULT, ...customIds].filter(id => !placed.has(id));
       for (const id of missing) {
         let pageIndex = normalized.findIndex(page => page.includes(null));
         if (pageIndex < 0) { normalized.push(Array(30).fill(null)); pageIndex=normalized.length-1; }
@@ -289,7 +298,7 @@ function renderHomeAppLauncher(workspace) {
   const indicators = launcher.querySelector('.home-app-page-indicators');
   const dock = launcher.querySelector('.home-app-dock');
   const layout = loadHomeAppLayout();
-  const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS].map(app => [app.id, app]));
+  const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS, ...loadCustomHomeApps()].map(app => [app.id, app]));
   let currentPage = 0;
   let holdTimer = null;
   let pendingStart = null;
@@ -489,7 +498,8 @@ function renderHomeAppLauncher(workspace) {
     if(!button) return;
     if(suppressClick){event.preventDefault();event.stopPropagation();return;}
     const app=appById.get(button.dataset.appId);
-    if(app?.route) navigate(app.route);
+    if(app?.url) window.open(app.url, '_blank', 'noopener,noreferrer');
+    else if(app?.route) navigate(app.route);
     else showWallpaperMessage(workspace,'Это приложение появится в Rebunar позже.');
   });
   paint();
