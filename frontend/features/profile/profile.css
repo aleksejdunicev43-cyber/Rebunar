@@ -1803,3 +1803,49 @@
 @media(prefers-reduced-motion:reduce){
   .profile-customize-overlay .profile-customize-tab{transition:none !important}
 }
+
+
+/* REBUNAR — TIGHTER VERTICAL RHYTHM IN PROFILE CUSTOMIZATION */
+.profile-customize-sheet .profile-customize-description{
+  margin-top:7px !important;
+  margin-bottom:10px !important;
+}
+.profile-customize-sheet .profile-customize-tabs{
+  margin-top:0 !important;
+  margin-bottom:8px !important;
+}
+.profile-customize-sheet .profile-customize-content{
+  flex:0 0 120px !important;
+  height:120px !important;
+  min-height:120px !important;
+  max-height:120px !important;
+  padding-top:4px !important;
+  padding-bottom:4px !important;
+}
+.profile-customize-sheet .profile-customize-empty{
+  padding-top:10px !important;
+  padding-bottom:10px !important;
+}
+.profile-customize-sheet .profile-customize-footer{
+  padding-top:8px !important;
+}
+@media(max-width:480px){
+  .profile-customize-sheet .profile-customize-description{
+    margin-top:6px !important;
+    margin-bottom:8px !important;
+  }
+  .profile-customize-sheet .profile-customize-tabs{
+    margin-bottom:6px !important;
+  }
+  .profile-customize-sheet .profile-customize-content{
+    flex-basis:116px !important;
+    height:116px !important;
+    min-height:116px !important;
+    max-height:116px !important;
+    padding-top:3px !important;
+    padding-bottom:3px !important;
+  }
+  .profile-customize-sheet .profile-customize-footer{
+    padding-top:6px !important;
+  }
+}
