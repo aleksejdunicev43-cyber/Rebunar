@@ -245,61 +245,68 @@ function loadHomeAppLayout() {
   const gridDefault = HOME_APPS.map(app => app.id);
   try {
     const saved = JSON.parse(localStorage.getItem(HOME_LAYOUT_KEY) || 'null');
-    if (saved && Array.isArray(saved.grid) && Array.isArray(saved.dock)) {
+    if (saved && Array.isArray(saved.dock)) {
+      const pages = Array.isArray(saved.pages) ? saved.pages
+        : Array.isArray(saved.grid) ? [saved.grid] : [gridDefault];
       const all = new Set([...gridDefault, ...HOME_DOCK_DEFAULT]);
-      const grid = Array.from({length:30}, (_, i) => all.has(saved.grid[i]) ? saved.grid[i] : null);
+      const normalized = pages.map(page => Array.from({length:30}, (_, i) => all.has(page?.[i]) ? page[i] : null));
+      if (!normalized.length) normalized.push(Array(30).fill(null));
       const dock = Array.from({length:5}, (_, i) => all.has(saved.dock[i]) ? saved.dock[i] : null);
       const seen = new Set();
-      for (const id of [...grid, ...dock]) {
-        if (id && seen.has(id)) {
-          const index = grid.indexOf(id);
-          if (index >= 0) grid[index] = null;
-        } else if (id) seen.add(id);
-      }
-      const placed = new Set([...grid, ...dock].filter(Boolean));
-      const missing = [...gridDefault, ...HOME_DOCK_DEFAULT].filter(id => !placed.has(id));
-      for (const id of missing) {
-        const emptyGrid = grid.indexOf(null);
-        if (emptyGrid >= 0) grid[emptyGrid] = id;
-        else {
-          const emptyDock = dock.indexOf(null);
-          if (emptyDock >= 0) dock[emptyDock] = id;
+      for (const page of normalized) {
+        for (let i=0;i<page.length;i++) {
+          const id=page[i];
+          if (id && seen.has(id)) page[i]=null;
+          else if (id) seen.add(id);
         }
       }
-      return {grid, dock};
+      for (let i=0;i<dock.length;i++) {
+        if (dock[i] && seen.has(dock[i])) dock[i]=null;
+        else if (dock[i]) seen.add(dock[i]);
+      }
+      const placed = new Set([...normalized.flat(), ...dock].filter(Boolean));
+      const missing = [...gridDefault, ...HOME_DOCK_DEFAULT].filter(id => !placed.has(id));
+      for (const id of missing) {
+        let pageIndex = normalized.findIndex(page => page.includes(null));
+        if (pageIndex < 0) { normalized.push(Array(30).fill(null)); pageIndex=normalized.length-1; }
+        normalized[pageIndex][normalized[pageIndex].indexOf(null)] = id;
+      }
+      return {pages:normalized, dock};
     }
   } catch {}
-  return {grid:gridDefault, dock:HOME_DOCK_DEFAULT.slice()};
+  return {pages:[gridDefault.concat(Array(30-gridDefault.length).fill(null))], dock:HOME_DOCK_DEFAULT.slice()};
 }
 
 function renderHomeAppLauncher(workspace) {
   const launcher = document.createElement('section');
   launcher.className = 'home-app-launcher';
   launcher.setAttribute('aria-label', 'Приложения');
-  launcher.innerHTML = '<div class="home-app-grid" aria-label="Сетка приложений"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
+  launcher.innerHTML = '<div class="home-app-pages"></div><div class="home-app-page-indicators" aria-label="Страницы"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
   workspace.appendChild(launcher);
-  const grid = launcher.querySelector('.home-app-grid');
+  const pagesHost = launcher.querySelector('.home-app-pages');
+  const indicators = launcher.querySelector('.home-app-page-indicators');
   const dock = launcher.querySelector('.home-app-dock');
   const layout = loadHomeAppLayout();
   const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS].map(app => [app.id, app]));
+  let currentPage = 0;
   let holdTimer = null;
   let pendingStart = null;
   let activeDrag = null;
+  let edgeTimer = null;
+  let edgeDirection = 0;
   let suppressClick = false;
+  let swipeStart = null;
 
   const save = () => {
     try { localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout)); } catch {}
   };
-
-  const createSlot = (zone, index, id) => {
+  const createSlot = (zone, index, id, pageIndex=0) => {
     const slot = document.createElement('div');
     slot.className = 'home-app-slot' + (id ? '' : ' is-empty');
     slot.dataset.zone = zone;
     slot.dataset.index = String(index);
-    if (!id) {
-      slot.setAttribute('aria-label', 'Свободное место');
-      return slot;
-    }
+    if (zone === 'grid') slot.dataset.page = String(pageIndex);
+    if (!id) { slot.setAttribute('aria-label', 'Свободное место'); return slot; }
     const app = appById.get(id);
     if (!app) return slot;
     const button = document.createElement('button');
@@ -314,98 +321,153 @@ function renderHomeAppLauncher(workspace) {
     slot.appendChild(button);
     return slot;
   };
-
+  const renderIndicators = () => {
+    indicators.replaceChildren(...layout.pages.map((_, index) => {
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='home-app-page-dot'+(index===currentPage?' is-active':'');
+      button.setAttribute('aria-label','Страница '+(index+1));
+      button.addEventListener('click',()=>showPage(index));
+      return button;
+    }));
+  };
+  const showPage = index => {
+    currentPage=Math.max(0,Math.min(index,layout.pages.length-1));
+    pagesHost.style.transform='translateX(-'+(currentPage*100)+'%)';
+    renderIndicators();
+  };
   const paint = () => {
-    grid.replaceChildren(...layout.grid.map((id, index) => createSlot('grid', index, id)));
-    dock.replaceChildren(...layout.dock.map((id, index) => createSlot('dock', index, id)));
+    pagesHost.replaceChildren(...layout.pages.map((page,pageIndex)=>{
+      const grid=document.createElement('div');
+      grid.className='home-app-grid';
+      grid.dataset.page=String(pageIndex);
+      grid.setAttribute('aria-label','Страница приложений '+(pageIndex+1));
+      grid.append(...page.map((id,index)=>createSlot('grid',index,id,pageIndex)));
+      return grid;
+    }));
+    dock.replaceChildren(...layout.dock.map((id,index)=>createSlot('dock',index,id)));
+    showPage(currentPage);
   };
-
+  const ensurePage = index => {
+    while(layout.pages.length<=index) layout.pages.push(Array(30).fill(null));
+    if(layout.pages.length>index) { paint(); save(); }
+  };
+  const clearEdgeTimer = () => {
+    if(edgeTimer) clearTimeout(edgeTimer);
+    edgeTimer=null; edgeDirection=0;
+  };
   const clearDrag = () => {
-    if (holdTimer) clearTimeout(holdTimer);
-    holdTimer = null;
-    pendingStart = null;
-    if (activeDrag?.button) {
-      activeDrag.button.classList.remove('is-dragging');
-      activeDrag.button.style.position = '';
-      activeDrag.button.style.left = '';
-      activeDrag.button.style.top = '';
-      activeDrag.button.style.width = '';
-      activeDrag.button.style.transform = '';
-      activeDrag.button.style.pointerEvents = '';
-    }
+    if(holdTimer) clearTimeout(holdTimer);
+    holdTimer=null; pendingStart=null; clearEdgeTimer();
+    if(activeDrag?.button) activeDrag.button.style.visibility='';
+    activeDrag?.ghost?.remove();
     launcher.classList.remove('is-dragging');
-    activeDrag = null;
+    activeDrag=null;
   };
-
+  const movePageEdge = (x) => {
+    const rect=launcher.getBoundingClientRect();
+    const direction=x>rect.right-30?1:x<rect.left+30?-1:0;
+    if(!direction || (direction<0 && currentPage===0)) { clearEdgeTimer(); return; }
+    if(direction===edgeDirection && edgeTimer) return;
+    clearEdgeTimer(); edgeDirection=direction;
+    edgeTimer=window.setTimeout(()=>{
+      edgeTimer=null;
+      const next=currentPage+direction;
+      if(direction>0) ensurePage(next);
+      if(next>=0 && next<layout.pages.length) showPage(next);
+    },420);
+  };
   launcher.addEventListener('pointerdown', event => {
-    const button = event.target.closest('.home-app-button');
-    if (!button || event.button !== undefined && event.button !== 0) return;
-    try { launcher.setPointerCapture(event.pointerId); } catch {}
-    const slot = button.closest('.home-app-slot');
-    const id = button.dataset.appId;
-    const rect = button.getBoundingClientRect();
-    const start = {x:event.clientX, y:event.clientY};
-    pendingStart = start;
-    holdTimer = window.setTimeout(() => {
-      pendingStart = null;
-      activeDrag = {button, id, zone:slot.dataset.zone, index:Number(slot.dataset.index), start, rect, x:start.x, y:start.y};
-      button.classList.add('is-dragging');
-      button.style.position = 'fixed';
-      button.style.left = rect.left + 'px';
-      button.style.top = rect.top + 'px';
-      button.style.width = rect.width + 'px';
-      button.style.pointerEvents = 'none';
-      button.style.zIndex = '120';
-      launcher.classList.add('is-dragging');
-    }, 320);
-  });
-
-  launcher.addEventListener('pointermove', event => {
-    if (activeDrag) {
-      activeDrag.x = event.clientX;
-      activeDrag.y = event.clientY;
-      activeDrag.button.style.transform = 'translate(' + (event.clientX - activeDrag.start.x) + 'px,' + (event.clientY - activeDrag.start.y) + 'px) scale(1.08)';
-      event.preventDefault();
-    } else if (holdTimer && pendingStart) {
-      const delta = Math.hypot(event.clientX - pendingStart.x, event.clientY - pendingStart.y);
-      if (delta > 14) { clearTimeout(holdTimer); holdTimer = null; pendingStart = null; }
+    const button=event.target.closest('.home-app-button');
+    if(!button) {
+      if(event.pointerType==='touch') swipeStart={x:event.clientX,y:event.clientY};
+      return;
     }
-  }, {passive:false});
-
+    if(event.button!==undefined && event.button!==0) return;
+    try { launcher.setPointerCapture(event.pointerId); } catch {}
+    const slot=button.closest('.home-app-slot');
+    const rect=button.getBoundingClientRect();
+    const startPoint={x:event.clientX,y:event.clientY};
+    pendingStart=startPoint;
+    holdTimer=window.setTimeout(()=>{
+      pendingStart=null;
+      const ghost=button.cloneNode(true);
+      ghost.classList.add('is-dragging');
+      ghost.style.position='fixed'; ghost.style.left=rect.left+'px'; ghost.style.top=rect.top+'px';
+      ghost.style.width=rect.width+'px'; ghost.style.height=rect.height+'px'; ghost.style.zIndex='120';
+      ghost.style.pointerEvents='none'; ghost.style.margin='0';
+      document.body.appendChild(ghost);
+      button.style.visibility='hidden';
+      activeDrag={button,ghost,id:button.dataset.appId,zone:slot.dataset.zone,page:Number(slot.dataset.page||0),start:startPoint};
+      launcher.classList.add('is-dragging');
+    },320);
+  });
+  launcher.addEventListener('pointermove', event => {
+    if(activeDrag) {
+      activeDrag.ghost.style.transform='translate('+(event.clientX-activeDrag.start.x)+'px,'+(event.clientY-activeDrag.start.y)+'px) scale(1.08)';
+      movePageEdge(event.clientX);
+      event.preventDefault();
+    } else if(holdTimer && pendingStart) {
+      if(Math.hypot(event.clientX-pendingStart.x,event.clientY-pendingStart.y)>14) {
+        clearTimeout(holdTimer); holdTimer=null; pendingStart=null;
+      }
+    } else if(swipeStart) {
+      // Swipe is evaluated on pointer release.
+    }
+  },{passive:false});
   const finishDrag = event => {
-    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-    if (!activeDrag) return;
-    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.home-app-slot');
-    if (target) {
-      const from = layout[activeDrag.zone];
-      const to = layout[target.dataset.zone];
-      const targetIndex = Number(target.dataset.index);
-      const fromIndex = from.indexOf(activeDrag.id);
-      if (fromIndex >= 0 && targetIndex >= 0 && targetIndex < to.length) {
-        [from[fromIndex], to[targetIndex]] = [to[targetIndex], from[fromIndex]];
+    if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}
+    if(!activeDrag) {
+      if(swipeStart) {
+        const dx=event.clientX-swipeStart.x, dy=event.clientY-swipeStart.y;
+        if(Math.abs(dx)>58 && Math.abs(dx)>Math.abs(dy)*1.25) {
+          if(dx<0) { if(currentPage===layout.pages.length-1) ensurePage(layout.pages.length); showPage(currentPage+1); }
+          else showPage(currentPage-1);
+        }
+        swipeStart=null;
+      }
+      return;
+    }
+    clearEdgeTimer();
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.home-app-slot');
+    if(target) {
+      const from=activeDrag.zone==='dock'?layout.dock:layout.pages[activeDrag.page];
+      const targetZone=target.dataset.zone;
+      const to=targetZone==='dock'?layout.dock:layout.pages[Number(target.dataset.page)];
+      const fromIndex=from.indexOf(activeDrag.id), targetIndex=Number(target.dataset.index);
+      if(fromIndex>=0 && targetIndex>=0 && targetIndex<to.length) {
+        [from[fromIndex],to[targetIndex]]=[to[targetIndex],from[fromIndex]];
         save();
       }
+    } else if(event.clientX>launcher.getBoundingClientRect().right-34) {
+      const next=currentPage+1;
+      ensurePage(next);
+      const targetPage=layout.pages[next];
+      const empty=targetPage.indexOf(null);
+      if(empty>=0) {
+        const from=activeDrag.zone==='dock'?layout.dock:layout.pages[activeDrag.page];
+        const index=from.indexOf(activeDrag.id);
+        if(index>=0){from[index]=null;targetPage[empty]=activeDrag.id;save();}
+        currentPage=next;
+      }
     }
-    suppressClick = true;
+    suppressClick=true;
     clearDrag();
     paint();
-    window.setTimeout(() => { suppressClick = false; }, 450);
+    window.setTimeout(()=>{suppressClick=false;},450);
   };
-  launcher.addEventListener('pointerup', finishDrag);
-  launcher.addEventListener('pointercancel', finishDrag);
-
-  launcher.addEventListener('click', event => {
-    const button = event.target.closest('.home-app-button');
-    if (!button) return;
-    if (suppressClick) { event.preventDefault(); event.stopPropagation(); return; }
-    const app = appById.get(button.dataset.appId);
-    if (app?.route) navigate(app.route);
-    else showWallpaperMessage(workspace, 'Это приложение появится в Rebunar позже.');
+  launcher.addEventListener('pointerup',finishDrag);
+  launcher.addEventListener('pointercancel',finishDrag);
+  launcher.addEventListener('click',event=>{
+    const button=event.target.closest('.home-app-button');
+    if(!button) return;
+    if(suppressClick){event.preventDefault();event.stopPropagation();return;}
+    const app=appById.get(button.dataset.appId);
+    if(app?.route) navigate(app.route);
+    else showWallpaperMessage(workspace,'Это приложение появится в Rebunar позже.');
   });
-
   paint();
 }
-
 export function renderHomeScreen(outlet) {
   const shell = outlet.closest('.app-shell');
   shell?.classList.add('home-workspace-active');
