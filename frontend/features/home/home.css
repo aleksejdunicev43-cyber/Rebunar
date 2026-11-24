@@ -290,3 +290,38 @@
 .home-workspace-active .home-wallpaper-reset[hidden] {
   display: none !important;
 }
+
+
+/* Keep the workspace edge-to-edge while the profile avatar floats above it. */
+.home-workspace-active .app-header {
+  flex: 0 0 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.home-workspace-active .app-layout {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  gap: 0;
+  margin: 0;
+  padding: 0 !important;
+}
+.home-workspace-active .main-content {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 !important;
+}
+.home-workspace-active #screen-outlet,
+.home-workspace-active .home-workspace {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+.home-workspace-active .home-workspace {
+  height: 100%;
+  border-radius: 0;
+}
