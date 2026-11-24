@@ -5,6 +5,7 @@
 
 import { changePassword } from '../profile/api.js';
 import { getUser } from '../auth/session.js';
+import { navigate } from '../../app/router.js';
 import { getLinkedMatrixAccount, beginMatrixConnection, removeMatrixConnection } from '../../infrastructure/matrix/connection.js';
 
 export function renderSettingsScreen(outlet) {
@@ -20,9 +21,19 @@ export function renderSettingsScreen(outlet) {
         <p>Управление аккаунтом и приложением</p>
       </div>
 
+      <div class="settings-section">
+        <h2>Аккаунт</h2>
+        <p>Личные данные и защита учётной записи</p>
+      </div>
       <div class="settings-list">
-
-
+        <button class="settings-item" type="button" data-action="edit-profile">
+          <span class="settings-icon">✎</span>
+          <span class="settings-item-content">
+            <strong>Изменить профиль</strong>
+            <small>Имя, аватар и описание «О себе»</small>
+          </span>
+          <span class="settings-arrow">›</span>
+        </button>
 
         <button class="settings-item" type="button" data-action="security">
           <span class="settings-icon">◇</span>
@@ -32,6 +43,33 @@ export function renderSettingsScreen(outlet) {
           </span>
           <span class="settings-arrow">›</span>
         </button>
+
+        <div class="settings-item settings-item-disabled" aria-disabled="true">
+          <span class="settings-icon">◇</span>
+          <span class="settings-item-content">
+            <strong>Приватность</strong>
+            <small>Управление видимостью профиля и данных · будет добавлено</small>
+          </span>
+          <span class="settings-status">СКОРО</span>
+        </div>
+
+        <div class="settings-item settings-item-disabled" aria-disabled="true">
+          <span class="settings-icon">♢</span>
+          <span class="settings-item-content">
+            <strong>Уведомления</strong>
+            <small>Настройки оповещений · будут добавлены</small>
+          </span>
+          <span class="settings-status">СКОРО</span>
+        </div>
+
+        <div class="settings-item settings-item-disabled" aria-disabled="true">
+          <span class="settings-icon">?</span>
+          <span class="settings-item-content">
+            <strong>Помощь и поддержка</strong>
+            <small>Справка и связь с командой Rebunar · будет добавлено</small>
+          </span>
+          <span class="settings-status">СКОРО</span>
+        </div>
 
         <button class="settings-item" type="button" data-action="matrix">
           <span class="settings-icon settings-icon-matrix">
@@ -57,6 +95,11 @@ export function renderSettingsScreen(outlet) {
       </div>
     </section>
   `;
+
+  outlet.querySelector('[data-action="edit-profile"]')
+    .addEventListener('click', () => {
+      navigate('profile', { editProfile: true });
+    });
 
   outlet.querySelector('[data-action="security"]')
     .addEventListener('click', () => {
