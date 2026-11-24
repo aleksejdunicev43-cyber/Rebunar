@@ -570,7 +570,7 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         filePathCallback?.onReceiveValue(null)
         filePathCallback = null
-        if (::browserPopupWebView.isInitialized) closeBrowserPopup()
+        if (browserPopupWebView != null) closeBrowserPopup()
         if (::browserWebView.isInitialized) {
             browserWebView.stopLoading()
             browserWebView.destroy()
