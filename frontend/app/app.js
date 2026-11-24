@@ -107,7 +107,9 @@ for (const [path, title] of Object.entries(screens)) {
   registerRoute(path, (params = {}) => {
     const outlet = document.getElementById('screen-outlet');
     if (!outlet) return;
-    root.querySelector('.app-shell')?.classList.toggle('home-workspace-active', path === 'home');
+    const shell = root.querySelector('.app-shell');
+    shell?.classList.toggle('home-workspace-active', path === 'home');
+    if (path !== 'home') shell?.querySelector(':scope > .home-workspace')?.remove();
     if (path === 'home') return renderHomeScreen(outlet);
     if (path === 'favorites') return renderFavoritesScreen(outlet);
     if (path === 'messages') return renderMessagesScreen(outlet, params);
