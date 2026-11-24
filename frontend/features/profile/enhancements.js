@@ -6,12 +6,6 @@ export function enhanceProfileScreen(container, user) {
   const profileCard = container.querySelector('.profile-card');
   if (!details || !profileCard || details.querySelector('.profile-status-card')) return;
 
-  const status = user?.bio?.trim() ? 'Активен в Rebunar' : 'Новый участник Rebunar';
-  const statusCard = document.createElement('div');
-  statusCard.className = 'profile-status-card';
-  statusCard.innerHTML = `<div class="profile-feature-heading"><div><span class="profile-feature-kicker">Статус</span><strong>${escapeHTML(status)}</strong></div><span class="profile-status-dot" aria-hidden="true"></span></div><p>Твой профиль — часть твоего статуса в экосистеме Rebunar.</p>`;
-  details.appendChild(statusCard);
-
   const xp = document.createElement('section');
   xp.className = 'profile-xp-card';
   xp.innerHTML = '<div class="profile-feature-heading"><div><span class="profile-feature-kicker">Игровой профиль</span><strong>Уровень 1</strong></div><span class="profile-xp-value">0 / 100 XP</span></div><div class="profile-xp-track" role="progressbar" aria-label="Опыт до следующего уровня" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="profile-xp-fill"></span></div><p>Система опыта готовится. Начисление XP появится вместе с игровыми действиями.</p>';
