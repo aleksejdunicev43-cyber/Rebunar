@@ -445,7 +445,6 @@ function renderHomeAppLauncher(workspace) {
           if(dx<0) {
             const next=currentPage+1;
             if(next<layout.pages.length) showPage(next);
-            else if(pageHasApps(currentPage) && ensurePage(next)) showPage(next);
           } else showPage(currentPage-1);
           suppressClick=true;
           window.setTimeout(()=>{suppressClick=false;},450);
@@ -461,9 +460,6 @@ function renderHomeAppLauncher(workspace) {
       const targetZone=target.dataset.zone;
       const to=targetZone==='dock'?layout.dock:layout.pages[Number(target.dataset.page)];
       const fromIndex=from.indexOf(activeDrag.id), targetIndex=Number(target.dataset.index);
-      const sourcePageIndex=activeDrag.zone==='grid'?activeDrag.page:-1;
-      const targetPageIndex=targetZone==='grid'?Number(target.dataset.page):-1;
-      const movingIntoEmptySlot=to[targetIndex]==null;
       if(fromIndex>=0 && targetIndex>=0 && targetIndex<to.length) {
         [from[fromIndex],to[targetIndex]]=[to[targetIndex],from[fromIndex]];
         compactEmptyPages();
