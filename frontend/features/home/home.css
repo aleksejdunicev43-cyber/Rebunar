@@ -25,7 +25,7 @@
   border: 0;
   border-bottom: 1px solid rgba(207,255,226,.14);
   border-radius: 0;
-  background: rgba(7, 18, 13, .96);
+  background: rgba(7, 18, 13, .58);
   box-shadow: 0 3px 16px rgba(0,0,0,.2);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -193,7 +193,7 @@
   border: 0;
   border-top: 1px solid rgba(207,255,226,.14);
   border-radius: 0;
-  background: rgba(7,18,13,.96);
+  background: rgba(7,18,13,.58);
   box-shadow: 0 -4px 18px rgba(0,0,0,.18);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
