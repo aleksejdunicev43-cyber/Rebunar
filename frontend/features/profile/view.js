@@ -42,6 +42,11 @@ export function renderProfileScreen(container, user, onLogout) {
             <p>${escapeHTML(bio)}</p>
           </div>
         </div>
+        <button class="profile-users-button" type="button" data-profile-users>
+          <span aria-hidden="true">♙</span>
+          <span>Все пользователи Rebunar</span>
+          <span class="profile-users-button-arrow" aria-hidden="true">›</span>
+        </button>
         <div class="profile-activity" aria-label="Статус и достижения"></div>
 
 
@@ -66,6 +71,9 @@ export function renderProfileScreen(container, user, onLogout) {
       }
     });
   });
+  container.querySelector('[data-profile-users]')
+    .addEventListener('click', () => navigate('users'));
+
   container.querySelector('.profile-logout')
     .addEventListener('click', onLogout);
 
