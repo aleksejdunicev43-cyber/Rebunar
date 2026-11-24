@@ -42,14 +42,6 @@ export function renderProfileScreen(container, user, onLogout) {
             <p>${escapeHTML(bio)}</p>
           </div>
         </div>
-        <div class="profile-quick-grid profile-quick-grid-all" aria-label="Основные разделы профиля">
-          ${renderProfileQuickActions([
-            ["recent","Читалка","◷"],
-            ["library","Библиотека","▣"],
-            ["achievements","Достижения","✧"],
-            ["stats","Статистика","▥"]
-          ])}
-        </div>
         <div class="profile-activity" aria-label="Статус и достижения"></div>
 
 
