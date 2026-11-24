@@ -300,8 +300,13 @@ function renderHomeAppLauncher(workspace) {
   let swipeStart = null;
 
   const pageHasApps = index => Boolean(layout.pages[index]?.some(Boolean));
-  const trimEmptyTailPages = () => {
-    while(layout.pages.length>1 && !pageHasApps(layout.pages.length-1)) layout.pages.pop();
+  const compactEmptyPages = () => {
+    for(let i=layout.pages.length-1;i>0;i--){
+      if(!pageHasApps(i)){
+        layout.pages.splice(i,1);
+        if(currentPage>i) currentPage--;
+      }
+    }
     currentPage=Math.min(currentPage,layout.pages.length-1);
   };
   const save = () => {
@@ -459,10 +464,9 @@ function renderHomeAppLauncher(workspace) {
       const sourcePageIndex=activeDrag.zone==='grid'?activeDrag.page:-1;
       const targetPageIndex=targetZone==='grid'?Number(target.dataset.page):-1;
       const movingIntoEmptySlot=to[targetIndex]==null;
-      const wouldEmptySource=sourcePageIndex>=0 && sourcePageIndex!==targetPageIndex && layout.pages[sourcePageIndex].filter(Boolean).length===1 && movingIntoEmptySlot;
-      if(fromIndex>=0 && targetIndex>=0 && targetIndex<to.length && !wouldEmptySource) {
+      if(fromIndex>=0 && targetIndex>=0 && targetIndex<to.length) {
         [from[fromIndex],to[targetIndex]]=[to[targetIndex],from[fromIndex]];
-        trimEmptyTailPages();
+        compactEmptyPages();
         save();
       }
     } else if(event.clientX>launcher.getBoundingClientRect().right-34) {
@@ -474,7 +478,7 @@ function renderHomeAppLauncher(workspace) {
         const targetPage=layout.pages[next];
         const empty=targetPage.indexOf(null);
         const index=from.indexOf(activeDrag.id);
-        if(empty>=0 && index>=0){from[index]=null;targetPage[empty]=activeDrag.id;trimEmptyTailPages();save();currentPage=Math.min(next,layout.pages.length-1);}
+        if(empty>=0 && index>=0){from[index]=null;targetPage[empty]=activeDrag.id;compactEmptyPages();save();currentPage=Math.min(next,layout.pages.length-1);}
       }
     }
     suppressClick=true;
