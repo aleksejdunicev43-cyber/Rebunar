@@ -143,10 +143,28 @@
   cursor: default;
 }
 .home-workspace.has-wallpaper {
-  /* The selected photo fills the complete display, including the areas behind both bars. */
-  background-size: auto, 100% 100%, cover, cover;
+  background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
+}
+
+/* Render the selected photo as a real viewport-sized layer, not as a
+   background image constrained by background sizing or another container. */
+.home-workspace .home-wallpaper-image {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  object-fit: fill;
+  object-position: center center;
+  pointer-events: none;
 }
 .home-workspace::after {
   position: absolute;
