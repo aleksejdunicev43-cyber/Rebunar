@@ -373,19 +373,53 @@
   left: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   min-height: 0;
   padding: 8px 7px 7px;
   pointer-events: none;
 }
+.home-app-pages {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  overflow: visible;
+  transition: transform .24s cubic-bezier(.2,.75,.25,1);
+  will-change: transform;
+}
 .home-app-grid {
   display: grid;
-  flex: 1 1 auto;
+  flex: 0 0 100%;
+  width: 100%;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(6, minmax(0, 1fr));
   gap: 2px 3px;
   min-height: 0;
   align-content: stretch;
+}
+.home-app-page-indicators {
+  display: flex;
+  flex: 0 0 9px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  pointer-events: auto;
+}
+.home-app-page-dot {
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  min-height: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(236,255,243,.42);
+}
+.home-app-page-dot.is-active {
+  width: 17px;
+  border-radius: 8px;
+  background: #79efa8;
+  box-shadow: 0 0 9px rgba(121,239,168,.42);
 }
 .home-app-slot {
   position: relative;
@@ -488,7 +522,7 @@
   -webkit-user-select: none;
 }
 @media (max-height: 700px) {
-  .home-app-launcher { gap: 5px; padding-top: 5px; }
+  .home-app-launcher { gap: 3px; padding-top: 5px; }
   .home-app-icon { width: 39px; height: 39px; font-size: 20px; }
   .home-app-dock { flex-basis: 66px; }
 }
