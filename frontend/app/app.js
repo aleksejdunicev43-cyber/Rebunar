@@ -9,7 +9,6 @@ import { initializeAuth, getUser, clearUser } from '../features/auth/session.js'
 import { renderAuthScreen } from '../features/auth/view.js';
 import { logout } from '../features/auth/api.js';
 import { renderProfileScreen, openProfileEditor } from '../features/profile/view.js?v=avatar-system-20261104-6';
-import { enhanceProfileScreen } from '../features/profile/enhancements.js?v=avatar-system-20261104-6';
 import { renderHomeScreen } from '../features/home/view.js';
 import { renderFavoritesScreen } from '../features/favorites/view.js';
 import { renderMessagesScreen } from '../features/messages/view.js?v=avatar-system-20261104-6';
@@ -117,7 +116,6 @@ for (const [path, title] of Object.entries(screens)) {
     if (path === 'profile') {
       const user = getUser();
       renderProfileScreen(outlet, user, handleLogout);
-      enhanceProfileScreen(outlet, user);
       if (params.editProfile) openProfileEditor(outlet, user, handleLogout);
       return;
     }
