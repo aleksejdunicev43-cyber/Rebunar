@@ -6,14 +6,19 @@ import { navigate } from '../../app/router.js';
 
 const sections = {
   store: {
-    eyebrow: 'REBUNAR / ЦИФРОВЫЕ ТОВАРЫ',
-    title: 'Магазин',
-    description: 'Единое пространство для покупки цифровых товаров: игр, программ, подписок и других продуктов.',
-    status: 'МАГАЗИН ГОТОВИТСЯ К ЗАПУСКУ',
-    cards: [
-      ['Игры и приложения', 'Каталог игр и программ, страницы продуктов, отзывы и библиотека покупок.'],
-      ['Подписки и сервисы', 'Цифровые подписки и дополнительные возможности платформы.'],
-      ['Авторы и разработчики', 'Публикация продуктов, управление продажами и статистика.']
+    eyebrow: 'REBUNAR / APP STORE',
+    title: 'Магазин приложений',
+    description: 'Добавляй веб-приложения на главный экран Rebunar. Это ярлыки-ссылки: они не занимают память телефона и открывают оригинальные сайты.',
+    apps: [
+      {
+        id: 'pinterest',
+        name: 'Pinterest',
+        category: 'Идеи и вдохновение',
+        description: 'Сохраняй идеи, изображения, подборки и вдохновение в своих коллекциях.',
+        url: 'https://www.pinterest.com/',
+        icon: 'P',
+        color: '#bd081c'
+      }
     ]
   },
   studio: {
@@ -77,6 +82,56 @@ const sections = {
 export function renderEcosystemScreen(outlet, key) {
   const section = sections[key];
   if (!section) return;
+  if (key === 'store') {
+    const customAppsKey = 'rebunar-home-custom-apps-v1';
+    let installed = [];
+    try { installed = JSON.parse(localStorage.getItem(customAppsKey) || '[]'); } catch {}
+    const installedIds = new Set(Array.isArray(installed) ? installed.map(app => app.id) : []);
+    outlet.innerHTML = `
+      <section class="screen ecosystem-screen ecosystem-store-screen">
+        <header class="ecosystem-hero">
+          <span class="ecosystem-eyebrow">${section.eyebrow}</span>
+          <h1>${section.title}</h1>
+          <p>${section.description}</p>
+          <span class="ecosystem-status">ВЕБ-ПРИЛОЖЕНИЯ · ЯРЛЫКИ НА ГЛАВНОМ ЭКРАНЕ</span>
+        </header>
+        <div class="ecosystem-store-toolbar">
+          <div><strong>Каталог приложений</strong><small>Первое приложение для тестирования</small></div>
+          <span class="ecosystem-store-count">01</span>
+        </div>
+        <div class="ecosystem-app-grid">
+          ${section.apps.map(app => `
+            <article class="ecosystem-app-card">
+              <div class="ecosystem-app-icon" style="--ecosystem-app-color:${app.color}"><span>${app.icon}</span></div>
+              <div class="ecosystem-app-info">
+                <span class="ecosystem-app-category">${app.category}</span>
+                <h2>${app.name}</h2>
+                <p>${app.description}</p>
+              </div>
+              <button class="ecosystem-app-add" type="button" data-add-app="${app.id}" ${installedIds.has(app.id) ? 'disabled' : ''}>${installedIds.has(app.id) ? 'Добавлено' : 'Добавить на главный экран'}</button>
+              <a class="ecosystem-app-preview" href="${app.url}" target="_blank" rel="noopener noreferrer">Открыть сайт ↗</a>
+            </article>
+          `).join('')}
+        </div>
+        <p class="ecosystem-store-note">Приложения открываются на своих официальных сайтах. Rebunar сохраняет только ярлык, а не устанавливает APK и не скачивает файлы.</p>
+      </section>
+    `;
+    outlet.querySelectorAll('[data-add-app]').forEach(button => button.addEventListener('click', () => {
+      const app = section.apps.find(item => item.id === button.dataset.addApp);
+      if (!app) return;
+      let apps = [];
+      try { apps = JSON.parse(localStorage.getItem(customAppsKey) || '[]'); } catch {}
+      if (!Array.isArray(apps)) apps = [];
+      if (!apps.some(item => item.id === app.id)) {
+        apps.push({ id: app.id, name: app.name, icon: app.icon, color: app.color, url: app.url });
+        try { localStorage.setItem(customAppsKey, JSON.stringify(apps)); }
+        catch { button.textContent = 'Недостаточно памяти'; return; }
+      }
+      button.textContent = 'Добавлено';
+      button.disabled = true;
+    }));
+    return;
+  }
   outlet.innerHTML = `
     <section class="screen ecosystem-screen ecosystem-screen--${key}">
       <header class="ecosystem-hero">
