@@ -300,6 +300,10 @@ function renderHomeAppLauncher(workspace) {
   let swipeStart = null;
 
   const pageHasApps = index => Boolean(layout.pages[index]?.some(Boolean));
+  const trimEmptyTailPages = () => {
+    while(layout.pages.length>1 && !pageHasApps(layout.pages.length-1)) layout.pages.pop();
+    currentPage=Math.min(currentPage,layout.pages.length-1);
+  };
   const save = () => {
     try { localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout)); } catch {}
   };
@@ -452,8 +456,13 @@ function renderHomeAppLauncher(workspace) {
       const targetZone=target.dataset.zone;
       const to=targetZone==='dock'?layout.dock:layout.pages[Number(target.dataset.page)];
       const fromIndex=from.indexOf(activeDrag.id), targetIndex=Number(target.dataset.index);
-      if(fromIndex>=0 && targetIndex>=0 && targetIndex<to.length) {
+      const sourcePageIndex=activeDrag.zone==='grid'?activeDrag.page:-1;
+      const targetPageIndex=targetZone==='grid'?Number(target.dataset.page):-1;
+      const movingIntoEmptySlot=to[targetIndex]==null;
+      const wouldEmptySource=sourcePageIndex>=0 && sourcePageIndex!==targetPageIndex && layout.pages[sourcePageIndex].filter(Boolean).length===1 && movingIntoEmptySlot;
+      if(fromIndex>=0 && targetIndex>=0 && targetIndex<to.length && !wouldEmptySource) {
         [from[fromIndex],to[targetIndex]]=[to[targetIndex],from[fromIndex]];
+        trimEmptyTailPages();
         save();
       }
     } else if(event.clientX>launcher.getBoundingClientRect().right-34) {
@@ -465,7 +474,7 @@ function renderHomeAppLauncher(workspace) {
         const targetPage=layout.pages[next];
         const empty=targetPage.indexOf(null);
         const index=from.indexOf(activeDrag.id);
-        if(empty>=0 && index>=0){from[index]=null;targetPage[empty]=activeDrag.id;save();currentPage=next;}
+        if(empty>=0 && index>=0){from[index]=null;targetPage[empty]=activeDrag.id;trimEmptyTailPages();save();currentPage=Math.min(next,layout.pages.length-1);}
       }
     }
     suppressClick=true;
