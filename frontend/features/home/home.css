@@ -116,9 +116,12 @@
 }
 
 .home-workspace {
-  position: absolute;
+  position: fixed;
   z-index: 0;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   isolation: isolate;
   display: flex;
   flex: 1 1 auto;
@@ -182,6 +185,33 @@
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+.home-wallpaper-picker {
+  position: absolute;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid rgba(128,255,183,.38);
+  border-radius: 13px;
+  background: rgba(5,22,14,.92);
+  color: #eafff1;
+  box-shadow: 0 8px 28px rgba(0,0,0,.38), 0 0 18px rgba(55,220,125,.12);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.home-wallpaper-picker[hidden] { display: none !important; }
+.home-wallpaper-picker span:first-child {
+  color: #79efa8;
+  font-size: 18px;
 }
 .home-workspace .home-wallpaper-image[hidden] {
   display: none !important;
