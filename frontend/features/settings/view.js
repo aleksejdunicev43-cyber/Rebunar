@@ -5,6 +5,7 @@
 
 import { changePassword } from '../profile/api.js';
 import { getUser } from '../auth/session.js';
+import { openCreatorChoice } from '../profile/view.js';
 import { navigate } from '../../app/router.js';
 import { getLinkedMatrixAccount, beginMatrixConnection, removeMatrixConnection } from '../../infrastructure/matrix/connection.js';
 
@@ -19,6 +20,21 @@ export function renderSettingsScreen(outlet) {
         </button>
         <h1>Настройки</h1>
         <p>Управление аккаунтом и приложением</p>
+      </div>
+
+      <div class="settings-section">
+        <h2>Создание</h2>
+        <p>Инструменты для авторов и разработчиков</p>
+      </div>
+      <div class="settings-list">
+        <button class="settings-item" type="button" data-action="creator">
+          <span class="settings-icon">✦</span>
+          <span class="settings-item-content">
+            <strong>Кабинет автора</strong>
+            <small>Создание новелл, вебтунов и других историй</small>
+          </span>
+          <span class="settings-arrow">›</span>
+        </button>
       </div>
 
       <div class="settings-section">
@@ -95,6 +111,9 @@ export function renderSettingsScreen(outlet) {
       </div>
     </section>
   `;
+
+  outlet.querySelector('[data-action="creator"]')
+    .addEventListener('click', () => openCreatorChoice(outlet));
 
   outlet.querySelector('[data-action="edit-profile"]')
     .addEventListener('click', () => {
