@@ -2,6 +2,8 @@
  * REBUNAR — ECOSYSTEM SECTIONS
  * Honest structural placeholders for future platform areas.
  */
+import { navigate } from '../../app/router.js';
+
 const sections = {
   store: {
     eyebrow: 'REBUNAR / ЦИФРОВЫЕ ТОВАРЫ',
@@ -84,6 +86,7 @@ export function renderEcosystemScreen(outlet, key) {
         <p>${section.description}</p>
         <span class="ecosystem-status">${section.status}</span>
       </header>
+      ${key === 'search' ? '<button class="ecosystem-users-link" type="button" data-open-users><span>♙</span><span><strong>Все пользователи</strong><small>Найти участников и открыть их профили</small></span><span aria-hidden="true">›</span></button>' : ''}
       <div class="ecosystem-card-grid">
         ${section.cards.map(([title, description], index) => `
           <article class="ecosystem-card">
@@ -96,4 +99,5 @@ export function renderEcosystemScreen(outlet, key) {
       <p class="ecosystem-footnote">Это структура будущего раздела. Функции будут подключаться постепенно — без кнопок, которые пока ничего не делают.</p>
     </section>
   `;
+  outlet.querySelector('[data-open-users]')?.addEventListener('click', () => navigate('users'));
 }
