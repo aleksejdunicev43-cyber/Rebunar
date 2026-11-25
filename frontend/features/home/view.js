@@ -419,6 +419,25 @@ function renderHomeAppLauncher(workspace) {
     dock.replaceChildren(...layout.dock.map((id,index)=>createSlot('dock',index,id)));
     showPage(currentPage);
   };
+  window.addEventListener('rebunar-home-app-added', event => {
+    if (!launcher.isConnected) return;
+    const app = event.detail;
+    if (!app || typeof app.id !== 'string') return;
+    appById.set(app.id, app);
+    if (![...layout.pages.flat(), ...layout.dock].includes(app.id)) {
+      let pageIndex = layout.pages.findIndex(page => page.includes(null));
+      if (pageIndex < 0 && layout.pages.length < HOME_MAX_PAGES) {
+        layout.pages.push(Array(30).fill(null));
+        pageIndex = layout.pages.length - 1;
+      }
+      if (pageIndex >= 0) {
+        const emptyIndex = layout.pages[pageIndex].indexOf(null);
+        if (emptyIndex >= 0) layout.pages[pageIndex][emptyIndex] = app.id;
+      }
+    }
+    save();
+    paint();
+  });
   const ensurePage = index => {
     if(index < 0 || index >= HOME_MAX_PAGES) return false;
     while(layout.pages.length<=index) {
