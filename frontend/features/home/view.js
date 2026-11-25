@@ -432,6 +432,7 @@ function renderHomeAppLauncher(workspace) {
       swipeStart={x:event.clientX,y:event.clientY};
       try { launcher.setPointerCapture(event.pointerId); } catch {}
     }
+    if (event.target.closest('.home-app-favorite')) return;
     const button=event.target.closest('.home-app-button');
     if(!button) return;
     if(event.button!==undefined && event.button!==0) return;
