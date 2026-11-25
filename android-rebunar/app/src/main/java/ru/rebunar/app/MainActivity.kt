@@ -1,10 +1,16 @@
 package ru.rebunar.app
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -25,14 +31,18 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import java.io.ByteArrayInputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.io.FileNotFoundException
 import java.util.Locale
+import org.json.JSONObject
 
 class MainActivity : Activity() {
     companion object {
         private const val APP_URL = "https://rebunar.pythonanywhere.com/new"
         private const val APP_HOST = "rebunar.pythonanywhere.com"
         private const val FILE_PICKER_REQUEST = 4102
+        private const val LATEST_RELEASE_API = "https://api.github.com/repos/aleksejdunicev43-cyber/Rebunar/releases/latest"
     }
 
     private lateinit var webView: WebView
@@ -43,6 +53,20 @@ class MainActivity : Activity() {
     private lateinit var browserAddress: TextView
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var hasEnteredForeground = false
+    private var updateDialogVisible = false
+    private var updateDownloadId = -1L
+    private var pendingInstallerUri: Uri? = null
+    private var receiverRegistered = false
+
+    private val updateDownloadReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L) != updateDownloadId) return
+            val uri = (getSystemService(DOWNLOAD_SERVICE) as DownloadManager).getUriForDownloadedFile(updateDownloadId)
+            if (uri == null) {
+                android.widget.Toast.makeText(this@MainActivity, "Не удалось скачать обновление.", android.widget.Toast.LENGTH_LONG).show()
+            } else installDownloadedUpdate(uri)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,12 +75,14 @@ class MainActivity : Activity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         buildScreen()
         configureWebView()
+        registerUpdateReceiver()
 
         if (savedInstanceState == null) {
             webView.loadUrl(APP_URL)
         } else {
             webView.restoreState(savedInstanceState)
         }
+        checkForUpdates()
     }
 
     private fun buildScreen() {
