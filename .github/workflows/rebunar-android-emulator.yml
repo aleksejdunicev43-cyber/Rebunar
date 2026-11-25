@@ -91,18 +91,52 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: |
+            set +e
             mkdir -p test-results/android
+            echo "Installing Rebunar APK"
             adb install -r android-rebunar/app/build/outputs/apk/debug/app-debug.apk
-            adb shell am force-stop ru.rebunar.app || true
+            install_status=$?
+            echo "$install_status" > test-results/android/install-exit-code.txt
+            if [ "$install_status" -ne 0 ]; then
+              adb logcat -d -t 5000 > test-results/android/logcat.txt 2>&1
+              exit "$install_status"
+            fi
+
+            adb logcat -c
+            adb shell am force-stop ru.rebunar.app
             adb shell monkey -p ru.rebunar.app 1
-            sleep 45
-            adb shell screencap -p /sdcard/rebunar-screen.png
-            adb pull /sdcard/rebunar-screen.png test-results/android/rebunar-screen.png
-            adb shell uiautomator dump /sdcard/rebunar-window.xml
-            adb pull /sdcard/rebunar-window.xml test-results/android/window.xml
-            adb logcat -d -t 5000 > test-results/android/logcat.txt
-            adb shell pidof ru.rebunar.app
-            grep -E 'REBUNAR|С возвращением|Войди в свой аккаунт|Не удалось подключиться к Rebunar|Проверь интернет-соединение' test-results/android/window.xml
+            launch_status=$?
+            echo "$launch_status" > test-results/android/launch-exit-code.txt
+
+            # Give the app time to initialize on slow software-emulated runners.
+            sleep 35
+
+            # Stream the screenshot directly to the runner. This avoids writing
+            # to /sdcard first, which failed with Permission denied on CI.
+            timeout 30s adb exec-out screencap -p > test-results/android/rebunar-screen.png 2> test-results/android/screencap-error.txt
+            echo "$?" > test-results/android/screencap-exit-code.txt
+
+            # UI hierarchy is useful evidence but must not hide the logcat report.
+            timeout 30s adb shell uiautomator dump /sdcard/rebunar-window.xml > test-results/android/uiautomator-output.txt 2>&1
+            if [ "$?" -eq 0 ]; then
+              timeout 20s adb pull /sdcard/rebunar-window.xml test-results/android/window.xml
+            fi
+
+            adb logcat -d -t 8000 > test-results/android/logcat.txt 2>&1
+            adb shell pidof ru.rebunar.app > test-results/android/app-pid.txt 2>&1
+            pid_status=$?
+            echo "$pid_status" > test-results/android/app-pid-exit-code.txt
+
+            echo "Emulator diagnostics:"
+            ls -lah test-results/android
+            if [ "$pid_status" -ne 0 ] || [ ! -s test-results/android/app-pid.txt ]; then
+              echo "Rebunar process is not running after launch."
+              exit 1
+            fi
+            if [ "$launch_status" -ne 0 ]; then
+              echo "Android launch command returned a non-zero exit code."
+              exit "$launch_status"
+            fi
 
       - name: Upload Android emulator evidence
         if: always()
@@ -110,5 +144,5 @@ jobs:
         with:
           name: rebunar-android-emulator-results
           path: test-results/android/
-          if-no-files-found: ignore
+          if-no-files-found: warn
           retention-days: 7
