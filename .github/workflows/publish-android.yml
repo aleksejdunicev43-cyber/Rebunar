@@ -162,7 +162,7 @@ jobs:
                 if node.attrib.get("clickable") != "true":
                     continue
                 bounds = node.attrib.get("bounds", "")
-                match = re.fullmatch(r"\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]", bounds)
+                match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", bounds)
                 if not match:
                     continue
                 x1, y1, x2, y2 = map(int, match.groups())
@@ -174,7 +174,7 @@ jobs:
                 x1, y1, x2, y2, label = candidates[0]
                 x, y = (x1+x2)//2, (y1+y2)//2
                 Path("artifacts/android-emulator/05-tap.txt").write_text(
-                    f"Tapped first accessible clickable target: {label!r} at ({x},{y})\\n",
+                    f"Tapped first accessible clickable target: {label!r} at ({x},{y})\n",
                     encoding="utf-8"
                 )
                 subprocess.run(["adb","shell","input","tap",str(x),str(y)],check=True)
@@ -184,7 +184,7 @@ jobs:
                 subprocess.run(["adb","pull","/sdcard/rebunar-after-tap.png","artifacts/android-emulator/06-after-tap.png"],check=True)
             else:
                 Path("artifacts/android-emulator/05-tap.txt").write_text(
-                    "No accessible clickable target was exposed by UIAutomator.\\n",
+                    "No accessible clickable target was exposed by UIAutomator.\n",
                     encoding="utf-8"
                 )
             PY
