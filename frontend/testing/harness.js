@@ -23,12 +23,12 @@ export function installTestHarness() {
       .filter(element => !element.disabled && element.getAttribute('aria-hidden') !== 'true')
       .map(element => ({
         tag: element.tagName.toLowerCase(),
-        label: (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 90),
+        label: (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 90),
         route: element.dataset.route || null,
         disabled: Boolean(element.disabled)
       }));
     return {
-      route: window.location.hash.replace(/^#\\/?/, '') || null,
+      route: window.location.hash.replace(/^#\/?/, '') || null,
       heading,
       controls,
       errors: events.filter(item => ['error', 'unhandled_rejection', 'http_error', 'network_error'].includes(item.type)),
@@ -55,7 +55,7 @@ export function installTestHarness() {
     const target = event.target instanceof Element ? event.target.closest('button, a, [role="button"]') : null;
     if (!target) return;
     record('click', {
-      label: (target.getAttribute('aria-label') || target.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 90),
+      label: (target.getAttribute('aria-label') || target.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 90),
       route: target.dataset.route || null
     });
   }, true);
