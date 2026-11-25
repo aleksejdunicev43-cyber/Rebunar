@@ -97,20 +97,28 @@ jobs:
         with:
           gradle-version: "8.9"
 
-      - name: Build release APK
-        run: gradle -p android-rebunar :app:assembleDebug
-
-      - name: Verify update signing compatibility
+      - name: Prepare persistent APK signing key
+        env:
+          REBUNAR_KEYSTORE_BASE64: ${{ secrets.REBUNAR_KEYSTORE_BASE64 }}
         run: |
-          APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
-          curl -fsSL "https://github.com/aleksejdunicev43-cyber/Rebunar/releases/download/v0.1.8/app-debug.apk" -o previous.apk
-          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
-          NEW_CERT=$("$APKSIGNER" verify --print-certs "$APK" | grep "Signer #1 certificate SHA-256 digest:" | awk '{print $NF}')
-          OLD_CERT=$("$APKSIGNER" verify --print-certs previous.apk | grep "Signer #1 certificate SHA-256 digest:" | awk '{print $NF}')
-          test -n "$NEW_CERT" && test "$NEW_CERT" = "$OLD_CERT" || {
-            echo "APK signing certificate differs from the installed release. Safe in-place update is not possible."
+          test -n "$REBUNAR_KEYSTORE_BASE64" || {
+            echo "Add the REBUNAR_KEYSTORE_BASE64 repository secret before publishing."
             exit 1
           }
+          echo "$REBUNAR_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/rebunar-signing.jks"
+          test -s "$RUNNER_TEMP/rebunar-signing.jks"
+          echo "REBUNAR_KEYSTORE_PATH=$RUNNER_TEMP/rebunar-signing.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          REBUNAR_KEYSTORE_PASSWORD: ${{ secrets.REBUNAR_KEYSTORE_PASSWORD }}
+          REBUNAR_KEY_ALIAS: ${{ secrets.REBUNAR_KEY_ALIAS }}
+          REBUNAR_KEY_PASSWORD: ${{ secrets.REBUNAR_KEY_PASSWORD }}
+        run: |
+          test -n "$REBUNAR_KEYSTORE_PASSWORD"
+          test -n "$REBUNAR_KEY_ALIAS"
+          test -n "$REBUNAR_KEY_PASSWORD"
+          gradle -p android-rebunar :app:assembleDebug
 
       - name: Verify bundled frontend assets
         run: |
