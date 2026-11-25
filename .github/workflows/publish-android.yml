@@ -126,6 +126,46 @@ jobs:
           test -s "$APK"
           unzip -l "$APK" | grep -q 'assets/build/index.html'
 
+      - name: Prepare Android emulator evidence folder
+        run: mkdir -p artifacts/android-emulator
+
+      - name: Launch APK in Android emulator and capture screen
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_I_WANT_MY_TCG: "yes"
+        with:
+          api-level: 30
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: |
+            set -euo pipefail
+            mkdir -p artifacts/android-emulator
+            adb wait-for-device
+            adb install -r "$GITHUB_WORKSPACE/android-rebunar/app/build/outputs/apk/debug/app-debug.apk"
+            adb shell pm path ru.rebunar.app | tee artifacts/android-emulator/00-installed-package.txt
+            adb shell dumpsys package ru.rebunar.app | grep -E 'Activity|MAIN|LAUNCHER' | head -80 > artifacts/android-emulator/00-launcher-info.txt || true
+            adb shell am force-stop ru.rebunar.app
+            adb shell monkey -p ru.rebunar.app -c android.intent.category.LAUNCHER 1
+            sleep 30
+            adb shell pidof ru.rebunar.app | tee artifacts/android-emulator/00-app-pid.txt
+            adb exec-out screencap -p > artifacts/android-emulator/01-app-start.png
+            adb shell uiautomator dump /data/local/tmp/rebunar-window.xml >/dev/null
+            adb pull /data/local/tmp/rebunar-window.xml artifacts/android-emulator/02-ui-hierarchy.xml
+            adb shell dumpsys activity activities > artifacts/android-emulator/03-activity.txt
+            adb logcat -d -t 4000 > artifacts/android-emulator/04-logcat.txt
+            python "$GITHUB_WORKSPACE/.github/scripts/android-emulator-tap.py"
+
+      - name: Upload Android emulator screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-android-emulator-check
+          path: artifacts/android-emulator/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
         with:
