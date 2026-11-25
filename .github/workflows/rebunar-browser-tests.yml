@@ -1,0 +1,42 @@
+name: Rebunar browser tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, feature/rebunar-test-harness]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install project dependencies
+        run: npm install
+      - name: Install Playwright test runner
+        run: npm install --no-save @playwright/test
+      - name: Build frontend
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        run: npx playwright test
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7

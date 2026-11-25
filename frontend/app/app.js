@@ -32,8 +32,10 @@ import { initializeTheme } from '../shared/theme.js';
 import { completeMatrixConnection } from '../infrastructure/matrix/connection.js';
 import { consumeMatrixSsoCallback } from '../infrastructure/matrix/sso.js';
 import { disconnectMatrix } from '../infrastructure/matrix/client.js';
+import { installTestHarness } from '../testing/harness.js';
 
 const root = document.getElementById('app');
+installTestHarness();
 if (!root) throw new Error('Rebunar: элемент #app не найден');
 
 // Keep the first-paint splash outside #app so the real interface can be mounted
