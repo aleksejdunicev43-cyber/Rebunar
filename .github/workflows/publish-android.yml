@@ -141,8 +141,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             set -euo pipefail
-            APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
-            adb install -r "$APK"
+            adb install -r "$GITHUB_WORKSPACE/android-rebunar/app/build/outputs/apk/debug/app-debug.apk"
             adb shell am force-stop ru.rebunar.app
             adb shell am start -n ru.rebunar.app/.MainActivity
             sleep 25
