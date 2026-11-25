@@ -297,7 +297,19 @@ function loadHomeAppLayout() {
       return {pages:normalized, dock};
     }
   } catch {}
-  return {pages:[gridDefault.concat(Array(30-gridDefault.length).fill(null))], dock:HOME_DOCK_DEFAULT.slice()};
+  const pages = [gridDefault.concat(Array(30-gridDefault.length).fill(null))];
+  for (const id of loadCustomHomeApps().map(app => app.id)) {
+    if (pages.some(page => page.includes(id))) continue;
+    let pageIndex = pages.findIndex(page => page.includes(null));
+    if (pageIndex < 0) {
+      if (pages.length >= HOME_MAX_PAGES) break;
+      pages.push(Array(30).fill(null));
+      pageIndex = pages.length - 1;
+    }
+    const emptyIndex = pages[pageIndex].indexOf(null);
+    if (emptyIndex >= 0) pages[pageIndex][emptyIndex] = id;
+  }
+  return {pages, dock:HOME_DOCK_DEFAULT.slice()};
 }
 
 function renderHomeAppLauncher(workspace) {
@@ -314,6 +326,24 @@ function renderHomeAppLauncher(workspace) {
   const recentButton = launcher.querySelector('[data-home-panel="recent"]');
   const layout = loadHomeAppLayout();
   const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS, ...loadCustomHomeApps()].map(app => [app.id, app]));
+  const launchApp = app => {
+    if (!app) return;
+    writeHomeIds(HOME_RECENTS_KEY, [app.id, ...readHomeIds(HOME_RECENTS_KEY).filter(id => id !== app.id)].slice(0, 12));
+    const target = app.url || (app.id === 'pinterest' ? 'https://www.pinterest.com/' : '');
+    if (target) {
+      let url;
+      try { url = new URL(target, window.location.href); } catch { return; }
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+      if (window.AndroidBrowser && typeof window.AndroidBrowser.open === 'function') {
+        window.AndroidBrowser.open(url.href, app.name || 'Приложение');
+      } else {
+        const opened = window.open(url.href, '_blank', 'noopener,noreferrer');
+        if (!opened) window.location.assign(url.href);
+      }
+      return;
+    }
+    if (app.route) navigate(app.route);
+  };
   let currentPage = 0;
   let holdTimer = null;
   let pendingStart = null;
@@ -354,7 +384,7 @@ function renderHomeAppLauncher(workspace) {
     button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span><span class="home-app-favorite" aria-hidden="true">♡</span>';
     button.querySelector('.home-app-favorite').classList.toggle('is-active', readHomeIds(HOME_FAVORITES_KEY).includes(id));
     if (app.id === 'pinterest') {
-      button.querySelector('.home-app-icon').innerHTML = '<img src="https://www.pinterest.com/favicon.ico" alt="" width="48" height="48" style="width:100%;height:100%;object-fit:contain">';
+      button.querySelector('.home-app-icon').innerHTML = '<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true" style="display:block"><circle cx="32" cy="32" r="32" fill="#E60023"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="49" font-weight="bold" fill="#fff">P</text></svg>';
     } else {
       button.querySelector('.home-app-icon').textContent = app.icon;
     }
