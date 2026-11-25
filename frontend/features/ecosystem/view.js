@@ -102,7 +102,7 @@ export function renderEcosystemScreen(outlet, key) {
         <div class="ecosystem-app-grid">
           ${section.apps.map(app => `
             <article class="ecosystem-app-card">
-              <div class="ecosystem-app-icon" style="--ecosystem-app-color:${app.color}"><img src="https://www.pinterest.com/favicon.ico" alt="Pinterest" width="48" height="48"></div>
+              <div class="ecosystem-app-icon" style="--ecosystem-app-color:${app.color}"><svg viewBox="0 0 64 64" width="100%" height="100%" role="img" aria-label="Pinterest" style="display:block"><circle cx="32" cy="32" r="32" fill="#E60023"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="49" font-weight="bold" fill="#fff">P</text></svg></div>
               <div class="ecosystem-app-info">
                 <span class="ecosystem-app-category">${app.category}</span>
                 <h2>${app.name}</h2>
@@ -135,6 +135,7 @@ export function renderEcosystemScreen(outlet, key) {
       }
       button.textContent = 'Добавлено';
       button.disabled = true;
+      window.dispatchEvent(new CustomEvent('rebunar-home-app-added', { detail: app }));
     }));
     return;
   }
