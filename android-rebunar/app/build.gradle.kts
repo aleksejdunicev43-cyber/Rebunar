@@ -15,9 +15,25 @@ android {
         versionName = "0.1.9"
     }
 
+    signingConfigs {
+        create("rebunarStable") {
+            val keyStorePath = System.getenv("REBUNAR_KEYSTORE_PATH")
+            if (!keyStorePath.isNullOrBlank()) {
+                storeFile = file(keyStorePath)
+                storePassword = System.getenv("REBUNAR_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("REBUNAR_KEY_ALIAS")
+                keyPassword = System.getenv("REBUNAR_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("rebunarStable")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("rebunarStable")
         }
     }
 
