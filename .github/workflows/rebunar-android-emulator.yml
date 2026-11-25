@@ -43,6 +43,9 @@ jobs:
       - name: Prepare Android project with current frontend
         run: |
           cp -R android-source/android-rebunar ./android-rebunar
+          # The legacy launcher XML references a removed rebunar_logo resource.
+          # Reuse the existing vector launcher artwork as the missing drawable.
+          cp android-rebunar/app/src/main/res/mipmap/ic_launcher.xml android-rebunar/app/src/main/res/drawable/rebunar_logo.xml
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
