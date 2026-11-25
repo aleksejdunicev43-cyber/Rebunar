@@ -31,6 +31,7 @@ export function navigate(path, params = {}) {
   handler(params);
 
   listeners.forEach(listener => listener(currentRoute));
+    window.dispatchEvent(new CustomEvent('rebunar:route-change', { detail: currentRoute }));
 }
 
 export function getCurrentRoute() {
@@ -56,6 +57,7 @@ export function initRouter(defaultPath = 'home') {
     routes.get(state.path)(state.params || {});
 
     listeners.forEach(listener => listener(currentRoute));
+    window.dispatchEvent(new CustomEvent('rebunar:route-change', { detail: currentRoute }));
   });
 
   const initialPath = window.location.hash.replace(/^#\/?/, '');
