@@ -385,6 +385,115 @@ class MainActivity : Activity() {
     }
 
 
+
+    private fun registerUpdateReceiver() {
+        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(updateDownloadReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("DEPRECATION")
+            registerReceiver(updateDownloadReceiver, filter)
+        }
+        receiverRegistered = true
+    }
+
+    private fun checkForUpdates() {
+        Thread {
+            val release = runCatching {
+                val connection = (URL(LATEST_RELEASE_API).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 7000
+                    readTimeout = 7000
+                    requestMethod = "GET"
+                    setRequestProperty("Accept", "application/vnd.github+json")
+                    setRequestProperty("User-Agent", "Rebunar-Android")
+                }
+                try {
+                    if (connection.responseCode !in 200..299) return@runCatching null
+                    JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                } finally {
+                    connection.disconnect()
+                }
+            }.getOrNull() ?: return@Thread
+
+            val latestTag = release.optString("tag_name").removePrefix("v")
+            val currentVersion = packageManager.getPackageInfo(packageName, 0).versionName.orEmpty()
+            val apkUrl = release.optJSONArray("assets")?.let { assets ->
+                (0 until assets.length()).map { assets.getJSONObject(it) }
+                    .firstOrNull { it.optString("name") == "app-debug.apk" }
+                    ?.optString("browser_download_url")
+            }.orEmpty()
+            if (latestTag.isBlank() || apkUrl.isBlank() || compareVersions(latestTag, currentVersion) <= 0) return@Thread
+
+            runOnUiThread {
+                if (isFinishing || isDestroyed || updateDialogVisible) return@runOnUiThread
+                updateDialogVisible = true
+                AlertDialog.Builder(this)
+                    .setTitle("Доступно обновление Rebunar")
+                    .setMessage("Новая версия $latestTag уже готова. Скачать и установить обновление?")
+                    .setPositiveButton("Обновить") { _, _ -> downloadUpdate(apkUrl, latestTag) }
+                    .setNegativeButton("Позже", null)
+                    .setOnDismissListener { updateDialogVisible = false }
+                    .show()
+            }
+        }.start()
+    }
+
+    private fun compareVersions(first: String, second: String): Int {
+        val a = first.split('.').map { it.toIntOrNull() ?: 0 }
+        val b = second.split('.').map { it.toIntOrNull() ?: 0 }
+        for (index in 0 until maxOf(a.size, b.size)) {
+            val left = a.getOrElse(index) { 0 }
+            val right = b.getOrElse(index) { 0 }
+            if (left != right) return left.compareTo(right)
+        }
+        return 0
+    }
+
+    private fun downloadUpdate(apkUrl: String, version: String) {
+        val uri = runCatching { Uri.parse(apkUrl) }.getOrNull()
+        if (uri?.scheme != "https" || uri.host != "github.com") {
+            android.widget.Toast.makeText(this, "Ссылка обновления недействительна.", android.widget.Toast.LENGTH_LONG).show()
+            return
+        }
+        val request = DownloadManager.Request(uri).apply {
+            setTitle("Обновление Rebunar $version")
+            setDescription("Загрузка установочного файла")
+            setMimeType("application/vnd.android.package-archive")
+            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            setAllowedOverMetered(true)
+            setAllowedOverRoaming(false)
+        }
+        updateDownloadId = (getSystemService(DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+        android.widget.Toast.makeText(this, "Обновление загружается. Уведомление появится после загрузки.", android.widget.Toast.LENGTH_LONG).show()
+    }
+
+    private fun installDownloadedUpdate(uri: Uri) {
+        if (Build.VERSION.SDK_INT >= 26 && !packageManager.canRequestPackageInstalls()) {
+            pendingInstallerUri = uri
+            AlertDialog.Builder(this)
+                .setTitle("Разрешение на установку")
+                .setMessage("Разреши Rebunar устанавливать обновления из этого источника. Это системное разрешение Android.")
+                .setPositiveButton("Открыть настройки") { _, _ ->
+                    val settings = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                        .setData(Uri.parse("package:$packageName"))
+                    startActivity(settings)
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
+            return
+        }
+        val installIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            startActivity(installIntent)
+        } catch (_: Exception) {
+            android.widget.Toast.makeText(this, "Android не смог открыть установщик. APK сохранён в загрузках.", android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+
     private fun buildBrowserPanel(): LinearLayout {
         val panel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -496,6 +605,12 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        pendingInstallerUri?.let { uri ->
+            if (Build.VERSION.SDK_INT < 26 || packageManager.canRequestPackageInstalls()) {
+                pendingInstallerUri = null
+                installDownloadedUpdate(uri)
+            }
+        }
         if (!hasEnteredForeground) {
             hasEnteredForeground = true
         }
@@ -512,6 +627,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        if (receiverRegistered) unregisterReceiver(updateDownloadReceiver)
         filePathCallback?.onReceiveValue(null)
         filePathCallback = null
         if (::webView.isInitialized) {
