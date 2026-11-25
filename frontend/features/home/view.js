@@ -241,6 +241,18 @@ const HOME_DOCK_APPS = [
 ];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
 const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
+const HOME_FAVORITES_KEY = 'rebunar-home-favorites-v1';
+const HOME_RECENTS_KEY = 'rebunar-home-recents-v1';
+
+function readHomeIds(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value.filter(id => typeof id === 'string') : [];
+  } catch { return []; }
+}
+function writeHomeIds(key, ids) {
+  try { localStorage.setItem(key, JSON.stringify(ids)); } catch {}
+}
 
 function loadCustomHomeApps() {
   try {
@@ -292,11 +304,14 @@ function renderHomeAppLauncher(workspace) {
   const launcher = document.createElement('section');
   launcher.className = 'home-app-launcher';
   launcher.setAttribute('aria-label', 'Приложения');
-  launcher.innerHTML = '<div class="home-app-pages"></div><div class="home-app-page-indicators" aria-label="Страницы"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
+  launcher.innerHTML = '<div class="home-app-tools"><button type="button" data-home-panel="favorites">♡ Избранное</button><button type="button" data-home-panel="recent">◷ Недавние</button></div><div class="home-app-quick-panel" hidden></div><div class="home-app-pages"></div><div class="home-app-page-indicators" aria-label="Страницы"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
   workspace.appendChild(launcher);
   const pagesHost = launcher.querySelector('.home-app-pages');
   const indicators = launcher.querySelector('.home-app-page-indicators');
   const dock = launcher.querySelector('.home-app-dock');
+  const quickPanel = launcher.querySelector('.home-app-quick-panel');
+  const favoritesButton = launcher.querySelector('[data-home-panel="favorites"]');
+  const recentButton = launcher.querySelector('[data-home-panel="recent"]');
   const layout = loadHomeAppLayout();
   const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS, ...loadCustomHomeApps()].map(app => [app.id, app]));
   let currentPage = 0;
@@ -336,7 +351,8 @@ function renderHomeAppLauncher(workspace) {
     button.dataset.appId = id;
     button.style.setProperty('--app-icon-color', app.color);
     button.setAttribute('aria-label', app.name);
-    button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span>';
+    button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span><span class="home-app-favorite" aria-hidden="true">♡</span>';
+    button.querySelector('.home-app-favorite').classList.toggle('is-active', readHomeIds(HOME_FAVORITES_KEY).includes(id));
     if (app.id === 'pinterest') {
       button.querySelector('.home-app-icon').innerHTML = '<img src="https://www.pinterest.com/favicon.ico" alt="" width="48" height="48" style="width:100%;height:100%;object-fit:contain">';
     } else {
@@ -416,6 +432,7 @@ function renderHomeAppLauncher(workspace) {
       swipeStart={x:event.clientX,y:event.clientY};
       try { launcher.setPointerCapture(event.pointerId); } catch {}
     }
+    if (event.target.closest('.home-app-favorite')) return;
     const button=event.target.closest('.home-app-button');
     if(!button) return;
     if(event.button!==undefined && event.button!==0) return;
@@ -502,12 +519,7 @@ function renderHomeAppLauncher(workspace) {
     if(!button) return;
     if(suppressClick){event.preventDefault();event.stopPropagation();return;}
     const app=appById.get(button.dataset.appId);
-    if(app?.url) {
-      if (window.AndroidBrowser?.open) window.AndroidBrowser.open(app.url, app.name);
-      else window.open(app.url, '_blank', 'noopener,noreferrer');
-    }
-    else if(app?.route) navigate(app.route);
-    else showWallpaperMessage(workspace,'Это приложение появится в Rebunar позже.');
+    launchApp(app);
   });
   paint();
 }
