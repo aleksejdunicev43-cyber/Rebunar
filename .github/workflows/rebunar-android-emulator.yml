@@ -1,0 +1,106 @@
+name: Rebunar Android emulator smoke test
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/rebunar-test-harness]
+    paths:
+      - "frontend/**"
+      - "android-rebunar/**"
+      - ".github/workflows/rebunar-android-emulator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-emulator-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout current frontend
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build Rebunar frontend
+        run: |
+          npm ci
+          npm run build
+          test -s frontend/build/index.html
+
+      - name: Checkout Android application source
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-bundled-frontend
+          path: android-source
+
+      - name: Prepare Android project with current frontend
+        run: |
+          cp -R android-source/android-rebunar ./android-rebunar
+          mkdir -p android-rebunar/app/src/main/assets/build
+          cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
+          test -s android-rebunar/app/src/main/assets/build/index.html
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create temporary test signing key
+        run: |
+          keytool -genkeypair -v \
+            -keystore "$RUNNER_TEMP/rebunar-test.jks" \
+            -storepass test-only-password \
+            -alias rebunar-test \
+            -keypass test-only-password \
+            -keyalg RSA -keysize 2048 -validity 2 \
+            -dname "CN=Rebunar CI Test, OU=Testing, O=Rebunar, L=CI, ST=CI, C=US"
+          echo "REBUNAR_KEYSTORE_PATH=$RUNNER_TEMP/rebunar-test.jks" >> "$GITHUB_ENV"
+          echo "REBUNAR_KEYSTORE_PASSWORD=test-only-password" >> "$GITHUB_ENV"
+          echo "REBUNAR_KEY_ALIAS=rebunar-test" >> "$GITHUB_ENV"
+          echo "REBUNAR_KEY_PASSWORD=test-only-password" >> "$GITHUB_ENV"
+
+      - name: Build test APK
+        run: |
+          gradle -p android-rebunar :app:assembleDebug
+          test -s android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Run APK on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            mkdir -p test-results/android
+            adb install -r android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am force-stop ru.rebunar.app || true
+            adb shell monkey -p ru.rebunar.app 1
+            sleep 45
+            adb shell screencap -p /sdcard/rebunar-screen.png
+            adb pull /sdcard/rebunar-screen.png test-results/android/rebunar-screen.png
+            adb shell uiautomator dump /sdcard/rebunar-window.xml
+            adb pull /sdcard/rebunar-window.xml test-results/android/window.xml
+            adb logcat -d -t 5000 > test-results/android/logcat.txt
+            adb shell pidof ru.rebunar.app
+            grep -E 'REBUNAR|С возвращением|Войди в свой аккаунт|Не удалось подключиться к Rebunar|Проверь интернет-соединение' test-results/android/window.xml
+
+      - name: Upload Android emulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-android-emulator-results
+          path: test-results/android/
+          if-no-files-found: ignore
+          retention-days: 7
