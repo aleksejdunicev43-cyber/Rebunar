@@ -45,7 +45,7 @@ test('signed-in test user can open the store and add an app shortcut', async ({ 
   await page.locator('.auth-submit').click();
 
   await expect(page.locator('.app-shell')).toBeVisible();
-  await page.locator('[data-route="store"]').first().click();
+  await page.getByRole('button', { name: 'Магазин', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Магазин приложений' })).toBeVisible();
 
   const addButton = page.locator('[data-add-app="pinterest"]');
