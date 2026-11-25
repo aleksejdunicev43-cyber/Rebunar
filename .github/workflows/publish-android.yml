@@ -153,39 +153,7 @@ jobs:
             adb pull /data/local/tmp/rebunar-window.xml artifacts/android-emulator/02-ui-hierarchy.xml
             adb shell dumpsys activity activities > artifacts/android-emulator/03-activity.txt
             adb logcat -d -t 4000 > artifacts/android-emulator/04-logcat.txt
-            python - <<'PY'
-            import xml.etree.ElementTree as ET
-            from pathlib import Path
-            import re, subprocess, time
-            tree = ET.parse("artifacts/android-emulator/02-ui-hierarchy.xml")
-            candidates = []
-            for node in tree.getroot().iter("node"):
-                if node.attrib.get("clickable") != "true":
-                    continue
-                match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
-                if not match:
-                    continue
-                x1, y1, x2, y2 = map(int, match.groups())
-                if x2 > x1 and y2 > y1:
-                    label = node.attrib.get("text") or node.attrib.get("content-desc") or ""
-                    candidates.append((x1, y1, x2, y2, label))
-            if candidates:
-                x1, y1, x2, y2, label = candidates[0]
-                x, y = (x1+x2)//2, (y1+y2)//2
-                Path("artifacts/android-emulator/05-tap.txt").write_text(
-                    f"Tapped first accessible clickable target: {label!r} at ({x},{y})\n",
-                    encoding="utf-8"
-                )
-                subprocess.run(["adb","shell","input","tap",str(x),str(y)], check=True)
-                time.sleep(3)
-                with open("artifacts/android-emulator/06-after-tap.png", "wb") as image_file:
-                    subprocess.run(["adb","exec-out","screencap","-p"], stdout=image_file, check=True)
-            else:
-                Path("artifacts/android-emulator/05-tap.txt").write_text(
-                    "No accessible clickable target was exposed by UIAutomator.\n",
-                    encoding="utf-8"
-                )
-            PY
+            python "$GITHUB_WORKSPACE/.github/scripts/android-emulator-tap.py"
 
       - name: Upload Android emulator screenshots and logs
         if: always()
