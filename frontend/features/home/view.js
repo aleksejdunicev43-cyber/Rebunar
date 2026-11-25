@@ -337,7 +337,7 @@ function renderHomeAppLauncher(workspace) {
     button.style.setProperty('--app-icon-color', app.color);
     button.setAttribute('aria-label', app.name);
     button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span>';
-    button.querySelector('.home-app-icon').textContent = app.icon;
+    if (app.id === 'pinterest') {\n      button.querySelector('.home-app-icon').innerHTML = '<img src="https://www.pinterest.com/favicon.ico" alt="" width="48" height="48" style="width:100%;height:100%;object-fit:contain">';\n    } else {\n      button.querySelector('.home-app-icon').textContent = app.icon;\n    }
     button.querySelector('.home-app-name').textContent = app.name;
     slot.appendChild(button);
     return slot;
