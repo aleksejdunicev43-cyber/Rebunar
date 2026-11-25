@@ -63,6 +63,19 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Use Android debug signing for emulator test
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path("android-rebunar/app/build.gradle.kts")
+          content = path.read_text()
+          updated, count = re.subn(r'debug\\s*\\{\\s*signingConfig\\s*=\\s*signingConfigs\\.getByName\\("rebunarStable"\\)\\s*\\}', 'debug { }', content, count=1)
+          if count != 1:
+              raise SystemExit("Could not isolate debug signing configuration")
+          path.write_text(updated)
+          PY
+
       - name: Build debug APK
         run: gradle -p android-rebunar :app:assembleDebug
 
