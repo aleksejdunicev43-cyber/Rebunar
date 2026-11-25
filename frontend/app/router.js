@@ -31,7 +31,7 @@ export function navigate(path, params = {}) {
   handler(params);
 
   listeners.forEach(listener => listener(currentRoute));
-    window.dispatchEvent(new CustomEvent('rebunar:route-change', { detail: currentRoute }));
+  window.dispatchEvent(new CustomEvent('rebunar:route-change', { detail: currentRoute }));
 }
 
 export function getCurrentRoute() {
