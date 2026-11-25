@@ -102,7 +102,7 @@ export function renderEcosystemScreen(outlet, key) {
         <div class="ecosystem-app-grid">
           ${section.apps.map(app => `
             <article class="ecosystem-app-card">
-              <div class="ecosystem-app-icon" style="--ecosystem-app-color:${app.color}"><span>${app.icon}</span></div>
+              <div class="ecosystem-app-icon" style="--ecosystem-app-color:${app.color}"><img src="https://www.pinterest.com/favicon.ico" alt="Pinterest" width="48" height="48"></div>
               <div class="ecosystem-app-info">
                 <span class="ecosystem-app-category">${app.category}</span>
                 <h2>${app.name}</h2>
