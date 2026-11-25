@@ -44,6 +44,9 @@ jobs:
         run: |
           cp -R android-source/android-rebunar ./android-rebunar
           cp android-source/rebunar_avatar.png ./rebunar_avatar.png
+          mkdir -p android-rebunar/app/src/main/res/drawable-nodpi
+          cp android-source/rebunar_avatar.png android-rebunar/app/src/main/res/drawable-nodpi/rebunar_logo.png
+          test -s android-rebunar/app/src/main/res/drawable-nodpi/rebunar_logo.png
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
