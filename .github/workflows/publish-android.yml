@@ -134,17 +134,19 @@ jobs:
         env:
           ANDROID_I_WANT_MY_TCG: "yes"
         with:
-          api-level: 35
+          api-level: 30
           arch: x86_64
-          profile: pixel_6
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          profile: pixel_2
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
             set -euo pipefail
+            mkdir -p artifacts/android-emulator
+            adb wait-for-device
             adb install -r "$GITHUB_WORKSPACE/android-rebunar/app/build/outputs/apk/debug/app-debug.apk"
             adb shell am force-stop ru.rebunar.app
             adb shell am start -n ru.rebunar.app/.MainActivity
-            sleep 25
+            sleep 30
             adb shell pidof ru.rebunar.app
             adb exec-out screencap -p > artifacts/android-emulator/01-app-start.png
             adb shell uiautomator dump /data/local/tmp/rebunar-window.xml >/dev/null
@@ -154,22 +156,19 @@ jobs:
             python - <<'PY'
             import xml.etree.ElementTree as ET
             from pathlib import Path
-            import re, subprocess
+            import re, subprocess, time
             tree = ET.parse("artifacts/android-emulator/02-ui-hierarchy.xml")
-            nodes = tree.getroot().iter("node")
             candidates = []
-            for node in nodes:
+            for node in tree.getroot().iter("node"):
                 if node.attrib.get("clickable") != "true":
                     continue
-                bounds = node.attrib.get("bounds", "")
-                match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", bounds)
+                match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
                 if not match:
                     continue
                 x1, y1, x2, y2 = map(int, match.groups())
-                if x2 <= x1 or y2 <= y1:
-                    continue
-                label = node.attrib.get("text") or node.attrib.get("content-desc") or ""
-                candidates.append((x1, y1, x2, y2, label))
+                if x2 > x1 and y2 > y1:
+                    label = node.attrib.get("text") or node.attrib.get("content-desc") or ""
+                    candidates.append((x1, y1, x2, y2, label))
             if candidates:
                 x1, y1, x2, y2, label = candidates[0]
                 x, y = (x1+x2)//2, (y1+y2)//2
@@ -177,11 +176,10 @@ jobs:
                     f"Tapped first accessible clickable target: {label!r} at ({x},{y})\n",
                     encoding="utf-8"
                 )
-                subprocess.run(["adb","shell","input","tap",str(x),str(y)],check=True)
-                import time
+                subprocess.run(["adb","shell","input","tap",str(x),str(y)], check=True)
                 time.sleep(3)
                 with open("artifacts/android-emulator/06-after-tap.png", "wb") as image_file:
-                    subprocess.run(["adb","exec-out","screencap","-p"],stdout=image_file,check=True)
+                    subprocess.run(["adb","exec-out","screencap","-p"], stdout=image_file, check=True)
             else:
                 Path("artifacts/android-emulator/05-tap.txt").write_text(
                     "No accessible clickable target was exposed by UIAutomator.\n",
