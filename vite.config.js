@@ -4,6 +4,7 @@ export default defineConfig({
   root: 'frontend',
   base: '/new/build/',
   build: {
+    target: 'chrome83',
     outDir: 'build',
     emptyOutDir: true,
     cssMinify: false,
