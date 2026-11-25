@@ -82,6 +82,9 @@ jobs:
 
       - name: Run APK on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          # GitHub-hosted runners may not expose KVM; explicitly allow QEMU TCG.
+          ANDROID_I_WANT_MY_TCG: "yes"
         with:
           api-level: 35
           arch: x86_64
