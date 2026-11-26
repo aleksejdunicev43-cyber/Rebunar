@@ -46,6 +46,10 @@ from frontend_routes import register_frontend_routes
 
 register_frontend_routes(app, BASE)
 
+from home_settings_routes import register_home_settings_routes
+
+register_home_settings_routes(app, connect, BASE)
+
 
 
 @app.after_request
