@@ -304,3 +304,100 @@ jobs:
           path: artifacts/visual/
           if-no-files-found: warn
           retention-days: 14
+
+  emulator-smoke:
+    name: Launch Rebunar in Android emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Rebunar
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build frontend for Android
+        run: |
+          npm ci
+          npm run build
+          test -s frontend/build/index.html
+
+      - name: Checkout Android application source
+        uses: actions/checkout@v4
+        with:
+          ref: feature/android-bundled-frontend
+          path: android-source
+
+      - name: Prepare Android project
+        run: |
+          cp -R android-source/android-rebunar ./android-rebunar
+          mkdir -p android-rebunar/app/src/main/res/drawable-nodpi
+          cp android-source/rebunar_avatar.png android-rebunar/app/src/main/res/drawable-nodpi/rebunar_logo.png
+          test -s android-rebunar/app/src/main/res/drawable-nodpi/rebunar_logo.png
+          mkdir -p android-rebunar/app/src/main/assets/build
+          cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
+          test -s android-rebunar/app/src/main/assets/build/index.html
+          grep -q 'serveBundledFrontend' android-rebunar/app/src/main/java/ru/rebunar/app/MainActivity.kt
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Use Android debug signing for emulator test
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("android-rebunar/app/build.gradle.kts")
+          content = path.read_text()
+          target = 'signingConfig = signingConfigs.getByName("rebunarStable")'
+          if content.count(target) != 2:
+              raise SystemExit(f"Expected 2 signing assignments, found {content.count(target)}")
+          path.write_text(content.replace(target, "signingConfig = signingConfigs.getByName(\"debug\")", 1))
+          PY
+
+      - name: Build debug APK
+        run: gradle -p android-rebunar :app:assembleDebug
+
+      - name: Launch on Android emulator and capture screen
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+            mkdir -p emulator-output
+            adb wait-for-device
+            adb install -r "$APK"
+            adb shell am force-stop ru.rebunar.app
+            adb shell am start -W -n ru.rebunar.app/.MainActivity
+            sleep 35
+            adb exec-out screencap -p > emulator-output/rebunar-screen.png
+            adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
+            adb pull /sdcard/window.xml emulator-output/window.xml >/dev/null 2>&1 || true
+            adb logcat -d -t 6000 > emulator-output/logcat.txt
+            adb shell pidof ru.rebunar.app > emulator-output/app-pid.txt
+            test -s emulator-output/rebunar-screen.png
+            test -s emulator-output/app-pid.txt
+
+      - name: Upload emulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebunar-android-emulator-evidence
+          path: emulator-output/
+          if-no-files-found: warn
+          retention-days: 7
