@@ -67,13 +67,14 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
           path = Path("android-rebunar/app/build.gradle.kts")
           content = path.read_text()
-          updated, count = re.subn(r'debug\\s*\\{\\s*signingConfig\\s*=\\s*signingConfigs\\.getByName\\("rebunarStable"\\)\\s*\\}', 'debug { }', content, count=1)
-          if count != 1:
+          old = '''        debug {
+            signingConfig = signingConfigs.getByName("rebunarStable")
+        }'''
+          if old not in content:
               raise SystemExit("Could not isolate debug signing configuration")
-          path.write_text(updated)
+          path.write_text(content.replace(old, "        debug { }", 1))
           PY
 
       - name: Build debug APK
