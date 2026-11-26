@@ -1,4 +1,5 @@
 import { navigate } from '../../app/router.js';
+import { subscribeToAuth } from '../auth/session.js';
 
 /**
  * REBUNAR — HOME WORKSPACE
@@ -124,6 +125,32 @@ async function loadAccountWallpaper(workspace) {
     if (localBlob) applyWallpaper(workspace, localBlob);
     showWallpaperMessage(workspace, error.message || 'Не удалось загрузить настройки аккаунта.', true);
   }
+}
+
+function openWallpaperSourcePicker(workspace, fileInput) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('section');
+    overlay.className = 'wallpaper-source-picker';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Выбор обоев');
+    overlay.innerHTML = '<header class="wallpaper-source-header"><button type="button" class="wallpaper-source-close" aria-label="Закрыть">×</button><strong>Обои</strong><span></span></header>' +
+      '<div class="wallpaper-source-preview"><div class="wallpaper-source-preview-image"></div><span>Предпросмотр обоев</span></div>' +
+      '<div class="wallpaper-source-bottom"><button type="button" data-source="screenshots"><span class="wallpaper-source-icon">▧</span><strong>Скриншоты</strong></button><button type="button" data-source="photos"><span class="wallpaper-source-icon">▣</span><strong>Фото</strong></button></div>';
+    workspace.appendChild(overlay);
+    const preview = overlay.querySelector('.wallpaper-source-preview-image');
+    if (wallpaperUrl) preview.style.backgroundImage = 'url("' + wallpaperUrl + '")';
+    const finish = value => { overlay.remove(); resolve(value); };
+    overlay.querySelector('.wallpaper-source-close').addEventListener('click', () => finish(null));
+    overlay.addEventListener('click', event => {
+      const sourceButton = event.target.closest('[data-source]');
+      if (!sourceButton) return;
+      // Android opens its native image picker; the user can choose the Screenshots
+      // or Photos album there. Keep this click directly tied to the user gesture.
+      finish(sourceButton.dataset.source);
+      fileInput.click();
+    });
+  });
 }
 
 function applyWallpaper(workspace, blob) {
@@ -786,8 +813,7 @@ export function renderHomeScreen(outlet) {
     event.preventDefault();
     event.stopPropagation();
     hidePicker();
-    // The gallery opens from this explicit tap, preserving Android's user gesture.
-    fileInput.click();
+    openWallpaperSourcePicker(workspace, fileInput);
   });
 
   workspace.addEventListener('contextmenu', event => event.preventDefault());
@@ -833,5 +859,17 @@ export function renderHomeScreen(outlet) {
     }
   });
 
+  let wallpaperSyncForUser = null;
+  const syncWallpaperForAccount = user => {
+    if (!user || !workspace.isConnected) return;
+    const userKey = String(user.id || user.username || 'account');
+    if (wallpaperSyncForUser === userKey) return;
+    wallpaperSyncForUser = userKey;
+    loadAccountWallpaper(workspace).catch(error => {
+      wallpaperSyncForUser = null;
+      console.warn('Rebunar: не удалось восстановить обои аккаунта.', error);
+    });
+  };
   loadAccountWallpaper(workspace);
+  subscribeToAuth(syncWallpaperForAccount);
 }
