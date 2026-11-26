@@ -386,14 +386,11 @@ function renderHomeAppLauncher(workspace) {
   const launcher = document.createElement('section');
   launcher.className = 'home-app-launcher';
   launcher.setAttribute('aria-label', 'Приложения');
-  launcher.innerHTML = '<div class="home-app-tools"><button type="button" data-home-panel="favorites">♡ Избранное</button><button type="button" data-home-panel="recent">◷ Недавние</button></div><div class="home-app-quick-panel" hidden></div><div class="home-app-pages"></div><div class="home-app-page-indicators" aria-label="Страницы"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
+  launcher.innerHTML = '<div class="home-app-pages"></div><div class="home-app-page-indicators" aria-label="Страницы"></div><div class="home-app-dock" aria-label="Нижняя панель приложений"></div>';
   workspace.appendChild(launcher);
   const pagesHost = launcher.querySelector('.home-app-pages');
   const indicators = launcher.querySelector('.home-app-page-indicators');
   const dock = launcher.querySelector('.home-app-dock');
-  const quickPanel = launcher.querySelector('.home-app-quick-panel');
-  const favoritesButton = launcher.querySelector('[data-home-panel="favorites"]');
-  const recentButton = launcher.querySelector('[data-home-panel="recent"]');
   const layout = loadHomeAppLayout();
   const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS, ...loadCustomHomeApps()].map(app => [app.id, app]));
   const launchApp = app => {
@@ -463,8 +460,7 @@ function renderHomeAppLauncher(workspace) {
     button.dataset.appId = id;
     button.style.setProperty('--app-icon-color', app.color);
     button.setAttribute('aria-label', app.name);
-    button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span><span class="home-app-favorite" aria-hidden="true">♡</span>';
-    button.querySelector('.home-app-favorite').classList.toggle('is-active', readHomeIds(HOME_FAVORITES_KEY).includes(id));
+    button.innerHTML = '<span class="home-app-icon" aria-hidden="true"></span><span class="home-app-name"></span>';
     if (app.id === 'pinterest') {
       button.querySelector('.home-app-icon').innerHTML = '<svg viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true" style="display:block"><circle cx="32" cy="32" r="32" fill="#E60023"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="49" font-weight="bold" fill="#fff">P</text></svg>';
     } else {
