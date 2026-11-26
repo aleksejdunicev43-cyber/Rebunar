@@ -91,8 +91,16 @@ export function renderEcosystemScreen(outlet, key) {
     const readInstalled = () => {
       try {
         const value = JSON.parse(localStorage.getItem(customAppsKey) || '[]');
-        return Array.isArray(value) ? value : [];
-      } catch { return []; }
+        const allowed = new Set(['pinterest', 'chatgpt']);
+        const cleaned = Array.isArray(value) ? value.filter(item => item && allowed.has(item.id)) : [];
+        if (!Array.isArray(value) || cleaned.length !== value.length) {
+          localStorage.setItem(customAppsKey, JSON.stringify(cleaned));
+        }
+        return cleaned;
+      } catch {
+        try { localStorage.setItem(customAppsKey, '[]'); } catch {}
+        return [];
+      }
     };
     const isInstalled = app => readInstalled().some(item => item.id === app.id);
     const saveApp = app => {
