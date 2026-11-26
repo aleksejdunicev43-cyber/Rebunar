@@ -76,6 +76,31 @@ async function uploadAccountWallpaper(blob) {
   return data;
 }
 
+async function syncAccountHomeLayout(workspace) {
+  try {
+    const settings = await fetchHomeSettings();
+    if (!settings.logged_in || !workspace.isConnected) return;
+    if (settings.layout && !homeLayoutTouched) {
+      localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(settings.layout));
+      workspace.querySelector('.home-app-launcher')?.remove();
+      renderHomeAppLauncher(workspace);
+    } else if (!settings.layout && !homeLayoutTouched) {
+      const localLayout = localStorage.getItem(HOME_LAYOUT_KEY);
+      if (localLayout) {
+        const response = await fetch('/api/home/layout', {
+          method: 'PUT',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ layout: JSON.parse(localLayout) })
+        });
+        if (!response.ok) console.warn('Rebunar: не удалось перенести раскладку в аккаунт.');
+      }
+    }
+  } catch (error) {
+    console.warn('Rebunar: не удалось синхронизировать рабочий стол.', error);
+  }
+}
+
 async function loadAccountWallpaper(workspace) {
   try {
     const settings = await fetchHomeSettings();
@@ -284,6 +309,7 @@ const HOME_DOCK_APPS = [
   {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
 ];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
+let homeLayoutTouched = false;
 const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
 const HOME_FAVORITES_KEY = 'rebunar-home-favorites-v1';
 const HOME_RECENTS_KEY = 'rebunar-home-recents-v1';
@@ -408,7 +434,19 @@ function renderHomeAppLauncher(workspace) {
     currentPage=Math.min(currentPage,layout.pages.length-1);
   };
   const save = () => {
-    try { localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout)); } catch {}
+    const encoded = JSON.stringify(layout);
+    try { localStorage.setItem(HOME_LAYOUT_KEY, encoded); } catch {}
+    homeLayoutTouched = true;
+    fetch('/api/home/layout', {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ layout })
+    }).then(response => {
+      if (!response.ok && response.status !== 401) {
+        console.warn('Rebunar: не удалось синхронизировать расположение приложений.');
+      }
+    }).catch(error => console.warn('Rebunar: синхронизация рабочего стола недоступна.', error));
   };
   const createSlot = (zone, index, id, pageIndex=0) => {
     const slot = document.createElement('div');
@@ -617,6 +655,7 @@ function renderHomeAppLauncher(workspace) {
   paint();
 }
 export function renderHomeScreen(outlet) {
+  homeLayoutTouched = false;
   const shell = outlet.closest('.app-shell');
   shell?.classList.add('home-workspace-active');
 
@@ -639,6 +678,7 @@ export function renderHomeScreen(outlet) {
 
   const workspace = host.querySelector(':scope > .home-workspace');
   renderHomeAppLauncher(workspace);
+  syncAccountHomeLayout(workspace);
   const fileInput = workspace.querySelector('.home-wallpaper-input');
   const pickerButton = workspace.querySelector('.home-wallpaper-picker');
   let holdTimer = null;
