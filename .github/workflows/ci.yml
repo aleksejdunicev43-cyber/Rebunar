@@ -402,18 +402,14 @@ jobs:
             adb shell am force-stop ru.rebunar.app
             adb shell am start -W -n ru.rebunar.app/.MainActivity
             sleep 20
-            if [ -n "$REBUNAR_TEST_USERNAME" ] && [ -n "$REBUNAR_TEST_PASSWORD" ]; then
-              echo "Entering the configured private Rebunar test account."
-              adb shell input tap 540 950
-              adb shell input text "$REBUNAR_TEST_USERNAME"
-              adb shell input keyevent 61
-              adb shell input text "$REBUNAR_TEST_PASSWORD"
-              adb shell input keyevent 61
-              adb shell input keyevent 66
-              sleep 12
-            else
-              echo "No private Rebunar test credentials configured; leaving the app on its login screen."
-            fi
+            echo "Entering the configured private Rebunar test account."
+            adb shell input tap 540 950
+            adb shell input text "$REBUNAR_TEST_USERNAME"
+            adb shell input keyevent 61
+            adb shell input text "$REBUNAR_TEST_PASSWORD"
+            adb shell input keyevent 61
+            adb shell input keyevent 66
+            sleep 12
             adb exec-out screencap -p > emulator-output/rebunar-screen.png
             adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
             adb pull /sdcard/window.xml emulator-output/window.xml >/dev/null 2>&1 || true
