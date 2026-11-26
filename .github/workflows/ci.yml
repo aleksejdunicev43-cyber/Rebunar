@@ -421,8 +421,8 @@ jobs:
             test -s emulator-output/rebunar-screen.png
             test -s emulator-output/app-pid.txt
             grep -q "Главный экран Rebunar" emulator-output/window.xml || { echo "Rebunar home screen was not found in the Android UI hierarchy. See screenshots and logcat."; exit 1; }
-            # Exercise bottom navigation and capture each destination in one shell command.
-            for destination in "chats:313" "search:540" "favorites:745" "profile:950" "home-return:130"; do name="${destination%%:*}"; x="${destination##*:}"; adb shell input tap "$x" 2160; sleep 5; adb exec-out screencap -p > "emulator-output/rebunar-$name.png"; adb shell uiautomator dump "/sdcard/window-$name.xml" >/dev/null 2>&1 || true; adb pull "/sdcard/window-$name.xml" "emulator-output/window-$name.xml" >/dev/null 2>&1 || true; test -s "emulator-output/rebunar-$name.png" || exit 1; done
+            # Exercise the native bottom navigation; UI hierarchy places its buttons at y=2315.
+            for destination in "store:275" "reader:450" "community:630" "chats:806" "more:984" "home-return:96"; do name="${destination%%:*}"; x="${destination##*:}"; adb shell input tap "$x" 2315; sleep 5; adb exec-out screencap -p > "emulator-output/rebunar-$name.png"; adb shell uiautomator dump "/sdcard/window-$name.xml" >/dev/null 2>&1 || true; adb pull "/sdcard/window-$name.xml" "emulator-output/window-$name.xml" >/dev/null 2>&1 || true; test -s "emulator-output/rebunar-$name.png" || exit 1; done
             test -s emulator-output/rebunar-search.png
             test -s emulator-output/rebunar-favorites.png
             test -s emulator-output/rebunar-profile.png
