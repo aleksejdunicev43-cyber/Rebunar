@@ -416,7 +416,7 @@ jobs:
             test -s emulator-output/rebunar-before-login.png
             test -s emulator-output/rebunar-screen.png
             test -s emulator-output/app-pid.txt
-            grep -q "PAGE_FINISHED" emulator-output/webview-diagnostics.txt || { echo "WebView did not finish loading the Rebunar page. See webview-diagnostics.txt."; exit 1; }
+            grep -q "Главный экран Rebunar" emulator-output/window.xml || { echo "Rebunar home screen was not found in the Android UI hierarchy. See screenshots and logcat."; exit 1; }
 
       - name: Upload emulator evidence
         if: always()
