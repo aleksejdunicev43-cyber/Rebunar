@@ -42,7 +42,7 @@ jobs:
       - name: Checkout Android application source
         uses: actions/checkout@v4
         with:
-          ref: feature/android-bundled-frontend
+          ref: d7e6c10f94ef00fd5a786ce03064a3789e0e77c1
           path: android-source
 
       - name: Prepare Android project and bundle frontend
@@ -138,8 +138,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.9
-          name: Rebunar Android 0.1.9
+          tag_name: v0.2.0
+          name: Rebunar Android 0.2.0
           target_commitish: main
           generate_release_notes: true
           make_latest: true
