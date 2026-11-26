@@ -336,10 +336,21 @@ function saveRemovedHomeApps(ids) {
 }
 
 function loadCustomHomeApps() {
+  const allowedApps = new Set(['pinterest', 'chatgpt']);
   try {
-    const apps = JSON.parse(localStorage.getItem(HOME_CUSTOM_APPS_KEY) || '[]');
-    return Array.isArray(apps) ? apps.filter(app => app && typeof app.id === 'string' && typeof app.url === 'string') : [];
-  } catch { return []; }
+    const stored = JSON.parse(localStorage.getItem(HOME_CUSTOM_APPS_KEY) || '[]');
+    const apps = Array.isArray(stored)
+      ? stored.filter(app => app && allowedApps.has(app.id) && typeof app.url === 'string')
+      : [];
+    // Remove legacy/demo shortcuts saved by older store versions.
+    if (!Array.isArray(stored) || apps.length !== stored.length) {
+      localStorage.setItem(HOME_CUSTOM_APPS_KEY, JSON.stringify(apps));
+    }
+    return apps;
+  } catch {
+    try { localStorage.setItem(HOME_CUSTOM_APPS_KEY, '[]'); } catch {}
+    return [];
+  }
 }
 const HOME_MAX_PAGES = 10;
 
