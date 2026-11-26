@@ -29,7 +29,8 @@ android {
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("rebunarStable")
+            // CI debug builds use Android's standard debug key; release keeps the stable private key.
+            signingConfig = signingConfigs.getByName("debug")
         }
         release {
             isMinifyEnabled = false
