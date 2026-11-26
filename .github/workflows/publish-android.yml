@@ -38,6 +38,13 @@ jobs:
           npm ci
           npm run build
           test -s frontend/build/index.html
+          # Fail the release if the canonical frontend does not contain the current store.
+          grep -R -q 'ChatGPT' frontend/build/assets
+          grep -R -q 'store-chatgpt-preview' frontend/build/assets
+          printf '{"version":"0.2.2","commit":"%s"}\n' "$GITHUB_SHA" > frontend/build/rebunar-build.json
+          cd frontend/build
+          zip -qr ../../rebunar-web-build.zip .
+          cd ../..
 
       - name: Checkout Android application source
         uses: actions/checkout@v4
@@ -53,8 +60,8 @@ jobs:
           from pathlib import Path
           gradle_file = Path("android-rebunar/app/build.gradle.kts")
           text = gradle_file.read_text()
-          text = text.replace("versionCode = 7", "versionCode = 8")
-          text = text.replace('versionName = "0.2.0"', 'versionName = "0.2.1"')
+          text = text.replace("versionCode = 9", "versionCode = 8")
+          text = text.replace('versionName = "0.2.2"', 'versionName = "0.2.1"')
           if 'versionCode = 8' not in text or 'versionName = "0.2.1"' not in text:
               raise SystemExit("Could not set the intended Android version.")
           gradle_file.write_text(text)
@@ -62,6 +69,8 @@ jobs:
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
+          grep -R -q 'ChatGPT' android-rebunar/app/src/main/assets/build/assets
+          grep -R -q 'store-chatgpt-preview' android-rebunar/app/src/main/assets/build/assets
 
       - name: Verify Android shell and bundled frontend support
         run: |
@@ -135,6 +144,12 @@ jobs:
           APK=android-rebunar/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
           unzip -l "$APK" | grep -q 'assets/build/index.html'
+          mkdir -p /tmp/rebunar-apk-check
+          unzip -q "$APK" 'assets/build/*' -d /tmp/rebunar-apk-check
+          grep -R -q 'ChatGPT' /tmp/rebunar-apk-check/assets/build/assets
+          grep -R -q 'store-chatgpt-preview' /tmp/rebunar-apk-check/assets/build/assets
+          test -s /tmp/rebunar-apk-check/assets/build/rebunar-build.json
+          cat /tmp/rebunar-apk-check/assets/build/rebunar-build.json
           APKSIGNER="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)/apksigner"
           "$APKSIGNER" verify --verbose --print-certs "$APK" | tee /tmp/rebunar-apk-signature.txt
           ! grep -qi 'CN=Android Debug' /tmp/rebunar-apk-signature.txt
@@ -143,7 +158,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rebunar-android-preview
-          path: android-rebunar/app/build/outputs/apk/release/app-release.apk
+          path: |
+            android-rebunar/app/build/outputs/apk/release/app-release.apk
+            rebunar-web-build.zip
           if-no-files-found: error
           retention-days: 14
 
@@ -151,8 +168,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2.1
-          name: Rebunar Android 0.2.1
+          tag_name: v0.2.2
+          name: Rebunar Android 0.2.2
           target_commitish: main
           generate_release_notes: true
           make_latest: true
