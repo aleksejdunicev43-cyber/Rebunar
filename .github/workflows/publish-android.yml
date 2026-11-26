@@ -49,6 +49,16 @@ jobs:
         run: |
           cp -R android-source/android-rebunar ./android-rebunar
           cp android-source/rebunar_avatar.png ./rebunar_avatar.png
+          python - <<'PY'
+          from pathlib import Path
+          gradle_file = Path("android-rebunar/app/build.gradle.kts")
+          text = gradle_file.read_text()
+          text = text.replace("versionCode = 7", "versionCode = 8")
+          text = text.replace('versionName = "0.2.0"', 'versionName = "0.2.1"')
+          if 'versionCode = 8' not in text or 'versionName = "0.2.1"' not in text:
+              raise SystemExit("Could not set the intended Android version.")
+          gradle_file.write_text(text)
+          PY
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
@@ -118,19 +128,22 @@ jobs:
           test -n "$REBUNAR_KEYSTORE_PASSWORD"
           test -n "$REBUNAR_KEY_ALIAS"
           test -n "$REBUNAR_KEY_PASSWORD"
-          gradle -p android-rebunar :app:assembleDebug
+          gradle -p android-rebunar :app:assembleRelease
 
       - name: Verify bundled frontend assets
         run: |
-          APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          APK=android-rebunar/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
           unzip -l "$APK" | grep -q 'assets/build/index.html'
+          APKSIGNER="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)/apksigner"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee /tmp/rebunar-apk-signature.txt
+          ! grep -qi 'CN=Android Debug' /tmp/rebunar-apk-signature.txt
 
       - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
         with:
           name: rebunar-android-preview
-          path: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          path: android-rebunar/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -138,10 +151,10 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2.0
-          name: Rebunar Android 0.2.0
+          tag_name: v0.2.1
+          name: Rebunar Android 0.2.1
           target_commitish: main
           generate_release_notes: true
           make_latest: true
-          files: android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+          files: android-rebunar/app/build/outputs/apk/release/app-release.apk
           fail_on_unmatched_files: true
