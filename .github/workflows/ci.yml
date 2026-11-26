@@ -392,10 +392,10 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
-            APK=android-rebunar/app/build/outputs/apk/debug/app-debug.apk
             mkdir -p emulator-output
             adb wait-for-device
-            adb install -r "$APK"
+            test -s android-rebunar/app/build/outputs/apk/debug/app-debug.apk
+            adb install -r android-rebunar/app/build/outputs/apk/debug/app-debug.apk
             adb shell am force-stop ru.rebunar.app
             adb shell am start -W -n ru.rebunar.app/.MainActivity
             sleep 35
