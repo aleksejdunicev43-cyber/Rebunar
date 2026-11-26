@@ -192,21 +192,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 11px;
-  min-height: 54px;
-  padding: 0 22px;
+  gap: 9px;
+  min-height: 46px;
+  padding: 0 17px;
   overflow: visible;
   border: 1px solid rgba(226,177,255,.96);
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(30,13,49,.96), rgba(8,5,20,.96));
   color: #fff7ff;
   box-shadow:
-    0 0 0 1px rgba(190,112,255,.24) inset,
-    0 0 10px rgba(196,115,255,.92),
-    0 0 25px rgba(161,72,255,.56),
-    0 9px 28px rgba(0,0,0,.48);
+    0 0 0 1px rgba(190,112,255,.2) inset,
+    0 0 7px rgba(196,115,255,.72),
+    0 0 18px rgba(161,72,255,.38),
+    0 7px 20px rgba(0,0,0,.42);
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 650;
   letter-spacing: .01em;
   white-space: nowrap;
@@ -230,9 +230,9 @@
 .home-wallpaper-picker[hidden] { display: none !important; }
 .home-wallpaper-picker-icon {
   display: inline-flex;
-  flex: 0 0 25px;
-  width: 25px;
-  height: 25px;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
   align-items: center;
   justify-content: center;
   color: #e6c1ff;
@@ -240,8 +240,8 @@
 }
 .home-wallpaper-picker-icon svg {
   display: block;
-  width: 25px;
-  height: 25px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -251,11 +251,11 @@
 .home-wallpaper-picker-label { line-height: 1; }
 .home-wallpaper-picker-sparkle {
   position: absolute;
-  top: -9px;
-  right: -8px;
+  top: -7px;
+  right: -6px;
   color: #f0caff;
-  font-size: 19px;
-  text-shadow: 0 0 6px #dca4ff, 0 0 13px #a84cff;
+  font-size: 16px;
+  text-shadow: 0 0 5px #dca4ff, 0 0 10px #a84cff;
   pointer-events: none;
 }
 .home-wallpaper-picker:active {
