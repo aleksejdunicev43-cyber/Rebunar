@@ -57,6 +57,75 @@ async function deleteWallpaper() {
   });
 }
 
+async function fetchHomeSettings() {
+  const response = await fetch('/api/home/settings', { credentials: 'same-origin' });
+  if (!response.ok) throw new Error('Не удалось получить настройки аккаунта.');
+  return response.json();
+}
+
+async function uploadAccountWallpaper(blob) {
+  const form = new FormData();
+  form.append('wallpaper', blob, 'rebunar-home-wallpaper.jpg');
+  const response = await fetch('/api/home/wallpaper', {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: form
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Не удалось сохранить обои в аккаунте.');
+  return data;
+}
+
+async function syncAccountHomeLayout(workspace) {
+  try {
+    const settings = await fetchHomeSettings();
+    if (!settings.logged_in || !workspace.isConnected) return;
+    if (settings.layout && !homeLayoutTouched) {
+      localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(settings.layout));
+      workspace.querySelector('.home-app-launcher')?.remove();
+      renderHomeAppLauncher(workspace);
+    } else if (!settings.layout && !homeLayoutTouched) {
+      const localLayout = localStorage.getItem(HOME_LAYOUT_KEY);
+      if (localLayout) {
+        const response = await fetch('/api/home/layout', {
+          method: 'PUT',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ layout: JSON.parse(localLayout) })
+        });
+        if (!response.ok) console.warn('Rebunar: не удалось перенести раскладку в аккаунт.');
+      }
+    }
+  } catch (error) {
+    console.warn('Rebunar: не удалось синхронизировать рабочий стол.', error);
+  }
+}
+
+async function loadAccountWallpaper(workspace) {
+  try {
+    const settings = await fetchHomeSettings();
+    if (settings.logged_in && settings.wallpaper_url) {
+      const response = await fetch(settings.wallpaper_url, { credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) throw new Error('Не удалось загрузить обои аккаунта.');
+      const blob = await response.blob();
+      await writeWallpaper(blob);
+      applyWallpaper(workspace, blob);
+      return;
+    }
+    const localBlob = await readWallpaper();
+    if (localBlob) {
+      applyWallpaper(workspace, localBlob);
+      if (settings.logged_in) {
+        showWallpaperMessage(workspace, 'Эти обои сохранены только на этом устройстве. Выбери их заново, чтобы синхронизировать.');
+      }
+    }
+  } catch (error) {
+    const localBlob = await readWallpaper().catch(() => null);
+    if (localBlob) applyWallpaper(workspace, localBlob);
+    showWallpaperMessage(workspace, error.message || 'Не удалось загрузить настройки аккаунта.', true);
+  }
+}
+
 function applyWallpaper(workspace, blob) {
   if (wallpaperUrl) URL.revokeObjectURL(wallpaperUrl);
   wallpaperUrl = blob ? URL.createObjectURL(blob) : null;
@@ -240,6 +309,7 @@ const HOME_DOCK_APPS = [
   {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
 ];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
+let homeLayoutTouched = false;
 const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
 const HOME_FAVORITES_KEY = 'rebunar-home-favorites-v1';
 const HOME_RECENTS_KEY = 'rebunar-home-recents-v1';
@@ -364,7 +434,19 @@ function renderHomeAppLauncher(workspace) {
     currentPage=Math.min(currentPage,layout.pages.length-1);
   };
   const save = () => {
-    try { localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout)); } catch {}
+    const encoded = JSON.stringify(layout);
+    try { localStorage.setItem(HOME_LAYOUT_KEY, encoded); } catch {}
+    homeLayoutTouched = true;
+    fetch('/api/home/layout', {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ layout })
+    }).then(response => {
+      if (!response.ok && response.status !== 401) {
+        console.warn('Rebunar: не удалось синхронизировать расположение приложений.');
+      }
+    }).catch(error => console.warn('Rebunar: синхронизация рабочего стола недоступна.', error));
   };
   const createSlot = (zone, index, id, pageIndex=0) => {
     const slot = document.createElement('div');
@@ -573,6 +655,7 @@ function renderHomeAppLauncher(workspace) {
   paint();
 }
 export function renderHomeScreen(outlet) {
+  homeLayoutTouched = false;
   const shell = outlet.closest('.app-shell');
   shell?.classList.add('home-workspace-active');
 
@@ -585,9 +668,10 @@ export function renderHomeScreen(outlet) {
       <input class="home-wallpaper-input" type="file"
         accept="image/jpeg,image/png,image/webp,image/avif"
         aria-label="Выбрать обои из галереи">
-      <button class="home-wallpaper-picker" type="button" hidden>
-        <span aria-hidden="true">▧</span>
-        <span>Выбрать фото</span>
+      <button class="home-wallpaper-picker" type="button" hidden aria-label="Выбрать обои">
+        <span class="home-wallpaper-picker-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="4.5" width="17" height="15" rx="2.2"></rect><circle cx="9" cy="9.5" r="1.7"></circle><path d="m5 17 5.2-5 3.2 3 2.2-2 3.4 4"></path></svg></span>
+        <span class="home-wallpaper-picker-label">Обои</span>
+        <span class="home-wallpaper-picker-sparkle" aria-hidden="true">✦</span>
       </button>
       <div class="home-wallpaper-status" role="status" aria-live="polite"></div>
     </section>
@@ -595,6 +679,7 @@ export function renderHomeScreen(outlet) {
 
   const workspace = host.querySelector(':scope > .home-workspace');
   renderHomeAppLauncher(workspace);
+  syncAccountHomeLayout(workspace);
   const fileInput = workspace.querySelector('.home-wallpaper-input');
   const pickerButton = workspace.querySelector('.home-wallpaper-picker');
   let holdTimer = null;
@@ -679,9 +764,10 @@ export function renderHomeScreen(outlet) {
       const edited = await openWallpaperEditor(file, workspace);
       if (!edited) return;
       showWallpaperMessage(workspace, 'Сохраняю обои…');
+      await uploadAccountWallpaper(edited);
       await writeWallpaper(edited);
       applyWallpaper(workspace, edited);
-      showWallpaperMessage(workspace, 'Обои установлены.');
+      showWallpaperMessage(workspace, 'Обои сохранены в аккаунте и синхронизируются между устройствами.');
     } catch (error) {
       showWallpaperMessage(workspace, error.message || 'Не удалось сохранить изображение.', true);
     } finally {
@@ -689,7 +775,5 @@ export function renderHomeScreen(outlet) {
     }
   });
 
-  readWallpaper()
-    .then(blob => { if (blob) applyWallpaper(workspace, blob); })
-    .catch(error => showWallpaperMessage(workspace, error.message || 'Не удалось загрузить сохранённые обои.', true));
+  loadAccountWallpaper(workspace);
 }

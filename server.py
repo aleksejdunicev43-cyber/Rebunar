@@ -13,7 +13,7 @@ import warnings
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 13 * 1024 * 1024
 KEY_FILE = Path(__file__).resolve().parent / ".secret_key"
 if not KEY_FILE.exists():
     import secrets
@@ -45,6 +45,10 @@ register_matrix_routes(app, connect)
 from frontend_routes import register_frontend_routes
 
 register_frontend_routes(app, BASE)
+
+from home_settings_routes import register_home_settings_routes
+
+register_home_settings_routes(app, connect, BASE)
 
 
 
