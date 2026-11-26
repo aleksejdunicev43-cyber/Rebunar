@@ -165,6 +165,65 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Deploy the exact frontend build to PythonAnywhere
+        if: github.event_name != 'pull_request'
+        env:
+          PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
+          PYTHONANYWHERE_API_HOST: ${{ secrets.PYTHONANYWHERE_API_HOST }}
+        run: |
+          if [ -z "$PYTHONANYWHERE_API_TOKEN" ] || [ -z "$PYTHONANYWHERE_API_HOST" ]; then
+            echo "::warning::Website auto-deploy skipped. Configure PYTHONANYWHERE_API_TOKEN and PYTHONANYWHERE_API_HOST in GitHub Actions secrets."
+            exit 0
+          fi
+          python -m pip install requests
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from urllib.parse import quote
+          import requests
+
+          username = "rebunar"
+          domain = "rebunar.pythonanywhere.com"
+          target = Path("/home/rebunar/rebunar_next/frontend/build")
+          api_host = os.environ["PYTHONANYWHERE_API_HOST"].rstrip("/")
+          headers = {"Authorization": "Token " + os.environ["PYTHONANYWHERE_API_TOKEN"]}
+          files = sorted(path for path in Path("frontend/build").rglob("*") if path.is_file())
+          if not files:
+              raise SystemExit("Frontend build is empty; refusing website deployment.")
+
+          for source in files:
+              relative = source.relative_to("frontend/build").as_posix()
+              remote_path = str(target / relative)
+              endpoint = (
+                  f"{api_host}/api/v0/user/{username}/files/path"
+                  + quote(remote_path, safe="/")
+              )
+              with source.open("rb") as stream:
+                  response = requests.post(
+                      endpoint,
+                      headers=headers,
+                      files={"content": (source.name, stream)},
+                      timeout=60,
+                  )
+              if response.status_code not in (200, 201):
+                  raise SystemExit(
+                      f"PythonAnywhere upload failed for {relative}: "
+                      f"{response.status_code} {response.text[:500]}"
+                  )
+              print(f"Uploaded {relative}")
+
+          reload_url = (
+              f"{api_host}/api/v0/user/{username}/webapps/{domain}/reload/"
+          )
+          response = requests.post(reload_url, headers=headers, timeout=60)
+          if response.status_code not in (200, 201, 202):
+              raise SystemExit(
+                  f"PythonAnywhere reload failed: {response.status_code} "
+                  f"{response.text[:500]}"
+              )
+          print("PythonAnywhere website reloaded with the same frontend build.")
+          PY
+
       - name: Publish APK release
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
