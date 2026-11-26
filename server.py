@@ -13,7 +13,7 @@ import warnings
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 13 * 1024 * 1024
 KEY_FILE = Path(__file__).resolve().parent / ".secret_key"
 if not KEY_FILE.exists():
     import secrets
