@@ -410,7 +410,7 @@ jobs:
             adb exec-out screencap -p > emulator-output/rebunar-before-login.png
             adb shell uiautomator dump /sdcard/window-before.xml >/dev/null 2>&1 || true
             adb pull /sdcard/window-before.xml emulator-output/window-before.xml >/dev/null 2>&1 || true
-            if test -n "$REBUNAR_TEST_USERNAME" && test -n "$REBUNAR_TEST_PASSWORD"; then echo "Test credentials are configured; attempting the login flow."; adb shell input tap 540 950; adb shell input text "$REBUNAR_TEST_USERNAME"; adb shell input keyevent 61; adb shell input text "$REBUNAR_TEST_PASSWORD"; adb shell input keyevent 61; adb shell input keyevent 66; sleep 15; else echo "Test credentials are not configured; leaving the app on its initial screen."; fi
+            if test -n "$REBUNAR_TEST_USERNAME" && test -n "$REBUNAR_TEST_PASSWORD"; then adb shell input tap 540 1360; sleep 8; adb shell input tap 540 950; adb shell input text "$REBUNAR_TEST_USERNAME"; adb shell input tap 540 1190; adb shell input text "$REBUNAR_TEST_PASSWORD"; adb shell input tap 540 1450; sleep 20; else echo "Test credentials are not configured; leaving the app on its initial screen."; fi
             adb exec-out screencap -p > emulator-output/rebunar-screen.png
             adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
             adb pull /sdcard/window.xml emulator-output/window.xml >/dev/null 2>&1 || true

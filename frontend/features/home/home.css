@@ -604,3 +604,49 @@
 
 
 /* App icons are intentionally clean: no favorite badges or quick filters. */
+
+
+/* Trash target appears in the top-right header only while dragging an app. */
+.home-workspace-active .header-actions .home-app-trash {
+  display: none;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  padding: 9px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(91,25,38,.9);
+  box-shadow: 0 4px 16px rgba(0,0,0,.35), 0 0 12px rgba(255,70,100,.18);
+  pointer-events: auto;
+  transition: background .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.home-workspace-active .header-actions .home-app-trash svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.home-workspace-active .header-actions.is-home-app-dragging {
+  z-index: 20;
+}
+.home-workspace-active .header-actions.is-home-app-dragging .header-icon-button {
+  visibility: hidden;
+}
+.home-workspace-active .header-actions.is-home-app-dragging .home-app-trash {
+  display: flex;
+  transform: scale(1.04);
+}
+.home-workspace-active .header-actions .home-app-trash.is-over {
+  color: #fff;
+  border-color: rgba(255,145,160,.9);
+  background: #c52e4b;
+  box-shadow: 0 0 0 5px rgba(255,75,105,.18), 0 0 24px rgba(255,65,95,.65);
+  transform: scale(1.18);
+}

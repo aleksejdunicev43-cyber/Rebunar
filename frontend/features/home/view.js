@@ -311,6 +311,7 @@ const HOME_DOCK_APPS = [
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
 let homeLayoutTouched = false;
 const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
+const HOME_REMOVED_APPS_KEY = 'rebunar-home-removed-apps-v1';
 const HOME_FAVORITES_KEY = 'rebunar-home-favorites-v1';
 const HOME_RECENTS_KEY = 'rebunar-home-recents-v1';
 
@@ -324,6 +325,16 @@ function writeHomeIds(key, ids) {
   try { localStorage.setItem(key, JSON.stringify(ids)); } catch {}
 }
 
+function loadRemovedHomeApps() {
+  try {
+    const ids = JSON.parse(localStorage.getItem(HOME_REMOVED_APPS_KEY) || '[]');
+    return Array.isArray(ids) ? ids.filter(id => typeof id === 'string') : [];
+  } catch { return []; }
+}
+function saveRemovedHomeApps(ids) {
+  try { localStorage.setItem(HOME_REMOVED_APPS_KEY, JSON.stringify([...ids])); } catch {}
+}
+
 function loadCustomHomeApps() {
   try {
     const apps = JSON.parse(localStorage.getItem(HOME_CUSTOM_APPS_KEY) || '[]');
@@ -333,14 +344,16 @@ function loadCustomHomeApps() {
 const HOME_MAX_PAGES = 10;
 
 function loadHomeAppLayout() {
-  const gridDefault = HOME_APPS.map(app => app.id);
+  const removed = new Set(loadRemovedHomeApps());
+  const gridDefault = HOME_APPS.map(app => app.id).filter(id => !removed.has(id));
   try {
     const saved = JSON.parse(localStorage.getItem(HOME_LAYOUT_KEY) || 'null');
     if (saved && Array.isArray(saved.dock)) {
       const pages = Array.isArray(saved.pages) ? saved.pages
         : Array.isArray(saved.grid) ? [saved.grid] : [gridDefault];
-      const customIds = loadCustomHomeApps().map(app => app.id);
-      const all = new Set([...gridDefault, ...HOME_DOCK_DEFAULT, ...customIds]);
+      const customIds = loadCustomHomeApps().map(app => app.id).filter(id => !removed.has(id));
+      const dockDefaults = HOME_DOCK_DEFAULT.filter(id => !removed.has(id));
+      const all = new Set([...gridDefault, ...dockDefaults, ...customIds]);
       const normalized = pages.slice(0, HOME_MAX_PAGES).map(page => Array.from({length:30}, (_, i) => all.has(page?.[i]) ? page[i] : null));
       if (!normalized.length) normalized.push(Array(30).fill(null));
       const dock = Array.from({length:5}, (_, i) => all.has(saved.dock[i]) ? saved.dock[i] : null);
@@ -357,7 +370,7 @@ function loadHomeAppLayout() {
         else if (dock[i]) seen.add(dock[i]);
       }
       const placed = new Set([...normalized.flat(), ...dock].filter(Boolean));
-      const missing = [...gridDefault, ...HOME_DOCK_DEFAULT, ...customIds].filter(id => !placed.has(id));
+      const missing = [...gridDefault, ...dockDefaults, ...customIds].filter(id => !placed.has(id));
       for (const id of missing) {
         let pageIndex = normalized.findIndex(page => page.includes(null));
         if (pageIndex < 0) { normalized.push(Array(30).fill(null)); pageIndex=normalized.length-1; }
@@ -368,7 +381,7 @@ function loadHomeAppLayout() {
     }
   } catch {}
   const pages = [gridDefault.concat(Array(30-gridDefault.length).fill(null))];
-  for (const id of loadCustomHomeApps().map(app => app.id)) {
+  for (const id of loadCustomHomeApps().map(app => app.id).filter(id => !removed.has(id))) {
     if (pages.some(page => page.includes(id))) continue;
     let pageIndex = pages.findIndex(page => page.includes(null));
     if (pageIndex < 0) {
@@ -392,6 +405,18 @@ function renderHomeAppLauncher(workspace) {
   const indicators = launcher.querySelector('.home-app-page-indicators');
   const dock = launcher.querySelector('.home-app-dock');
   const layout = loadHomeAppLayout();
+  const removedApps = new Set(loadRemovedHomeApps());
+  const headerActions = workspace.closest('.app-shell')?.querySelector('.header-actions');
+  let trashButton = headerActions?.querySelector('.home-app-trash');
+  if (headerActions && !trashButton) {
+    trashButton = document.createElement('button');
+    trashButton.type = 'button';
+    trashButton.className = 'home-app-trash';
+    trashButton.setAttribute('aria-label', 'Удалить приложение');
+    trashButton.title = 'Перетащите сюда, чтобы убрать с главного экрана';
+    trashButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-9 0 1 13h10l1-13M10 11v5m4-5v5"/></svg>';
+    headerActions.appendChild(trashButton);
+  }
   const appById = new Map([...HOME_APPS, ...HOME_DOCK_APPS, ...loadCustomHomeApps()].map(app => [app.id, app]));
   const launchApp = app => {
     if (!app) return;
@@ -501,6 +526,8 @@ function renderHomeAppLauncher(workspace) {
     if (!launcher.isConnected) return;
     const app = event.detail;
     if (!app || typeof app.id !== 'string') return;
+    removedApps.delete(app.id);
+    saveRemovedHomeApps(removedApps);
     appById.set(app.id, app);
     if (![...layout.pages.flat(), ...layout.dock].includes(app.id)) {
       let pageIndex = layout.pages.findIndex(page => page.includes(null));
@@ -536,6 +563,9 @@ function renderHomeAppLauncher(workspace) {
     if(activeDrag?.button) activeDrag.button.style.visibility='';
     activeDrag?.ghost?.remove();
     launcher.classList.remove('is-dragging');
+    headerActions?.classList.remove('is-home-app-dragging');
+    trashButton?.classList.remove('is-over');
+    trashButton?.setAttribute('aria-hidden', 'true');
     activeDrag=null;
   };
   const movePageEdge = (x) => {
@@ -578,12 +608,20 @@ function renderHomeAppLauncher(workspace) {
       button.style.visibility='hidden';
       activeDrag={button,ghost,id:button.dataset.appId,zone:slot.dataset.zone,page:Number(slot.dataset.page||0),start:startPoint};
       launcher.classList.add('is-dragging');
+      headerActions?.classList.add('is-home-app-dragging');
+      trashButton?.setAttribute('aria-hidden', 'false');
     },320);
   });
   launcher.addEventListener('pointermove', event => {
     if(activeDrag) {
       activeDrag.ghost.style.transform='translate('+(event.clientX-activeDrag.start.x)+'px,'+(event.clientY-activeDrag.start.y)+'px) scale(1.08)';
       movePageEdge(event.clientX);
+      if (trashButton) {
+        const trashRect = trashButton.getBoundingClientRect();
+        const overTrash = event.clientX >= trashRect.left - 10 && event.clientX <= trashRect.right + 10 && event.clientY >= trashRect.top - 10 && event.clientY <= trashRect.bottom + 10;
+        trashButton.classList.toggle('is-over', overTrash);
+        activeDrag.trashOver = overTrash;
+      }
       event.preventDefault();
     } else if(holdTimer && pendingStart) {
       if(Math.hypot(event.clientX-pendingStart.x,event.clientY-pendingStart.y)>14) {
@@ -611,8 +649,21 @@ function renderHomeAppLauncher(workspace) {
       return;
     }
     clearEdgeTimer();
+    const trashRect = trashButton?.getBoundingClientRect();
+    const droppedOnTrash = event.type === 'pointerup' && trashRect && event.clientX >= trashRect.left - 10 && event.clientX <= trashRect.right + 10 && event.clientY >= trashRect.top - 10 && event.clientY <= trashRect.bottom + 10;
+    if (droppedOnTrash) {
+      const from = activeDrag.zone === 'dock' ? layout.dock : layout.pages[activeDrag.page];
+      const index = from.indexOf(activeDrag.id);
+      if (index >= 0) {
+        from[index] = null;
+        removedApps.add(activeDrag.id);
+        saveRemovedHomeApps(removedApps);
+        compactEmptyPages();
+        save();
+      }
+    }
     const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.home-app-slot');
-    if(target) {
+    if(!droppedOnTrash && target) {
       const from=activeDrag.zone==='dock'?layout.dock:layout.pages[activeDrag.page];
       const targetZone=target.dataset.zone;
       const to=targetZone==='dock'?layout.dock:layout.pages[Number(target.dataset.page)];
@@ -622,7 +673,7 @@ function renderHomeAppLauncher(workspace) {
         compactEmptyPages();
         save();
       }
-    } else if(event.clientX>launcher.getBoundingClientRect().right-34) {
+    } else if(!droppedOnTrash && event.clientX>launcher.getBoundingClientRect().right-34) {
       const next=currentPage+1;
       const from=activeDrag.zone==='dock'?layout.dock:layout.pages[activeDrag.page];
       const sourcePage=activeDrag.zone==='grid'?layout.pages[activeDrag.page]:null;
