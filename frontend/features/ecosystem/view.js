@@ -217,58 +217,6 @@ export function renderEcosystemScreen(outlet, key) {
     return;
   }
   outlet.innerHTML = `
-      <section class="screen ecosystem-screen ecosystem-store-screen">
-        <header class="ecosystem-hero">
-          <span class="ecosystem-eyebrow">${section.eyebrow}</span>
-          <h1>${section.title}</h1>
-          <p>${section.description}</p>
-          <span class="ecosystem-status">ВЕБ-ПРИЛОЖЕНИЯ · ЯРЛЫКИ НА ГЛАВНОМ ЭКРАНЕ</span>
-        </header>
-        <div class="ecosystem-store-toolbar">
-          <div><strong>Каталог приложений</strong><small>Первое приложение для тестирования</small></div>
-          <span class="ecosystem-store-count">01</span>
-        </div>
-        <div class="ecosystem-app-grid">
-          ${section.apps.map(app => `
-            <article class="ecosystem-app-card">
-              <div class="ecosystem-app-icon" style="--ecosystem-app-color:${app.color}"><svg viewBox="0 0 64 64" width="100%" height="100%" role="img" aria-label="Pinterest" style="display:block"><circle cx="32" cy="32" r="32" fill="#E60023"/><text x="32" y="47" text-anchor="middle" font-family="Georgia,serif" font-size="49" font-weight="bold" fill="#fff">P</text></svg></div>
-              <div class="ecosystem-app-info">
-                <span class="ecosystem-app-category">${app.category}</span>
-                <h2>${app.name}</h2>
-                <p>${app.description}</p>
-              </div>
-              <button class="ecosystem-app-add" type="button" data-add-app="${app.id}" ${installedIds.has(app.id) ? 'disabled' : ''}>${installedIds.has(app.id) ? 'Добавлено' : 'Добавить на главный экран'}</button>
-              <a class="ecosystem-app-preview" href="${app.url}" target="_blank" rel="noopener noreferrer">Открыть сайт ↗</a>
-            </article>
-          `).join('')}
-        </div>
-        <p class="ecosystem-store-note">Приложения открываются на своих официальных сайтах. Rebunar сохраняет только ярлык, а не устанавливает APK и не скачивает файлы.</p>
-      </section>
-    `;
-    outlet.querySelectorAll('[data-open-app]').forEach(button => button.addEventListener('click', () => {
-      const app = section.apps.find(item => item.id === button.dataset.openApp);
-      if (!app) return;
-      if (window.AndroidBrowser?.open) window.AndroidBrowser.open(app.url, app.name);
-      else window.open(app.url, '_blank', 'noopener,noreferrer');
-    }));
-    outlet.querySelectorAll('[data-add-app]').forEach(button => button.addEventListener('click', () => {
-      const app = section.apps.find(item => item.id === button.dataset.addApp);
-      if (!app) return;
-      let apps = [];
-      try { apps = JSON.parse(localStorage.getItem(customAppsKey) || '[]'); } catch {}
-      if (!Array.isArray(apps)) apps = [];
-      if (!apps.some(item => item.id === app.id)) {
-        apps.push({ id: app.id, name: app.name, icon: app.icon, color: app.color, url: app.url });
-        try { localStorage.setItem(customAppsKey, JSON.stringify(apps)); }
-        catch { button.textContent = 'Недостаточно памяти'; return; }
-      }
-      button.textContent = 'Добавлено';
-      button.disabled = true;
-      window.dispatchEvent(new CustomEvent('rebunar-home-app-added', { detail: app }));
-    }));
-    return;
-  }
-  outlet.innerHTML = `
     <section class="screen ecosystem-screen ecosystem-screen--${key}">
       <header class="ecosystem-hero">
         <span class="ecosystem-eyebrow">${section.eyebrow}</span>
