@@ -525,33 +525,18 @@ class MainActivity : Activity() {
             setBackgroundColor(Color.rgb(8, 9, 10))
             visibility = View.GONE
         }
-        val toolbar = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(4), dp(5), dp(4), dp(5))
-            setBackgroundColor(Color.rgb(17, 25, 21))
-        }
-        fun toolButton(label: String, width: Int = 38, action: () -> Unit): Button =
-            Button(this).apply {
-                text = label
-                isAllCaps = false
-                textSize = 14f
-                minWidth = dp(width)
-                setPadding(dp(2), 0, dp(2), 0)
-                setOnClickListener { action() }
-            }
-        toolbar.addView(toolButton("‹") { if (browserWebView.canGoBack()) browserWebView.goBack() })
-        toolbar.addView(toolButton("›") { if (browserWebView.canGoForward()) browserWebView.goForward() })
+
+        // A slim address field stays at the top; navigation controls live at the bottom.
         browserAddress = EditText(this).apply {
             setSingleLine(true)
-            textSize = 12f
+            textSize = 13f
             setTextColor(Color.WHITE)
             setHintTextColor(Color.LTGRAY)
-            hint = "Введите адрес сайта"
+            hint = "Адрес сайта"
             inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
             imeOptions = EditorInfo.IME_ACTION_GO
-            setPadding(dp(8), 0, dp(8), 0)
-            setBackgroundColor(Color.rgb(31, 43, 36))
+            setPadding(dp(14), 0, dp(14), 0)
+            setBackgroundColor(Color.rgb(20, 19, 30))
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_GO) {
                     loadBrowserAddress()
@@ -559,21 +544,96 @@ class MainActivity : Activity() {
                 } else false
             }
         }
-        toolbar.addView(browserAddress, LinearLayout.LayoutParams(0, dp(42), 1f))
-        browserTabsButton = toolButton("1", 42) { showBrowserTabs() }
-        toolbar.addView(browserTabsButton)
-        toolbar.addView(toolButton("+", 38) { createBrowserTab("about:blank", true) })
-        toolbar.addView(toolButton("↻") { browserWebView.reload() })
-        toolbar.addView(toolButton("✕") { closeInternalBrowser() })
 
         browserContent = FrameLayout(this).apply {
             setBackgroundColor(Color.rgb(8, 9, 10))
         }
-        panel.addView(toolbar, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(54)
-        ))
+
+        val bottomBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(dp(8), dp(3), dp(8), dp(3))
+            setBackgroundColor(Color.rgb(15, 13, 24))
+        }
+
+        fun bottomAction(icon: String, caption: String, description: String, action: () -> Unit): View {
+            return LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                contentDescription = description
+                setPadding(0, dp(2), 0, dp(2))
+                addView(TextView(this@MainActivity).apply {
+                    text = icon
+                    textSize = 22f
+                    gravity = Gravity.CENTER
+                    setTextColor(Color.rgb(202, 165, 255))
+                }, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(25)
+                ))
+                addView(TextView(this@MainActivity).apply {
+                    text = caption
+                    textSize = 10f
+                    gravity = Gravity.CENTER
+                    setTextColor(Color.rgb(220, 214, 235))
+                }, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(15)
+                ))
+                setOnClickListener { action() }
+            }
+        }
+
+        bottomBar.addView(bottomAction("⌂", "Главная", "Вернуться в Rebunar") {
+            returnToRebunar()
+        }, LinearLayout.LayoutParams(0, dp(46), 1f))
+        browserTabsButton = Button(this).apply {
+            text = "▢  ${browserTabs.size}"
+            isAllCaps = false
+            textSize = 10f
+            setTextColor(Color.rgb(220, 214, 235))
+            setBackgroundColor(Color.TRANSPARENT)
+            minWidth = 0
+            minimumWidth = 0
+            setPadding(0, 0, 0, 0)
+            contentDescription = "Открытые вкладки"
+            setOnClickListener { showBrowserTabs() }
+        }
+        val tabsAction = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            addView(TextView(this@MainActivity).apply {
+                text = "▢"
+                textSize = 22f
+                gravity = Gravity.CENTER
+                setTextColor(Color.rgb(202, 165, 255))
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(25)))
+            addView(TextView(this@MainActivity).apply {
+                text = "Вкладки"
+                textSize = 10f
+                gravity = Gravity.CENTER
+                setTextColor(Color.rgb(220, 214, 235))
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(15)))
+            isClickable = true
+            isFocusable = true
+            contentDescription = "Открытые вкладки"
+            setOnClickListener { showBrowserTabs() }
+        }
+        bottomBar.addView(tabsAction, LinearLayout.LayoutParams(0, dp(46), 1f))
+        bottomBar.addView(bottomAction("⟳", "Обновить", "Обновить страницу") {
+            if (::browserWebView.isInitialized) browserWebView.reload()
+        }, LinearLayout.LayoutParams(0, dp(46), 1f))
+
+        panel.addView(browserAddress, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(42)
+        ).apply {
+            setMargins(dp(10), dp(6), dp(10), dp(4))
+        })
         panel.addView(browserContent, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+        ))
+        panel.addView(bottomBar, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(50)
         ))
         return panel
     }
@@ -678,20 +738,69 @@ class MainActivity : Activity() {
         if (!::browserAddress.isInitialized || activeBrowserTabId != tab.id) return
         if (!browserAddress.hasFocus()) browserAddress.setText(tab.url.takeUnless { it == "about:blank" } ?: "")
         browserAddress.setSelection(browserAddress.text.length)
-        browserTabsButton.text = browserTabs.size.toString()
-        browserTabsButton.contentDescription = "Открытые вкладки: ${browserTabs.size}"
+        if (::browserTabsButton.isInitialized) {
+            browserTabsButton.text = "▢  ${browserTabs.size}"
+            browserTabsButton.contentDescription = "Открытые вкладки: ${browserTabs.size}"
+        }
     }
 
     private fun showBrowserTabs() {
-        if (browserTabs.isEmpty()) return
-        val labels = browserTabs.mapIndexed { index, tab ->
-            "${index + 1}. ${tab.title.ifBlank { tab.url.ifBlank { "Новая вкладка" } }}"
-        }.toTypedArray()
-        AlertDialog.Builder(this)
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(8))
+        }
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Вкладки Rebunar")
-            .setItems(labels) { _, which -> browserTabs.getOrNull(which)?.let { activateBrowserTab(it.id) } }
-            .setNegativeButton("Закрыть", null)
-            .show()
+            .setView(content)
+            .setNegativeButton("Готово", null)
+            .create()
+
+        val addTab = TextView(this).apply {
+            text = "+  Новая вкладка"
+            textSize = 16f
+            setTextColor(Color.rgb(202, 165, 255))
+            setPadding(dp(8), dp(14), dp(8), dp(14))
+            isClickable = true
+            setOnClickListener {
+                createBrowserTab("about:blank", true)
+                dialog.dismiss()
+            }
+        }
+        content.addView(addTab)
+
+        browserTabs.forEachIndexed { index, tab ->
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(8), dp(8), dp(4), dp(8))
+            }
+            val title = TextView(this).apply {
+                text = "${index + 1}. ${tab.title.ifBlank { tab.url.ifBlank { "Новая вкладка" } }}"
+                textSize = 14f
+                setTextColor(Color.WHITE)
+                maxLines = 2
+                setOnClickListener {
+                    activateBrowserTab(tab.id)
+                    dialog.dismiss()
+                }
+            }
+            row.addView(title, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            row.addView(TextView(this).apply {
+                text = "×"
+                textSize = 24f
+                gravity = Gravity.CENTER
+                setTextColor(Color.LTGRAY)
+                setPadding(dp(14), dp(2), dp(14), dp(2))
+                contentDescription = "Закрыть вкладку"
+                setOnClickListener {
+                    closeBrowserTab(tab.id)
+                    dialog.dismiss()
+                    if (browserTabs.isNotEmpty()) showBrowserTabs()
+                }
+            })
+            content.addView(row)
+        }
+        dialog.show()
     }
 
     private fun closeBrowserTab(id: Int) {
@@ -723,8 +832,13 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun returnToRebunar() {
+        // Keep open pages alive so the user can return to them from the tabs list.
+        browserPanel.visibility = View.GONE
+    }
+
     private fun closeInternalBrowser() {
-        if (activeBrowserTabId >= 0) closeBrowserTab(activeBrowserTabId)
+        returnToRebunar()
     }
 
     private fun refreshPage() {
@@ -769,7 +883,7 @@ class MainActivity : Activity() {
 
     override fun onBackPressed() {
         if (::browserPanel.isInitialized && browserPanel.visibility == View.VISIBLE) {
-            if (::browserWebView.isInitialized && browserWebView.canGoBack()) browserWebView.goBack() else closeInternalBrowser()
+            returnToRebunar()
         } else if (::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
         } else {
