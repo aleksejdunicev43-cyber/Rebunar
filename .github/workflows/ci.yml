@@ -421,6 +421,45 @@ jobs:
             test -s emulator-output/rebunar-screen.png
             test -s emulator-output/app-pid.txt
             grep -q "Главный экран Rebunar" emulator-output/window.xml || { echo "Rebunar home screen was not found in the Android UI hierarchy. See screenshots and logcat."; exit 1; }
+            # Exercise the five launcher navigation destinations and save evidence for each.
+            python3 - <<'PY'
+            import subprocess
+            import time
+            from pathlib import Path
+
+            output = Path("emulator-output")
+            size = subprocess.check_output(["adb", "shell", "wm", "size"], text=True)
+            dimensions = size.strip().split(":")[-1].strip()
+            width, height = (int(value) for value in dimensions.split("x"))
+            nav_y = int(height * 0.90)
+            tabs = [
+                ("chats", 0.29),
+                ("search", 0.50),
+                ("favorites", 0.69),
+                ("profile", 0.88),
+                ("home-return", 0.12),
+            ]
+            for name, fraction in tabs:
+                x = int(width * fraction)
+                print(f"Testing bottom navigation: {name} at ({x}, {nav_y})")
+                subprocess.run(["adb", "shell", "input", "tap", str(x), str(nav_y)], check=True)
+                time.sleep(5)
+                with (output / f"rebunar-{name}.png").open("wb") as image:
+                    subprocess.run(["adb", "exec-out", "screencap", "-p"], stdout=image, check=True)
+                subprocess.run(
+                    ["adb", "shell", "uiautomator", "dump", f"/sdcard/window-{name}.xml"],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+                )
+                subprocess.run(
+                    ["adb", "pull", f"/sdcard/window-{name}.xml", str(output / f"window-{name}.xml")],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+                )
+            PY
+            test -s emulator-output/rebunar-chats.png
+            test -s emulator-output/rebunar-search.png
+            test -s emulator-output/rebunar-favorites.png
+            test -s emulator-output/rebunar-profile.png
+            test -s emulator-output/rebunar-home-return.png
 
       - name: Upload emulator evidence
         if: always()
