@@ -396,37 +396,13 @@ jobs:
           disable-animations: true
           script: |
             mkdir -p emulator-output
-            # Wait until the emulator is fully online, not merely visible to ADB.
-            adb start-server
-            for attempt in $(seq 1 90); do
-              device_state="$(adb devices | awk '/^emulator-[0-9]+[[:space:]]/ {print $2; exit}')"
-              if [ "$device_state" = "device" ] && [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then
-                echo "Android emulator is online and booted."
-                break
-              fi
-              if [ "$device_state" = "offline" ]; then
-                adb reconnect offline >/dev/null 2>&1 || true
-              fi
-              if [ "$attempt" -eq 90 ]; then
-                echo "Android emulator did not become ready. ADB devices:"
-                adb devices -l || true
-                exit 1
-              fi
-              sleep 2
-            done
+            # The emulator action already waits for boot; allow ADB to settle and verify it.
+            adb wait-for-device
+            sleep 10
+            adb devices -l
+            adb shell getprop sys.boot_completed
             test -s android-rebunar/app/build/outputs/apk/debug/app-debug.apk
-            for attempt in $(seq 1 5); do
-              if adb install -r android-rebunar/app/build/outputs/apk/debug/app-debug.apk; then
-                break
-              fi
-              if [ "$attempt" -eq 5 ]; then
-                echo "APK installation failed after 5 attempts."
-                adb devices -l || true
-                exit 1
-              fi
-              adb reconnect offline >/dev/null 2>&1 || true
-              sleep 5
-            done
+            adb install -r android-rebunar/app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
             adb shell am force-stop ru.rebunar.app
             adb shell am start -W -n ru.rebunar.app/.MainActivity
