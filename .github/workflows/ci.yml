@@ -423,10 +423,16 @@ jobs:
             grep -q "Главный экран Rebunar" emulator-output/window.xml || { echo "Rebunar home screen was not found in the Android UI hierarchy. See screenshots and logcat."; exit 1; }
             # Exercise the native bottom navigation; UI hierarchy places its buttons at y=2315.
             for destination in "store:275" "reader:450" "community:630" "chats:806" "more:984" "home-return:96"; do name="${destination%%:*}"; x="${destination##*:}"; adb shell input tap "$x" 2315; sleep 5; adb exec-out screencap -p > "emulator-output/rebunar-$name.png"; adb shell uiautomator dump "/sdcard/window-$name.xml" >/dev/null 2>&1 || true; adb pull "/sdcard/window-$name.xml" "emulator-output/window-$name.xml" >/dev/null 2>&1 || true; test -s "emulator-output/rebunar-$name.png" || exit 1; done
-            test -s emulator-output/rebunar-search.png
-            test -s emulator-output/rebunar-favorites.png
-            test -s emulator-output/rebunar-profile.png
+            test -s emulator-output/rebunar-store.png
+            test -s emulator-output/rebunar-reader.png
+            test -s emulator-output/rebunar-community.png
+            test -s emulator-output/rebunar-chats.png
+            test -s emulator-output/rebunar-more.png
             test -s emulator-output/rebunar-home-return.png
+            grep -q 'Магазин' emulator-output/window-store.xml
+            grep -q 'Читалка' emulator-output/window-reader.xml
+            grep -q 'Сообщества' emulator-output/window-community.xml
+            grep -q 'Чаты' emulator-output/window-chats.xml
 
       - name: Upload emulator evidence
         if: always()
