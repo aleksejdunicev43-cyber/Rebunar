@@ -57,6 +57,50 @@ async function deleteWallpaper() {
   });
 }
 
+async function fetchHomeSettings() {
+  const response = await fetch('/api/home/settings', { credentials: 'same-origin' });
+  if (!response.ok) throw new Error('Не удалось получить настройки аккаунта.');
+  return response.json();
+}
+
+async function uploadAccountWallpaper(blob) {
+  const form = new FormData();
+  form.append('wallpaper', blob, 'rebunar-home-wallpaper.jpg');
+  const response = await fetch('/api/home/wallpaper', {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: form
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Не удалось сохранить обои в аккаунте.');
+  return data;
+}
+
+async function loadAccountWallpaper(workspace) {
+  try {
+    const settings = await fetchHomeSettings();
+    if (settings.logged_in && settings.wallpaper_url) {
+      const response = await fetch(settings.wallpaper_url, { credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) throw new Error('Не удалось загрузить обои аккаунта.');
+      const blob = await response.blob();
+      await writeWallpaper(blob);
+      applyWallpaper(workspace, blob);
+      return;
+    }
+    const localBlob = await readWallpaper();
+    if (localBlob) {
+      applyWallpaper(workspace, localBlob);
+      if (settings.logged_in) {
+        showWallpaperMessage(workspace, 'Эти обои сохранены только на этом устройстве. Выбери их заново, чтобы синхронизировать.');
+      }
+    }
+  } catch (error) {
+    const localBlob = await readWallpaper().catch(() => null);
+    if (localBlob) applyWallpaper(workspace, localBlob);
+    showWallpaperMessage(workspace, error.message || 'Не удалось загрузить настройки аккаунта.', true);
+  }
+}
+
 function applyWallpaper(workspace, blob) {
   if (wallpaperUrl) URL.revokeObjectURL(wallpaperUrl);
   wallpaperUrl = blob ? URL.createObjectURL(blob) : null;
@@ -679,9 +723,10 @@ export function renderHomeScreen(outlet) {
       const edited = await openWallpaperEditor(file, workspace);
       if (!edited) return;
       showWallpaperMessage(workspace, 'Сохраняю обои…');
+      await uploadAccountWallpaper(edited);
       await writeWallpaper(edited);
       applyWallpaper(workspace, edited);
-      showWallpaperMessage(workspace, 'Обои установлены.');
+      showWallpaperMessage(workspace, 'Обои сохранены в аккаунте и синхронизируются между устройствами.');
     } catch (error) {
       showWallpaperMessage(workspace, error.message || 'Не удалось сохранить изображение.', true);
     } finally {
@@ -689,7 +734,5 @@ export function renderHomeScreen(outlet) {
     }
   });
 
-  readWallpaper()
-    .then(blob => { if (blob) applyWallpaper(workspace, blob); })
-    .catch(error => showWallpaperMessage(workspace, error.message || 'Не удалось загрузить сохранённые обои.', true));
+  loadAccountWallpaper(workspace);
 }
