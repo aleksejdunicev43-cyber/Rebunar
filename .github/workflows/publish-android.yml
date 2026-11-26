@@ -61,12 +61,12 @@ jobs:
           import re
           gradle_file = Path("android-rebunar/app/build.gradle.kts")
           text = gradle_file.read_text()
-          text, code_count = re.subn(r"versionCode = \\d+", "versionCode = 9", text, count=1)
+          text, code_count = re.subn(r"versionCode = \d+", "versionCode = 9", text, count=1)
           text, name_count = re.subn(r'versionName = "[^"]+"', 'versionName = "0.2.2"', text, count=1)
           if code_count != 1 or name_count != 1:
               raise SystemExit("Could not set the intended Android version.")
           gradle_file.write_text(text)
-          PYY
+          PY
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
           test -s android-rebunar/app/src/main/assets/build/index.html
