@@ -41,7 +41,7 @@ jobs:
           # Fail the release if the canonical frontend does not contain the current store.
           grep -R -q 'ChatGPT' frontend/build/assets
           grep -R -q 'store-chatgpt-preview' frontend/build/assets
-          printf '{"version":"0.2.2","commit":"%s"}\n' "$GITHUB_SHA" > frontend/build/rebunar-build.json
+          printf '{"version":"0.2.3","commit":"%s"}\n' "$GITHUB_SHA" > frontend/build/rebunar-build.json
           cd frontend/build
           zip -qr ../../rebunar-web-build.zip .
           cd ../..
@@ -49,7 +49,7 @@ jobs:
       - name: Checkout Android application source
         uses: actions/checkout@v4
         with:
-          ref: d7e6c10f94ef00fd5a786ce03064a3789e0e77c1
+          ref: 2282873e5b8b6558ad5cf62816df916123e574c2
           path: android-source
 
       - name: Prepare Android project and bundle frontend
@@ -61,8 +61,8 @@ jobs:
           import re
           gradle_file = Path("android-rebunar/app/build.gradle.kts")
           text = gradle_file.read_text()
-          text, code_count = re.subn(r"versionCode = \d+", "versionCode = 9", text, count=1)
-          text, name_count = re.subn(r'versionName = "[^"]+"', 'versionName = "0.2.2"', text, count=1)
+          text, code_count = re.subn(r"versionCode = \d+", "versionCode = 10", text, count=1)
+          text, name_count = re.subn(r'versionName = "[^"]+"', 'versionName = "0.2.3"', text, count=1)
           if code_count != 1 or name_count != 1:
               raise SystemExit("Could not set the intended Android version.")
           gradle_file.write_text(text)
@@ -228,8 +228,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2.2
-          name: Rebunar Android 0.2.2
+          tag_name: v0.2.3
+          name: Rebunar Android 0.2.3
           target_commitish: main
           generate_release_notes: true
           make_latest: true
