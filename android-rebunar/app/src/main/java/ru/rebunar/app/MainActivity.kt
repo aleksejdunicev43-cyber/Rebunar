@@ -15,6 +15,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
@@ -27,6 +28,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -51,7 +53,13 @@ class MainActivity : Activity() {
     private lateinit var errorPanel: LinearLayout
     private lateinit var browserPanel: LinearLayout
     private lateinit var browserWebView: WebView
-    private lateinit var browserAddress: TextView
+    private lateinit var browserAddress: EditText
+    private lateinit var browserContent: FrameLayout
+    private lateinit var browserTabsButton: Button
+    private data class BrowserTab(val id: Int, val view: WebView, var title: String, var url: String)
+    private val browserTabs = mutableListOf<BrowserTab>()
+    private var activeBrowserTabId = -1
+    private var nextBrowserTabId = 1
     private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
     private var hasEnteredForeground = false
     private var updateDialogVisible = false
@@ -221,10 +229,9 @@ class MainActivity : Activity() {
                 }
 
                 if (uri.scheme == "https" || uri.scheme == "http") {
-                    runCatching {
-                        startActivity(Intent(Intent.ACTION_VIEW, uri))
-                    }
+                    openInternalBrowser(uri.toString(), uri.host.orEmpty())
                 }
+                // Never hand web links to Chrome or another Android app.
                 return true
             }
 
@@ -521,77 +528,203 @@ class MainActivity : Activity() {
         val toolbar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(6), dp(5), dp(6), dp(5))
-            setBackgroundColor(Color.rgb(17, 21, 19))
+            setPadding(dp(4), dp(5), dp(4), dp(5))
+            setBackgroundColor(Color.rgb(17, 25, 21))
         }
-        fun toolButton(label: String, action: () -> Unit): Button =
+        fun toolButton(label: String, width: Int = 38, action: () -> Unit): Button =
             Button(this).apply {
                 text = label
                 isAllCaps = false
-                textSize = 13f
-                minWidth = dp(42)
-                setPadding(dp(4), 0, dp(4), 0)
+                textSize = 14f
+                minWidth = dp(width)
+                setPadding(dp(2), 0, dp(2), 0)
                 setOnClickListener { action() }
             }
         toolbar.addView(toolButton("‹") { if (browserWebView.canGoBack()) browserWebView.goBack() })
         toolbar.addView(toolButton("›") { if (browserWebView.canGoForward()) browserWebView.goForward() })
-        browserAddress = TextView(this).apply {
-            text = "https://"
+        browserAddress = EditText(this).apply {
+            setSingleLine(true)
             textSize = 12f
-            setTextColor(Color.LTGRAY)
-            maxLines = 1
-            ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.LTGRAY)
+            hint = "Введите адрес сайта"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_URI
+            imeOptions = EditorInfo.IME_ACTION_GO
             setPadding(dp(8), 0, dp(8), 0)
+            setBackgroundColor(Color.rgb(31, 43, 36))
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_GO) {
+                    loadBrowserAddress()
+                    true
+                } else false
+            }
         }
-        toolbar.addView(browserAddress, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        toolbar.addView(browserAddress, LinearLayout.LayoutParams(0, dp(42), 1f))
+        browserTabsButton = toolButton("1", 42) { showBrowserTabs() }
+        toolbar.addView(browserTabsButton)
+        toolbar.addView(toolButton("+", 38) { createBrowserTab("about:blank", true) })
         toolbar.addView(toolButton("↻") { browserWebView.reload() })
         toolbar.addView(toolButton("✕") { closeInternalBrowser() })
-        browserWebView = WebView(this).apply {
+
+        browserContent = FrameLayout(this).apply {
             setBackgroundColor(Color.rgb(8, 9, 10))
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            settings.loadsImagesAutomatically = true
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
-            settings.javaScriptCanOpenWindowsAutomatically = false
-            settings.setSupportMultipleWindows(false)
-        }
-        browserWebView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val uri = request?.url ?: return true
-                return uri.scheme != "https" && uri.scheme != "http"
-            }
-            override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
-                browserAddress.text = url ?: ""
-            }
-            override fun onPageFinished(view: WebView?, url: String?) {
-                browserAddress.text = url ?: ""
-            }
-            override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: android.net.http.SslError?) {
-                handler?.cancel()
-            }
         }
         panel.addView(toolbar, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(48)
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(54)
         ))
-        panel.addView(browserWebView, LinearLayout.LayoutParams(
+        panel.addView(browserContent, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
         ))
         return panel
     }
 
-    private fun openInternalBrowser(rawUrl: String, title: String) {
-        val uri = runCatching { Uri.parse(rawUrl) }.getOrNull() ?: return
-        if (uri.scheme != "https" && uri.scheme != "http") return
-        if (uri.host.isNullOrBlank()) return
-        browserAddress.text = title.ifBlank { uri.host ?: rawUrl }
+    private fun normalizeBrowserAddress(raw: String): String {
+        val value = raw.trim()
+        if (value.isBlank()) return ""
+        val candidate = if (value.contains("://")) value else "https://$value"
+        val uri = runCatching { Uri.parse(candidate) }.getOrNull() ?: return ""
+        if ((uri.scheme != "https" && uri.scheme != "http") || uri.host.isNullOrBlank()) return ""
+        return uri.toString()
+    }
+
+    private fun loadBrowserAddress() {
+        val address = normalizeBrowserAddress(browserAddress.text.toString())
+        if (address.isBlank()) {
+            browserAddress.error = "Введи корректный адрес сайта"
+            return
+        }
+        browserAddress.clearFocus()
+        val keyboard = getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        keyboard.hideSoftInputFromWindow(browserAddress.windowToken, 0)
+        browserWebView.loadUrl(address)
+    }
+
+    private fun createBrowserTab(rawUrl: String, activate: Boolean): WebView {
+        val view = WebView(this).apply {
+            setBackgroundColor(Color.rgb(8, 9, 10))
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.loadsImagesAutomatically = true
+            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            settings.javaScriptCanOpenWindowsAutomatically = true
+            settings.setSupportMultipleWindows(true)
+            settings.allowFileAccess = false
+            settings.allowContentAccess = true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) settings.safeBrowsingEnabled = true
+        }
+        CookieManager.getInstance().setAcceptCookie(true)
+        CookieManager.getInstance().setAcceptThirdPartyCookies(view, true)
+        val tab = BrowserTab(nextBrowserTabId++, view, "Новая вкладка", rawUrl)
+        browserTabs.add(tab)
+        browserContent.addView(view, FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        ))
+        view.visibility = View.GONE
+
+        view.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(webView: WebView?, request: WebResourceRequest?): Boolean {
+                val uri = request?.url ?: return true
+                // Keep all normal web navigation in this tab. Block unsupported external schemes.
+                return uri.scheme != "https" && uri.scheme != "http"
+            }
+            override fun onPageStarted(webView: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                tab.url = url.orEmpty()
+                if (activeBrowserTabId == tab.id) updateBrowserToolbar(tab)
+            }
+            override fun onPageFinished(webView: WebView?, url: String?) {
+                tab.url = url.orEmpty()
+                tab.title = webView?.title?.takeIf { it.isNotBlank() } ?: Uri.parse(tab.url).host.orEmpty()
+                if (activeBrowserTabId == tab.id) updateBrowserToolbar(tab)
+                CookieManager.getInstance().flush()
+            }
+            override fun onReceivedSslError(webView: WebView?, handler: SslErrorHandler?, error: android.net.http.SslError?) {
+                handler?.cancel()
+            }
+        }
+        view.webChromeClient = object : WebChromeClient() {
+            override fun onCreateWindow(
+                source: WebView?,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: android.os.Message?
+            ): Boolean {
+                if (!isUserGesture || resultMsg == null) return false
+                val newView = createBrowserTab("about:blank", true)
+                val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
+                transport.webView = newView
+                resultMsg.sendToTarget()
+                return true
+            }
+            override fun onCloseWindow(window: WebView?) {
+                val closing = browserTabs.firstOrNull { it.view === window } ?: return
+                closeBrowserTab(closing.id)
+            }
+        }
+        if (activate) activateBrowserTab(tab.id)
+        if (rawUrl.isNotBlank() && rawUrl != "about:blank") view.loadUrl(rawUrl)
+        return view
+    }
+
+    private fun activateBrowserTab(id: Int) {
+        val tab = browserTabs.firstOrNull { it.id == id } ?: return
+        activeBrowserTabId = id
+        browserTabs.forEach { it.view.visibility = if (it.id == id) View.VISIBLE else View.GONE }
+        browserWebView = tab.view
+        updateBrowserToolbar(tab)
         browserPanel.visibility = View.VISIBLE
-        browserWebView.loadUrl(uri.toString())
+    }
+
+    private fun updateBrowserToolbar(tab: BrowserTab) {
+        if (!::browserAddress.isInitialized || activeBrowserTabId != tab.id) return
+        if (!browserAddress.hasFocus()) browserAddress.setText(tab.url.takeUnless { it == "about:blank" } ?: "")
+        browserAddress.setSelection(browserAddress.text.length)
+        browserTabsButton.text = browserTabs.size.toString()
+        browserTabsButton.contentDescription = "Открытые вкладки: ${browserTabs.size}"
+    }
+
+    private fun showBrowserTabs() {
+        if (browserTabs.isEmpty()) return
+        val labels = browserTabs.mapIndexed { index, tab ->
+            "${index + 1}. ${tab.title.ifBlank { tab.url.ifBlank { "Новая вкладка" } }}"
+        }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Вкладки Rebunar")
+            .setItems(labels) { _, which -> browserTabs.getOrNull(which)?.let { activateBrowserTab(it.id) } }
+            .setNegativeButton("Закрыть", null)
+            .show()
+    }
+
+    private fun closeBrowserTab(id: Int) {
+        val index = browserTabs.indexOfFirst { it.id == id }
+        if (index < 0) return
+        val wasActive = activeBrowserTabId == id
+        val tab = browserTabs.removeAt(index)
+        tab.view.stopLoading()
+        browserContent.removeView(tab.view)
+        tab.view.destroy()
+        if (browserTabs.isEmpty()) {
+            activeBrowserTabId = -1
+            browserPanel.visibility = View.GONE
+            return
+        }
+        if (wasActive) activateBrowserTab(browserTabs.getOrElse(index.coerceAtMost(browserTabs.lastIndex)) { browserTabs.last() }.id)
+        else browserTabsButton.text = browserTabs.size.toString()
+    }
+
+    private fun openInternalBrowser(rawUrl: String, title: String) {
+        val url = normalizeBrowserAddress(rawUrl)
+        if (url.isBlank()) return
+        val view = createBrowserTab(url, true)
+        browserTabs.lastOrNull()?.let { tab ->
+            if (tab.view === view && title.isNotBlank()) {
+                tab.title = title
+                updateBrowserToolbar(tab)
+            }
+        }
     }
 
     private fun closeInternalBrowser() {
-        browserWebView.stopLoading()
-        browserWebView.loadUrl("about:blank")
-        browserPanel.visibility = View.GONE
+        if (activeBrowserTabId >= 0) closeBrowserTab(activeBrowserTabId)
     }
 
     private fun refreshPage() {
@@ -636,7 +769,7 @@ class MainActivity : Activity() {
 
     override fun onBackPressed() {
         if (::browserPanel.isInitialized && browserPanel.visibility == View.VISIBLE) {
-            if (browserWebView.canGoBack()) browserWebView.goBack() else closeInternalBrowser()
+            if (::browserWebView.isInitialized && browserWebView.canGoBack()) browserWebView.goBack() else closeInternalBrowser()
         } else if (::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
         } else {
