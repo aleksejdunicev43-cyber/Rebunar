@@ -15,6 +15,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
@@ -228,15 +229,24 @@ class MainActivity : Activity() {
             }
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                Log.i("RebunarWeb", "PAGE_STARTED url=" + url)
                 errorPanel.visibility = View.GONE
                 progress.visibility = View.VISIBLE
                 progress.progress = 5
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
+                Log.i("RebunarWeb", "PAGE_FINISHED url=" + url + " title=" + view?.title)
+                view?.evaluateJavascript("JSON.stringify({ready:document.readyState,title:document.title,href:location.href,body:(document.body?.innerText||'').slice(0,1200),app:!!document.querySelector('#app')})") { result ->
+                    Log.i("RebunarWeb", "PAGE_STATE " + result)
+                }
                 progress.visibility = View.GONE
                 errorPanel.visibility = View.GONE
                 CookieManager.getInstance().flush()
+            }
+
+            override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                Log.e("RebunarWeb", "HTTP_ERROR url=" + request?.url + " status=" + errorResponse?.statusCode)
             }
 
             override fun onReceivedError(
@@ -244,6 +254,7 @@ class MainActivity : Activity() {
                 request: WebResourceRequest?,
                 error: WebResourceError?
             ) {
+                Log.e("RebunarWeb", "LOAD_ERROR url=" + request?.url + " code=" + error?.errorCode + " description=" + error?.description)
                 if (request?.isForMainFrame == true) showConnectionError()
             }
 
@@ -252,13 +263,20 @@ class MainActivity : Activity() {
                 handler: SslErrorHandler?,
                 error: android.net.http.SslError?
             ) {
+                Log.e("RebunarWeb", "SSL_ERROR url=" + error?.url + " primary=" + error?.primaryError)
                 handler?.cancel()
                 showConnectionError()
             }
         }
 
         webView.webChromeClient = object : WebChromeClient() {
+            override fun onConsoleMessage(message: android.webkit.ConsoleMessage?): Boolean {
+                Log.e("RebunarWebConsole", message?.message() + " -- " + message?.sourceId() + ":" + message?.lineNumber())
+                return true
+            }
+
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                Log.d("RebunarWeb", "PROGRESS " + newProgress)
                 progress.progress = newProgress
                 if (newProgress >= 100) progress.visibility = View.GONE
             }
