@@ -707,10 +707,10 @@
 .wallpaper-source-icon{font-size:22px;color:#a8e8c1}
 .wallpaper-source-bottom button strong{font-size:13px;font-weight:650}
 @media(max-height:700px){
-  .wallpaper-source-picker{top:calc(48px + env(safe-area-inset-top));bottom:calc(100px + env(safe-area-inset-bottom))}
+  .wallpaper-source-picker{top:calc(48px + env(safe-area-inset-top));bottom:0}
   .wallpaper-source-header{flex-basis:48px;min-height:48px}
   .wallpaper-source-preview{padding:5px 14px;gap:5px}
-  .wallpaper-source-preview-image{width:min(58vw,250px);height:min(34dvh,300px);min-height:140px}
+  .wallpaper-source-preview-image{width:min(48vw,210px);height:min(26dvh,240px);min-height:120px}
   .wallpaper-source-bottom{padding:6px 12px 8px}
   .wallpaper-source-bottom button{min-height:48px}
 }
