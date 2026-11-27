@@ -1810,5 +1810,5 @@
 /* Raise only the curved back-arrow glyph by 5px; keep its button centered. */
 .messages-chat-header .messages-back > span {
   display: inline-block;
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
