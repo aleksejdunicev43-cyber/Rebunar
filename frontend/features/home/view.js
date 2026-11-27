@@ -127,53 +127,6 @@ async function loadAccountWallpaper(workspace) {
   }
 }
 
-function openWallpaperGallery(workspace, files) {
-  return new Promise(resolve => {
-    const images = Array.from(files || []).filter(file =>
-      file && /^image\/(jpeg|png|webp|avif|gif)$/i.test(file.type) && file.size <= 12 * 1024 * 1024
-    );
-    const overlay = document.createElement('section');
-    overlay.className = 'wallpaper-gallery';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Галерея фотографий');
-    overlay.innerHTML =
-      '<header class="wallpaper-gallery-header"><button type="button" class="wallpaper-gallery-close" aria-label="Закрыть">×</button><div><strong>Обои</strong><small>Выбери фотографию</small></div><span></span></header>' +
-      '<div class="wallpaper-gallery-grid" role="list"></div>' +
-      '<footer class="wallpaper-gallery-footer"><span>' + images.length + ' фотографий</span><small>Нажми на фото, чтобы открыть редактор</small></footer>';
-    workspace.appendChild(overlay);
-    const grid = overlay.querySelector('.wallpaper-gallery-grid');
-    const urls = [];
-    const finish = value => {
-      urls.forEach(url => URL.revokeObjectURL(url));
-      overlay.remove();
-      resolve(value);
-    };
-    overlay.querySelector('.wallpaper-gallery-close').addEventListener('click', () => finish(null));
-    images.forEach((file, index) => {
-      const url = URL.createObjectURL(file);
-      urls.push(url);
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'wallpaper-gallery-item';
-      button.setAttribute('role', 'listitem');
-      button.setAttribute('aria-label', 'Выбрать фотографию ' + (index + 1));
-      const image = document.createElement('img');
-      image.src = url;
-      image.alt = '';
-      image.loading = 'lazy';
-      const number = document.createElement('span');
-      number.textContent = String(index + 1);
-      button.append(image, number);
-      button.addEventListener('click', () => finish(file));
-      grid.appendChild(button);
-    });
-    if (!images.length) {
-      grid.innerHTML = '<div class="wallpaper-gallery-empty"><span>▧</span><strong>Фотографии не найдены</strong><small>Выбери изображения JPG, PNG или WebP размером до 12 МБ.</small></div>';
-    }
-  });
-}
-
 function applyWallpaper(workspace, blob) {
   if (wallpaperUrl) URL.revokeObjectURL(wallpaperUrl);
   wallpaperUrl = blob ? URL.createObjectURL(blob) : null;
@@ -741,8 +694,8 @@ export function renderHomeScreen(outlet) {
     <section class="home-workspace" aria-label="Главный экран Rebunar">
       <img class="home-wallpaper-image" alt="" aria-hidden="true" hidden>
       <input class="home-wallpaper-input" type="file"
-        accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple
-        aria-label="Выбрать фотографии для обоев">
+        accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+        aria-label="Выбрать фотографию для обоев">
       <button class="home-wallpaper-picker" type="button" hidden aria-label="Выбрать обои">
         <span class="home-wallpaper-picker-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="4.5" width="17" height="15" rx="2.2"></rect><circle cx="9" cy="9.5" r="1.7"></circle><path d="m5 17 5.2-5 3.2 3 2.2-2 3.4 4"></path></svg></span>
         <span class="home-wallpaper-picker-label">Обои</span>
@@ -825,8 +778,16 @@ export function renderHomeScreen(outlet) {
     if (!selectedFiles.length) return;
     showWallpaperMessage(workspace, '');
     try {
-      const file = await openWallpaperGallery(workspace, selectedFiles);
+      const file = selectedFiles[0];
       if (!file) return;
+      if (!/^image\/(jpeg|png|webp|avif|gif)$/i.test(file.type)) {
+        showWallpaperMessage(workspace, 'Выбери изображение JPG, PNG, WebP или GIF.', true);
+        return;
+      }
+      if (file.size > 12 * 1024 * 1024) {
+        showWallpaperMessage(workspace, 'Изображение слишком большое. Максимальный размер — 12 МБ.', true);
+        return;
+      }
       const edited = await openWallpaperEditor(file, workspace);
       if (!edited) return;
       showWallpaperMessage(workspace, 'Сохраняю обои…');
