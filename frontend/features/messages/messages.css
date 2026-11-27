@@ -1828,3 +1828,16 @@
   outline: none !important;
   box-shadow: none !important;
 }
+
+
+/* Chat header: slightly enlarge the emerald back arrow and move the identity group closer to the left edge. */
+.messages-chat-header .messages-back {
+  font-size: 28px !important;
+}
+
+@media (max-width: 760px) {
+  .messages-chat-header {
+    padding-left: 6px !important;
+    gap: 8px !important;
+  }
+}
