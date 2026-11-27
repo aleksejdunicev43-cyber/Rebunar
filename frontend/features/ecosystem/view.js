@@ -162,8 +162,8 @@ export function renderEcosystemScreen(outlet, key) {
       outlet.innerHTML = `
         <section class="screen ecosystem-screen ecosystem-store-screen ecosystem-store-v2 store-detail-screen">
           <button type="button" class="store-back" data-store-back><span aria-hidden="true">‹</span> Магазин</button>
-          <div class="store-detail-head"><span class="store-detail-icon">${app.icon}</span><div class="store-detail-title"><span class="store-section-kicker">ПРИЛОЖЕНИЕ · ${app.category.toLocaleUpperCase()}</span><h1>${app.name}</h1><p>${app.description}</p></div></div>
-          <div class="store-detail-actions"><button type="button" class="store-install-action" data-store-install ${installed ? 'is-installed' : ''} ${installed ? 'disabled' : ''}><span class="store-install-progress" aria-hidden="true"><span></span></span><span class="store-install-label">${installed ? 'Установлено' : 'Установить'}</span></button></div>
+          <div class="store-detail-head"><span class="store-detail-icon-wrap"><span class="store-detail-icon">${app.icon}</span><span class="store-detail-download-ring" aria-hidden="true"></span></span><div class="store-detail-title"><span class="store-section-kicker">ПРИЛОЖЕНИЕ · ${app.category.toLocaleUpperCase()}</span><h1>${app.name}</h1><p>${app.description}</p></div></div>
+          <div class="store-detail-actions"><button type="button" class="store-install-action" data-store-install ${installed ? 'is-installed' : ''} ${installed ? 'disabled' : ''}><span class="store-install-label">${installed ? 'Установлено' : 'Установить'}</span></button></div>
           <div class="store-preview-panel ${chatgpt ? 'store-chatgpt-preview' : ''}"><div class="store-preview-art store-preview-art-one"><span>${chatgpt ? 'ChatGPT' : 'Идеи'}</span><b>${chatgpt ? 'ОБЩАЙСЯ<br>С ИИ' : 'СОБИРАЙ<br>ВДОХНОВЕНИЕ'}</b></div><div class="store-preview-art store-preview-art-two"><span>${chatgpt ? 'Помощник' : 'Коллекции'}</span><b>${chatgpt ? 'ИДЕИ<br>И ОТВЕТЫ' : 'ТВОЙ<br>ВИЗУАЛЬНЫЙ<br>МИР'}</b></div><div class="store-preview-art store-preview-art-three"><span>${chatgpt ? 'OpenAI' : 'Открывай'}</span><b>${chatgpt ? 'ОДИН СЕРВИС<br>МНОГО ВОЗМОЖНОСТЕЙ' : 'НОВОЕ<br>КАЖДЫЙ ДЕНЬ'}</b></div></div>
           <section class="store-detail-section"><h2>О приложении</h2><p>${chatgpt ? 'ChatGPT — официальный ИИ-сервис OpenAI. Он помогает отвечать на вопросы, формулировать идеи, работать с текстами и решать самые разные задачи. В Rebunar открывается сайт chatgpt.com.' : 'Pinterest — сервис для поиска и сохранения визуальных идей. Находи изображения, подборки и вдохновение, а понравившееся собирай в собственные коллекции.'}</p></section>
           <section class="store-detail-section"><h2>Что можно делать</h2><ul class="store-feature-list">${features.map(feature => `<li><span>✦</span> ${feature}</li>`).join('')}</ul></section>
@@ -176,16 +176,20 @@ export function renderEcosystemScreen(outlet, key) {
         if (button.disabled || isInstalled(app)) return;
         button.disabled = true;
         button.classList.add('is-installing');
+        outlet.querySelector('.store-detail-icon-wrap')?.classList.add('is-installing');
         button.querySelector('.store-install-label').textContent = 'Добавление…';
         // Visual install flow only: no APK or app data is downloaded.
         window.setTimeout(() => {
           if (!saveApp(app)) {
             button.classList.remove('is-installing');
+            outlet.querySelector('.store-detail-icon-wrap')?.classList.remove('is-installing');
             button.disabled = false;
             button.querySelector('.store-install-label').textContent = 'Повторить';
             return;
           }
           button.classList.remove('is-installing');
+          outlet.querySelector('.store-detail-icon-wrap')?.classList.remove('is-installing');
+          outlet.querySelector('.store-detail-icon-wrap')?.classList.add('is-installed');
           button.classList.add('is-installed');
           button.querySelector('.store-install-label').textContent = 'Установлено';
         }, 1100);
