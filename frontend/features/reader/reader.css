@@ -1295,3 +1295,30 @@
     padding:14px;
   }
 }
+
+/* READER — content-first landing */
+.reader-screen{padding-top:12px}
+.reader-catalog-hero{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 4px 8px;border:0;border-radius:0;background:transparent}
+.reader-catalog-hero h1{margin:2px 0;font-size:clamp(25px,4vw,32px)}
+.reader-library-link{flex:0 0 auto;padding:9px 12px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.035);color:#aebbb4;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.reader-library-link:hover,.reader-library-link.is-active{border-color:rgba(75,211,157,.35);color:#78d9ad;background:rgba(43,181,131,.09)}
+.reader-tabs.reader-tabs-compact{display:flex;gap:7px;margin:8px 0 16px;padding:0;border:0;background:transparent}
+.reader-tabs-compact .reader-tab{flex:0 0 auto;min-height:36px;padding:8px 17px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:transparent;color:#9eaaa4;font-size:12px}
+.reader-tabs-compact .reader-tab.is-active{border-color:rgba(75,211,157,.45);background:rgba(43,181,131,.16);color:#eafff3;box-shadow:none}
+.reader-category-panel{min-height:0;padding:0;border:0;border-radius:0;background:transparent}
+.reader-category-panel .reader-catalog-toolbar{margin:0 0 12px}
+.reader-category-panel .reader-work-grid{margin-top:12px}
+.reader-category-panel.reader-library-panel{padding-top:4px}
+.reader-category-panel .reader-work-card{border-color:rgba(255,255,255,.075);background:#141b18}
+.reader-category-panel .reader-work-card-novel{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:stretch;min-height:132px}
+.reader-category-panel .reader-work-card-novel .reader-work-cover{width:88px;height:100%;min-height:132px}
+.reader-category-panel .reader-work-card-novel .reader-work-info{justify-content:center;padding:11px}
+.reader-category-panel .reader-work-card-novel .reader-work-description{-webkit-line-clamp:3}
+@media(max-width:600px){
+ .reader-catalog-hero{padding:8px 2px 6px}
+ .reader-tabs.reader-tabs-compact{margin:8px 0 13px}
+ .reader-category-panel .reader-work-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .reader-category-panel .reader-work-card:not(.reader-work-card-novel) .reader-work-cover{height:205px}
+ .reader-category-panel .reader-work-card-novel{grid-template-columns:78px minmax(0,1fr);min-height:116px}
+ .reader-category-panel .reader-work-card-novel .reader-work-cover{width:78px;min-height:116px}
+}

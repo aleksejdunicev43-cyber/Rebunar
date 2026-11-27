@@ -982,17 +982,18 @@ export function renderReaderScreen(outlet, params = {}) {
   const initialCategory = params.category === 'library' ? 'library' : (Object.hasOwn(categories, params.category) ? params.category : 'novels');
   outlet.innerHTML = [
     '<section class="screen reader-screen">',
-    '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Что почитаем?</h1></div></header>',
-    '<div class="reader-tabs" role="tablist" aria-label="Категории чтения">',
-      '<button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">Aa</span><span class="reader-tab-copy"><strong>Новеллы</strong><small>Текстовые истории</small></span></button>',
-      '<button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">▤</span><span class="reader-tab-copy"><strong>Вебтуны</strong><small>Истории в картинках</small></span></button>',
-      '<button class="reader-tab" type="button" role="tab" data-reader-tab="library" aria-selected="false"><span class="reader-tab-icon" aria-hidden="true">♡</span><span class="reader-tab-copy"><strong>Библиотека</strong><small>Сохранённые истории</small></span></button>',
+    '<header class="reader-hero reader-catalog-hero"><div class="reader-hero-copy"><span class="reader-eyebrow">REBUNAR / READER</span><h1>Читать</h1></div><button class="reader-library-link" type="button" data-reader-tab="library">♡ Моя библиотека</button></header>',
+    '<div class="reader-tabs reader-tabs-compact" role="tablist" aria-label="Категории чтения">',
+      '<button class="reader-tab" type="button" role="tab" data-reader-tab="novels" aria-selected="false">Новеллы</button>',
+      '<button class="reader-tab" type="button" role="tab" data-reader-tab="webtoons" aria-selected="false">Вебтуны</button>',
     '</div>',
     '<section class="reader-category-panel" id="reader-category-panel" aria-live="polite"></section>',
     '</section>'
   ].join('');
   const panel=outlet.querySelector('#reader-category-panel');
-  const tabs=[...outlet.querySelectorAll('[data-reader-tab]')];
+  const tabs=[...outlet.querySelectorAll('.reader-tabs [data-reader-tab]')];
+  const libraryLink=outlet.querySelector('.reader-library-link');
+  libraryLink?.addEventListener('click',()=>activateCategory('library'));
   let active='novels';
   const activateCategory=key=>{
     if(!categories[key] && key!=='library')return;
@@ -1000,6 +1001,8 @@ export function renderReaderScreen(outlet, params = {}) {
     active=key;
     tabs.forEach(tab=>{const on=tab.dataset.readerTab===key;tab.classList.toggle('is-active',on);tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;});
     panel.replaceChildren();
+    panel.classList.toggle('reader-library-panel',key==='library');
+    libraryLink?.classList.toggle('is-active',key==='library');
     const catalog=node('div','reader-catalog-list');
     panel.append(catalog);
     if(key==='library'){
