@@ -1812,3 +1812,19 @@
   display: inline-block;
   transform: translateY(-4px);
 }
+
+/* Minimal back control: keep the tap target, remove its visible square. */
+.messages-chat-header .messages-back {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #35c99a !important;
+  font-weight: 800 !important;
+  font-size: 24px !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.messages-chat-header .messages-back:focus,
+.messages-chat-header .messages-back:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
