@@ -1228,6 +1228,13 @@ def send_message():
         if not user:
             return jsonify({"error": "Пользователь не найден"}), 404
 
+        # Новое сообщение возвращает скрытый ранее диалог в список обеих сторон.
+        con.execute("""
+            DELETE FROM hidden_chats
+            WHERE (user_id = ? AND other_user_id = ?)
+               OR (user_id = ? AND other_user_id = ?)
+        """, (session["user_id"], receiver_id, receiver_id, session["user_id"]))
+
         cur = con.execute(
             "INSERT INTO messages (sender_id, receiver_id, text) VALUES (?, ?, ?)",
             (session["user_id"], receiver_id, text)
@@ -1278,6 +1285,13 @@ def send_message_image():
         folder.mkdir(parents=True, exist_ok=True)
         filename = uuid.uuid4().hex + "." + ext
         (folder / filename).write_bytes(data)
+        # Новое вложение возвращает скрытый ранее диалог в список обеих сторон.
+        con.execute("""
+            DELETE FROM hidden_chats
+            WHERE (user_id = ? AND other_user_id = ?)
+               OR (user_id = ? AND other_user_id = ?)
+        """, (me, receiver_id, receiver_id, me))
+
         cur = con.execute("""
             INSERT INTO messages (sender_id, receiver_id, text, image_path)
             VALUES (?, ?, ?, ?)
@@ -1580,6 +1594,7 @@ def message_history():
             "username": row[5],
             "display_name": row[6] or row[5],
             "avatar": row[7] or "",
+            "image_url": "/api/messages/image/" + row[8] if row[8] else None,
         }
         for row in rows
     ])
