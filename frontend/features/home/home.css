@@ -655,15 +655,15 @@
 /* REBUNAR — WALLPAPER SOURCE SCREEN */
 .wallpaper-source-picker{
   position:fixed;z-index:1100;
-  top:calc(58px + env(safe-area-inset-top));
-  right:0;bottom:calc(70px + env(safe-area-inset-bottom));left:0;
+  top:calc(52px + env(safe-area-inset-top));
+  right:0;bottom:calc(108px + env(safe-area-inset-bottom));left:0;
   display:flex;flex-direction:column;width:100%;overflow:hidden;
   box-sizing:border-box;background:linear-gradient(160deg,#202a28 0%,#111a18 100%);color:#f6f7f8;
   overscroll-behavior:contain;
 }
 .wallpaper-source-header{
   display:grid;grid-template-columns:52px 1fr 52px;align-items:center;
-  flex:0 0 64px;min-height:64px;padding:0 10px;
+  flex:0 0 54px;min-height:54px;padding:0 10px;
   background:rgba(5,10,9,.96);color:#fff;text-align:center;
   border-bottom:1px solid rgba(164,235,191,.12);
 }
@@ -674,12 +674,12 @@
 }
 .wallpaper-source-preview{
   display:flex;flex:1 1 auto;min-height:0;align-items:center;justify-content:center;
-  flex-direction:column;gap:12px;padding:24px 18px;
+  flex-direction:column;gap:7px;padding:8px 18px;
   color:rgba(235,255,243,.62);font-size:12px;
 }
 .wallpaper-source-preview-image{
   position:relative;display:flex;align-items:center;justify-content:center;
-  width:min(68vw,300px);height:min(49dvh,520px);min-height:180px;
+  width:min(64vw,280px);height:min(39dvh,410px);min-height:160px;
   overflow:hidden;border:1px solid rgba(156,238,188,.2);border-radius:18px;
   background-color:#101a17;
   background-image:radial-gradient(ellipse at 50% 30%,rgba(61,155,103,.28),transparent 58%),linear-gradient(145deg,#1b3027,#080f0c);
@@ -693,22 +693,24 @@
 .wallpaper-source-picker.has-current-wallpaper .wallpaper-source-empty{display:none}
 .wallpaper-source-bottom{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
-  flex:0 0 auto;padding:14px 14px 18px;
+  flex:0 0 auto;padding:8px 14px 10px;
   background:linear-gradient(180deg,rgba(24,34,30,.96),rgba(10,17,14,.98));
   border-top:1px solid rgba(164,235,191,.1);
 }
 .wallpaper-source-bottom button{
-  display:flex;min-width:0;min-height:62px;align-items:center;justify-content:center;
-  gap:10px;padding:10px 8px;border:1px solid rgba(255,255,255,.08);
+  display:flex;min-width:0;min-height:54px;align-items:center;justify-content:center;
+  gap:8px;padding:8px;border:1px solid rgba(255,255,255,.08);
   border-radius:13px;background:#111416;color:#f4f5f6;
   font:inherit;font-size:14px;cursor:pointer;touch-action:manipulation;
 }
 .wallpaper-source-bottom button:active{background:#30373a;transform:scale(.985)}
 .wallpaper-source-icon{font-size:22px;color:#a8e8c1}
 .wallpaper-source-bottom button strong{font-size:13px;font-weight:650}
-@media(max-height:560px){
-  .wallpaper-source-picker{top:calc(54px + env(safe-area-inset-top));bottom:calc(62px + env(safe-area-inset-bottom))}
-  .wallpaper-source-header{flex-basis:50px;min-height:50px}
-  .wallpaper-source-preview-image{height:36dvh}
-  .wallpaper-source-bottom button{min-height:50px}
+@media(max-height:700px){
+  .wallpaper-source-picker{top:calc(48px + env(safe-area-inset-top));bottom:calc(100px + env(safe-area-inset-bottom))}
+  .wallpaper-source-header{flex-basis:48px;min-height:48px}
+  .wallpaper-source-preview{padding:5px 14px;gap:5px}
+  .wallpaper-source-preview-image{width:min(58vw,250px);height:min(34dvh,300px);min-height:140px}
+  .wallpaper-source-bottom{padding:6px 12px 8px}
+  .wallpaper-source-bottom button{min-height:48px}
 }
