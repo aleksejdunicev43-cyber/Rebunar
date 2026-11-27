@@ -135,11 +135,14 @@ function openWallpaperSourcePicker(workspace, fileInput) {
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-label', 'Выбор обоев');
     overlay.innerHTML = '<header class="wallpaper-source-header"><button type="button" class="wallpaper-source-close" aria-label="Закрыть">×</button><strong>Обои</strong><span></span></header>' +
-      '<div class="wallpaper-source-preview"><div class="wallpaper-source-preview-image"></div><span>Предпросмотр обоев</span></div>' +
+      '<div class="wallpaper-source-preview"><div class="wallpaper-source-preview-image"><div class="wallpaper-source-empty"><span class="wallpaper-source-empty-icon" aria-hidden="true">✦</span><strong>Твои будущие обои</strong><small>Выбери фото и настрой кадрирование</small></div></div><span>Предпросмотр обоев</span></div>' +
       '<div class="wallpaper-source-bottom"><button type="button" data-source="screenshots"><span class="wallpaper-source-icon">▧</span><strong>Скриншоты</strong></button><button type="button" data-source="photos"><span class="wallpaper-source-icon">▣</span><strong>Фото</strong></button></div>';
     workspace.appendChild(overlay);
     const preview = overlay.querySelector('.wallpaper-source-preview-image');
-    if (wallpaperUrl) preview.style.backgroundImage = 'url("' + wallpaperUrl + '")';
+    if (wallpaperUrl) {
+      preview.style.backgroundImage = 'url("' + wallpaperUrl + '")';
+      overlay.classList.add('has-current-wallpaper');
+    }
     const finish = value => { overlay.remove(); resolve(value); };
     overlay.querySelector('.wallpaper-source-close').addEventListener('click', () => finish(null));
     overlay.addEventListener('click', event => {
@@ -198,7 +201,7 @@ function openWallpaperEditor(file, workspace) {
         '<div class="wallpaper-editor-tools"><p>Перемещай фото пальцем и меняй масштаб двумя пальцами</p><div class="wallpaper-editor-controls">' +
         '<button type="button" data-action="zoom-out" aria-label="Уменьшить">−</button><button type="button" data-action="zoom-in" aria-label="Увеличить">+</button>' +
         '<button type="button" data-action="rotate-left" aria-label="Повернуть влево">↶</button><button type="button" data-action="rotate-right" aria-label="Повернуть вправо">↷</button><button type="button" data-action="reset">Сбросить</button></div></div></div>';
-      workspace.appendChild(overlay);
+      document.body.appendChild(overlay);
       const preview = overlay.querySelector('.wallpaper-editor-preview');
       const image = overlay.querySelector('.wallpaper-editor-source');
       image.src = sourceUrl;
