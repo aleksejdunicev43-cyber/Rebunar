@@ -296,14 +296,9 @@ function openWallpaperEditor(file, workspace) {
 
 
 const HOME_APPS = [];
-const HOME_DOCK_DEFAULT = ['dock-home','dock-messages','dock-search','dock-favorites','dock-profile'];
-const HOME_DOCK_APPS = [
-  {id:'dock-home',name:'Главная',icon:'⌂',color:'#286b48',route:'home'},
-  {id:'dock-messages',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
-  {id:'dock-search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
-  {id:'dock-favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
-  {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
-];
+// Эти пять системных ярлыков больше не размещаются на рабочем столе.
+const HOME_DOCK_DEFAULT = [];
+const HOME_DOCK_APPS = [];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
 let homeLayoutTouched = false;
 const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
@@ -363,7 +358,7 @@ function loadHomeAppLayout() {
       const all = new Set([...gridDefault, ...dockDefaults, ...customIds]);
       const normalized = pages.slice(0, HOME_MAX_PAGES).map(page => Array.from({length:30}, (_, i) => all.has(page?.[i]) ? page[i] : null));
       if (!normalized.length) normalized.push(Array(30).fill(null));
-      const dock = Array.from({length:5}, (_, i) => all.has(saved.dock[i]) ? saved.dock[i] : null);
+      const dock = [];
       const seen = new Set();
       for (const page of normalized) {
         for (let i=0;i<page.length;i++) {
@@ -399,7 +394,7 @@ function loadHomeAppLayout() {
     const emptyIndex = pages[pageIndex].indexOf(null);
     if (emptyIndex >= 0) pages[pageIndex][emptyIndex] = id;
   }
-  return {pages, dock:HOME_DOCK_DEFAULT.slice()};
+  return {pages, dock:[]};
 }
 
 function renderHomeAppLauncher(workspace) {
@@ -526,7 +521,8 @@ function renderHomeAppLauncher(workspace) {
       grid.append(...page.map((id,index)=>createSlot('grid',index,id,pageIndex)));
       return grid;
     }));
-    dock.replaceChildren(...layout.dock.map((id,index)=>createSlot('dock',index,id)));
+    dock.replaceChildren();
+    dock.hidden = true;
     showPage(currentPage);
   };
   window.addEventListener('rebunar-home-app-added', event => {
