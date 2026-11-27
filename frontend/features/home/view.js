@@ -295,46 +295,9 @@ function openWallpaperEditor(file, workspace) {
 }
 
 
-const HOME_APPS = [
-  {id:'games',name:'Игры',icon:'🎮',color:'#315b47',route:'store'},
-  {id:'video',name:'Видео',icon:'▶',color:'#74434c',route:'creators'},
-  {id:'music',name:'Музыка',icon:'♫',color:'#554b7a',route:null},
-  {id:'books',name:'Книги',icon:'📚',color:'#66533b',route:'reader'},
-  {id:'chats',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
-  {id:'store',name:'Магазин',icon:'◈',color:'#6b4c37',route:'store'},
-  {id:'anime',name:'Аниме',icon:'✦',color:'#67466f',route:null},
-  {id:'communities',name:'Сообщества',icon:'♧',color:'#38634d',route:'communities'},
-  {id:'photos',name:'Фото',icon:'▧',color:'#5c5275',route:'favorites'},
-  {id:'files',name:'Файлы',icon:'▤',color:'#4a6170',route:null},
-  {id:'maps',name:'Карты',icon:'⌖',color:'#456b58',route:null},
-  {id:'browser',name:'Браузер',icon:'◎',color:'#3d6274',route:null},
-  {id:'news',name:'Новости',icon:'▥',color:'#66503d',route:'notifications'},
-  {id:'users',name:'Люди',icon:'♙',color:'#536b54',route:'users'},
-  {id:'profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'},
-  {id:'mail',name:'Почта',icon:'✉',color:'#4c6377',route:'mail'},
-  {id:'search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
-  {id:'alerts',name:'Уведомления',icon:'♢',color:'#765448',route:'notifications'},
-  {id:'stats',name:'Статистика',icon:'▥',color:'#405e78',route:'statistics'},
-  {id:'settings',name:'Настройки',icon:'⚙',color:'#52665a',route:'settings'},
-  {id:'creator',name:'Авторы',icon:'✎',color:'#76516b',route:'creators'},
-  {id:'reader',name:'Читалка',icon:'▣',color:'#5c6141',route:'reader'},
-  {id:'favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
-  {id:'social',name:'Лента',icon:'⌁',color:'#3e6a63',route:'communities'},
-  {id:'cloud',name:'Облако',icon:'☁',color:'#526b7a',route:null},
-  {id:'calendar',name:'Календарь',icon:'▦',color:'#6a5842',route:null},
-  {id:'wallet',name:'Кошелёк',icon:'◇',color:'#536b49',route:null},
-  {id:'translate',name:'Переводчик',icon:'文',color:'#4d5d7b',route:null},
-  {id:'camera',name:'Камера',icon:'◉',color:'#68516a',route:null},
-  {id:'more',name:'Ещё',icon:'＋',color:'#426b52',route:'settings'}
-];
-const HOME_DOCK_DEFAULT = ['dock-home','dock-messages','dock-search','dock-favorites','dock-profile'];
-const HOME_DOCK_APPS = [
-  {id:'dock-home',name:'Главная',icon:'⌂',color:'#286b48',route:'home'},
-  {id:'dock-messages',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
-  {id:'dock-search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
-  {id:'dock-favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
-  {id:'dock-profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'}
-];
+const HOME_APPS = [];
+const HOME_DOCK_DEFAULT = [];
+const HOME_DOCK_APPS = [];
 const HOME_LAYOUT_KEY = 'rebunar-home-app-layout-v1';
 let homeLayoutTouched = false;
 const HOME_CUSTOM_APPS_KEY = 'rebunar-home-custom-apps-v1';
