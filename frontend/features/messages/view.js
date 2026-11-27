@@ -438,6 +438,20 @@ export function renderMessagesScreen(outlet, params = {}) {
     }
   }, listenerOptions);
 
+  outlet.addEventListener('input', event => {
+    if (!event.target.matches('[data-send-form] textarea[name="text"]')) return;
+    event.target.style.height = 'auto';
+    event.target.style.height = Math.min(event.target.scrollHeight, 120) + 'px';
+  }, listenerOptions);
+
+  outlet.addEventListener('keydown', event => {
+    if (!event.target.matches('[data-send-form] textarea[name="text"]')) return;
+    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      event.target.form?.requestSubmit();
+    }
+  }, listenerOptions);
+
   outlet.addEventListener('submit', async event => {
     if (event.target.matches('[data-send-form]')) {
       event.preventDefault();
