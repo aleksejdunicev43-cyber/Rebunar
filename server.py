@@ -1144,97 +1144,58 @@ def upload_profile_cover():
     if len(data) > 5 * 1024 * 1024:
         return jsonify({"error": "Размер обложки не должен превышать 5 МБ"}), 413
 
-    if data.startswith(b"\xff\xd8\xff"):
-        extension = ".jpg"
-    elif data.startswith(b"\x89PNG\r\n\x1a\n"):
-        extension = ".png"
-    elif len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
-        extension = ".webp"
+    if data.hex().startswith("ffd8ff"):
+        ext = "jpg"
+    elif data.hex().startswith("89504e470d0a1a0a"):
+        ext = "png"
+    elif data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+        ext = "webp"
     else:
-        return jsonify({"error": "Ожидается изображение JPEG, PNG или WebP"}), 400
-
-    folder = BASE / "uploads" / "profile_covers"
-    folder.mkdir(parents=True, exist_ok=True)
-    filename = uuid.uuid4().hex + extension
-    (folder / filename).write_bytes(data)
-    cover_url = "/uploads/profile-covers/" + filename
+        return jsonify({"error": "Разрешены JPG, PNG и WebP"}), 400
 
     with connect() as con:
-        con.execute(
-            "UPDATE users SET profile_cover = ? WHERE id = ?",
-            (cover_url, session["user_id"])
-        )
-
-    return jsonify({"ok": True, "profile_cover": cover_url}), 200
-
-
-@app.get("/uploads/profile-covers/<filename>")
-def get_profile_cover(filename):
-    if Path(filename).name != filename:
-        return jsonify({"error": "Обложка не найдена"}), 404
-
-    return send_from_directory(BASE / "uploads" / "profile_covers", filename)
-
-
-@app.post("/api/logout")
-def logout():
-    presence_id = session.get("presence_id")
-
-    if presence_id:
-        with connect() as con:
-            con.execute(
-                "DELETE FROM user_presence WHERE presence_id = ?",
-                (presence_id,)
-            )
-
-    session.clear()
-    response = jsonify({"logged_in": False})
-    response.delete_cookie(
-        app.config.get("SESSION_COOKIE_NAME", "session"),
-        path=app.config.get("SESSION_COOKIE_PATH") or "/",
-        domain=app.config.get("SESSION_COOKIE_DOMAIN"),
-        secure=app.config.get("SESSION_COOKIE_SECURE", False),
-        httponly=app.config.get("SESSION_COOKIE_HTTPONLY", True),
-        samesite=app.config.get("SESSION_COOKIE_SAMESITE"),
-    )
-    return response, 200
-
-
-@app.post("/api/messages/send")
-def send_message():
-    if "user_id" not in session:
-        return jsonify({"error": "Войди в аккаунт"}), 401
-
-    data = request.get_json(silent=True) or {}
-    receiver_id = data.get("receiver_id")
-    text = str(data.get("text", "")).strip()
-
-    if not receiver_id or not text:
-        return jsonify({"error": "Нужны получатель и текст"}), 400
-
-    try:
-        receiver_id = int(receiver_id)
-    except (TypeError, ValueError):
-        return jsonify({"error": "Некорректный получатель"}), 400
-
-    if receiver_id == session["user_id"]:
-        return jsonify({"error": "Нельзя отправить сообщение самому себе"}), 400
-
-    with connect() as con:
-        user = con.execute(
-            "SELECT id FROM users WHERE id = ?", (receiver_id,)
-        ).fetchone()
-
+        user = con.execute("SELECT id FROM users WHERE id = ?", (receiver_id,)).fetchone()
         if not user:
             return jsonify({"error": "Пользователь не найден"}), 404
 
-        cur = con.execute(
-            "INSERT INTO messages (sender_id, receiver_id, text) VALUES (?, ?, ?)",
-            (session["user_id"], receiver_id, text)
-        )
+        folder = BASE / "uploads" / "messages"
+        folder.mkdir(parents=True, exist_ok=True)
+        filename = uuid.uuid4().hex + "." + ext
+        (folder / filename).write_bytes(data)
+        # Новое вложение возвращает скрытый ранее диалог в список обеих сторон.
+        con.execute("""
+            DELETE FROM hidden_chats
+            WHERE (user_id = ? AND other_user_id = ?)
+               OR (user_id = ? AND other_user_id = ?)
+        """, (me, receiver_id, receiver_id, me))
 
-    return jsonify({"id": cur.lastrowid, "ok": True}), 201
+        cur = con.execute("""
+            INSERT INTO messages (sender_id, receiver_id, text, image_path)
+            VALUES (?, ?, ?, ?)
+        """, (me, receiver_id, "[Фото]", filename))
 
+    return jsonify({"ok": True, "id": cur.lastrowid}), 201
+
+
+@app.get("/api/messages/image/<filename>")
+def get_message_image(filename):
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+    if Path(filename).name != filename:
+        return jsonify({"error": "Фотография не найдена"}), 404
+
+    me = session["user_id"]
+    with connect() as con:
+        row = con.execute("""
+            SELECT id FROM messages
+            WHERE image_path = ?
+              AND (sender_id = ? OR receiver_id = ?)
+        """, (filename, me, me)).fetchone()
+
+    if not row:
+        return jsonify({"error": "Фотография не найдена"}), 404
+
+    return send_from_directory(BASE / "uploads" / "messages", filename)
 
 
 @app.get("/api/messages/self")
@@ -1450,21 +1411,13 @@ def hide_message_chat(other_user_id):
         if not user:
             return jsonify({"error": "Пользователь не найден"}), 404
 
-        # Удаляем только личную переписку этой пары, а не сообщения других пользователей.
+        # Скрываем диалог только для текущего пользователя. История собеседника не удаляется.
         con.execute("""
-            DELETE FROM messages
-            WHERE (sender_id = ? AND receiver_id = ?)
-               OR (sender_id = ? AND receiver_id = ?)
-        """, (me, other_user_id, other_user_id, me))
+            INSERT OR IGNORE INTO hidden_chats (user_id, other_user_id)
+            VALUES (?, ?)
+        """, (me, other_user_id))
 
-        # Убираем старые скрытия в обе стороны, чтобы новый диалог мог появиться снова.
-        con.execute("""
-            DELETE FROM hidden_chats
-            WHERE (user_id = ? AND other_user_id = ?)
-               OR (user_id = ? AND other_user_id = ?)
-        """, (me, other_user_id, other_user_id, me))
-
-    return jsonify({"ok": True, "deleted_for_both": True}), 200
+    return jsonify({"ok": True, "hidden_for_me": True}), 200
 
 
 @app.get("/api/messages/history")
@@ -1494,7 +1447,8 @@ def message_history():
                 m.{time_column} AS created_at,
                 u.username,
                 u.display_name,
-                u.avatar
+                u.avatar,
+                m.image_path
             FROM messages m
             JOIN users u ON u.id = m.sender_id
             WHERE
@@ -1517,6 +1471,7 @@ def message_history():
             "username": row[5],
             "display_name": row[6] or row[5],
             "avatar": row[7] or "",
+            "image_url": "/api/messages/image/" + row[8] if row[8] else None,
         }
         for row in rows
     ])

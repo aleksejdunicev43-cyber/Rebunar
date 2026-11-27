@@ -19,6 +19,13 @@ export function sendMessage(receiverId, message) {
   });
 }
 
+export function uploadMessageImage(receiverId, file) {
+  const form = new FormData();
+  form.append('receiver_id', String(Number(receiverId)));
+  form.append('image', file);
+  return api.upload('/messages/image', form);
+}
+
 export function getSelfNotes() {
   return api.get('/messages/self');
 }
