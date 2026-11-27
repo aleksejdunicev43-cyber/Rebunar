@@ -156,6 +156,11 @@ function renderPendingMediaTray() {
   const tray = outletRef?.querySelector('[data-media-tray]');
   if (!tray) return;
   tray.hidden = pendingMessageImages.length === 0;
+  const sendButton = outletRef?.querySelector('.messages-inline-send');
+  const voiceButton = outletRef?.querySelector('[data-voice-input]');
+  const hasText = Boolean(outletRef?.querySelector('[data-send-form] textarea[name="text"]')?.value.trim());
+  if (sendButton) sendButton.hidden = !(hasText || pendingMessageImages.length);
+  if (voiceButton) voiceButton.hidden = hasText || pendingMessageImages.length > 0;
   tray.innerHTML = pendingMessageImages.map((item, index) => `
     <div class="messages-media-thumb">
       <img src="${escapeHTML(item.url)}" alt="Фото для отправки">
