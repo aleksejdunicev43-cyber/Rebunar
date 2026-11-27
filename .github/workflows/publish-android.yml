@@ -41,7 +41,9 @@ jobs:
           # Fail the release if the canonical frontend does not contain the current store.
           grep -R -q 'ChatGPT' frontend/build/assets
           grep -R -q 'store-chatgpt-preview' frontend/build/assets
-          printf '{"version":"0.2.3","commit":"%s"}\n' "$GITHUB_SHA" > frontend/build/rebunar-build.json
+          BUILD_VERSION="0.2.3"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then BUILD_VERSION="0.2.4-test"; fi
+          printf '{"version":"%s","commit":"%s"}\n' "$BUILD_VERSION" "$GITHUB_SHA" > frontend/build/rebunar-build.json
           cd frontend/build
           zip -qr ../../rebunar-web-build.zip .
           cd ../..
