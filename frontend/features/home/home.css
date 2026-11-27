@@ -656,7 +656,7 @@
 .wallpaper-source-picker{
   position:fixed;z-index:1100;
   top:calc(52px + env(safe-area-inset-top));
-  right:0;bottom:calc(108px + env(safe-area-inset-bottom));left:0;
+  right:0;bottom:0;left:0;
   display:flex;flex-direction:column;width:100%;overflow:hidden;
   box-sizing:border-box;background:linear-gradient(160deg,#202a28 0%,#111a18 100%);color:#f6f7f8;
   overscroll-behavior:contain;
@@ -679,7 +679,7 @@
 }
 .wallpaper-source-preview-image{
   position:relative;display:flex;align-items:center;justify-content:center;
-  width:min(64vw,280px);height:min(39dvh,410px);min-height:160px;
+  width:min(52vw,230px);height:min(29dvh,300px);min-height:130px;
   overflow:hidden;border:1px solid rgba(156,238,188,.2);border-radius:18px;
   background-color:#101a17;
   background-image:radial-gradient(ellipse at 50% 30%,rgba(61,155,103,.28),transparent 58%),linear-gradient(145deg,#1b3027,#080f0c);
@@ -707,10 +707,10 @@
 .wallpaper-source-icon{font-size:22px;color:#a8e8c1}
 .wallpaper-source-bottom button strong{font-size:13px;font-weight:650}
 @media(max-height:700px){
-  .wallpaper-source-picker{top:calc(48px + env(safe-area-inset-top));bottom:calc(100px + env(safe-area-inset-bottom))}
+  .wallpaper-source-picker{top:calc(48px + env(safe-area-inset-top));bottom:0}
   .wallpaper-source-header{flex-basis:48px;min-height:48px}
   .wallpaper-source-preview{padding:5px 14px;gap:5px}
-  .wallpaper-source-preview-image{width:min(58vw,250px);height:min(34dvh,300px);min-height:140px}
+  .wallpaper-source-preview-image{width:min(48vw,210px);height:min(26dvh,240px);min-height:120px}
   .wallpaper-source-bottom{padding:6px 12px 8px}
   .wallpaper-source-bottom button{min-height:48px}
 }
