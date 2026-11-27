@@ -741,8 +741,8 @@ export function renderHomeScreen(outlet) {
     <section class="home-workspace" aria-label="Главный экран Rebunar">
       <img class="home-wallpaper-image" alt="" aria-hidden="true" hidden>
       <input class="home-wallpaper-input" type="file"
-        accept="image/jpeg,image/png,image/webp,image/avif"
-        aria-label="Выбрать обои из галереи">
+        accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple
+        aria-label="Выбрать фотографии для обоев">
       <button class="home-wallpaper-picker" type="button" hidden aria-label="Выбрать обои">
         <span class="home-wallpaper-picker-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="4.5" width="17" height="15" rx="2.2"></rect><circle cx="9" cy="9.5" r="1.7"></circle><path d="m5 17 5.2-5 3.2 3 2.2-2 3.4 4"></path></svg></span>
         <span class="home-wallpaper-picker-label">Обои</span>
