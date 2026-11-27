@@ -1689,3 +1689,29 @@
   .messages-message-list { padding: 12px 10px; }
   .message-row .messages-bubble { max-width: min(82%, 420px); }
 }
+
+
+/* Rebunar emerald messenger accent and balanced message surfaces. */
+.messages-compose button[type="submit"] {
+  background: linear-gradient(145deg, #32c49a, #159b78);
+  color: #071d17;
+  box-shadow: 0 3px 12px rgba(27, 180, 137, .18);
+}
+.messages-compose .messages-attach-button {
+  background: #273542;
+  color: #cbd7e3;
+  border-color: rgba(170,190,210,.16);
+}
+.messages-bubble {
+  background: #25313d;
+  border-color: rgba(160,180,200,.12);
+  color: #edf3f7;
+}
+.message-row.is-own .messages-bubble {
+  background: linear-gradient(145deg, #174b3e, #163d35);
+  border-color: rgba(49,190,145,.24);
+}
+.messages-bubble .message-author { color: #8bd7bd; }
+.messages-bubble time { color: #a0b0bd; }
+.messages-chat-header { background: #1c2834; }
+.messages-compose { background: #1b2632; }
