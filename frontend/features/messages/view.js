@@ -165,7 +165,7 @@ async function openChat(user) {
 
   conversation.innerHTML = `
     <header class="messages-chat-header">
-      <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
+      <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">←</span></button>
       ${avatarMarkup(user, { size: 'chat', className: 'messages-header-avatar' })}
       <div class="messages-chat-identity">
         <strong>${escapeHTML(getChatName(user))}</strong>
@@ -199,7 +199,7 @@ async function openFavorite() {
 
   conversation.innerHTML = `
     <header class="messages-chat-header">
-      <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">⤺</span></button>
+      <button type="button" class="screen-back messages-back" data-back aria-label="Назад" title="Назад"><span aria-hidden="true">←</span></button>
       <span class="messages-favorite-avatar messages-favorite-avatar-small">
         <span class="messages-favorite-symbol">★</span>
       </span>
