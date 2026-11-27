@@ -21,6 +21,7 @@ let searchTimer = null;
 let refreshTimer = null;
 let screenToken = 0;
 let screenController = null;
+let pendingMessageImages = [];
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -151,6 +152,23 @@ function renderFavoriteNotes({ preserveScroll = false } = {}) {
   }
 }
 
+function renderPendingMediaTray() {
+  const tray = outletRef?.querySelector('[data-media-tray]');
+  if (!tray) return;
+  tray.hidden = pendingMessageImages.length === 0;
+  const sendButton = outletRef?.querySelector('.messages-inline-send');
+  const voiceButton = outletRef?.querySelector('[data-voice-input]');
+  const hasText = Boolean(outletRef?.querySelector('[data-send-form] textarea[name="text"]')?.value.trim());
+  if (sendButton) sendButton.hidden = !(hasText || pendingMessageImages.length);
+  if (voiceButton) voiceButton.hidden = hasText || pendingMessageImages.length > 0;
+  tray.innerHTML = pendingMessageImages.map((item, index) => `
+    <div class="messages-media-thumb">
+      <img src="${escapeHTML(item.url)}" alt="Фото для отправки">
+      <button type="button" data-remove-pending-image="${index}" aria-label="Убрать фото">×</button>
+    </div>
+  `).join('');
+}
+
 async function loadChats() {
   chats = await getChats();
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
@@ -158,6 +176,8 @@ async function loadChats() {
 
 async function openChat(user) {
   activeChat = user;
+  pendingMessageImages.forEach(item => URL.revokeObjectURL(item.url));
+  pendingMessageImages = [];
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
   const conversation = outletRef?.querySelector('[data-conversation]');
@@ -173,11 +193,21 @@ async function openChat(user) {
       </div>
     </header>
     <div class="messages-message-list" data-message-list></div>
+    <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image hidden multiple>
+    <input type="file" accept="image/*" capture="environment" data-message-camera hidden>
+    <div class="messages-media-tray" data-media-tray hidden></div>
+    <div class="messages-emoji-panel" data-emoji-panel hidden>
+      <button type="button" data-insert-emoji="😀">😀</button><button type="button" data-insert-emoji="😂">😂</button><button type="button" data-insert-emoji="🥰">🥰</button><button type="button" data-insert-emoji="😍">😍</button><button type="button" data-insert-emoji="😊">😊</button><button type="button" data-insert-emoji="😉">😉</button><button type="button" data-insert-emoji="😭">😭</button><button type="button" data-insert-emoji="😎">😎</button><button type="button" data-insert-emoji="🤔">🤔</button><button type="button" data-insert-emoji="👍">👍</button><button type="button" data-insert-emoji="❤️">❤️</button><button type="button" data-insert-emoji="🔥">🔥</button><button type="button" data-insert-emoji="🎉">🎉</button><button type="button" data-insert-emoji="🙏">🙏</button><button type="button" data-insert-emoji="👋">👋</button><button type="button" data-insert-emoji="✨">✨</button>
+    </div>
     <form class="messages-compose" data-send-form>
-      <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image hidden>
-      <button type="button" class="messages-attach-button" data-attach-message-image aria-label="Прикрепить фотографию" title="Прикрепить фотографию">＋</button>
-      <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" aria-label="Текст сообщения"></textarea>
-      <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение">➤</button>
+      <div class="messages-compose-pill">
+        <button type="button" class="messages-tool-button messages-emoji-button" data-emoji-toggle aria-label="Смайлики" title="Смайлики">☺</button>
+        <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" aria-label="Текст сообщения"></textarea>
+        <button type="button" class="messages-tool-button" data-open-camera aria-label="Камера" title="Камера">▣</button>
+        <button type="button" class="messages-tool-button messages-voice-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
+        <button type="submit" class="messages-inline-send" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
+      </div>
+      <button type="button" class="messages-attach-button" data-attach-message-image aria-label="Добавить фото" title="Добавить фото">＋</button>
     </form>
   `;
 
@@ -425,6 +455,61 @@ export function renderMessagesScreen(outlet, params = {}) {
       return;
     }
 
+    if (event.target.closest('[data-open-camera]')) {
+      outlet.querySelector('[data-message-camera]')?.click();
+      return;
+    }
+
+    if (event.target.closest('[data-emoji-toggle]')) {
+      const panel = outlet.querySelector('[data-emoji-panel]');
+      if (panel) panel.hidden = !panel.hidden;
+      return;
+    }
+
+    const emojiButton = event.target.closest('[data-insert-emoji]');
+    if (emojiButton) {
+      const field = outlet.querySelector('[data-send-form] textarea[name="text"]');
+      if (field) {
+        const start = field.selectionStart ?? field.value.length;
+        const end = field.selectionEnd ?? start;
+        const emoji = emojiButton.dataset.insertEmoji || "";
+        field.setRangeText(emoji, start, end, "end");
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.focus();
+      }
+      return;
+    }
+
+    if (event.target.closest('[data-remove-pending-image]')) {
+      const index = Number(event.target.closest('[data-remove-pending-image]').dataset.removePendingImage);
+      const removed = pendingMessageImages.splice(index, 1)[0];
+      if (removed) URL.revokeObjectURL(removed.url);
+      renderPendingMediaTray();
+      return;
+    }
+
+    if (event.target.closest('[data-voice-input]')) {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) {
+        showStatus(outlet.querySelector('[data-message-list]'), 'Голосовой ввод не поддерживается этим браузером');
+        return;
+      }
+      const recognition = new Recognition();
+      recognition.lang = 'ru-RU';
+      recognition.interimResults = false;
+      recognition.onresult = resultEvent => {
+        const field = outlet.querySelector('[data-send-form] textarea[name="text"]');
+        const spoken = resultEvent.results?.[0]?.[0]?.transcript || '';
+        if (field && spoken) {
+          field.value = [field.value.trim(), spoken].filter(Boolean).join(' ');
+          field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      };
+      recognition.onerror = () => showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось распознать речь');
+      try { recognition.start(); } catch {}
+      return;
+    }
+
     const deleteButton = event.target.closest('[data-delete-note]');
     if (deleteButton) {
       try {
@@ -442,6 +527,11 @@ export function renderMessagesScreen(outlet, params = {}) {
     if (!event.target.matches('[data-send-form] textarea[name="text"]')) return;
     event.target.style.height = 'auto';
     event.target.style.height = Math.min(event.target.scrollHeight, 120) + 'px';
+    const sendButton = outlet.querySelector('.messages-inline-send');
+    const voiceButton = outlet.querySelector('[data-voice-input]');
+    const hasText = Boolean(event.target.value.trim());
+    if (sendButton) sendButton.hidden = !hasText;
+    if (voiceButton) voiceButton.hidden = hasText;
   }, listenerOptions);
 
   outlet.addEventListener('keydown', event => {
@@ -458,13 +548,24 @@ export function renderMessagesScreen(outlet, params = {}) {
       const input = event.target.elements.text;
       const text = input.value.trim();
       if (!activeChat || activeChat.kind === 'favorite') return;
-      if (!text) return;
+      if (!text && !pendingMessageImages.length) return;
 
       const button = event.target.querySelector('button[type="submit"]');
       button.disabled = true;
       try {
         if (text) await sendMessage(activeChat.user_id, text);
+        for (const item of pendingMessageImages) {
+          await uploadMessageImage(activeChat.user_id, item.file);
+        }
+        pendingMessageImages.forEach(item => URL.revokeObjectURL(item.url));
+        pendingMessageImages = [];
         input.value = '';
+        input.style.height = '';
+        const sendButton = outlet.querySelector('.messages-inline-send');
+        const voiceButton = outlet.querySelector('[data-voice-input]');
+        if (sendButton) sendButton.hidden = true;
+        if (voiceButton) voiceButton.hidden = false;
+        renderPendingMediaTray();
         renderMessages(await getChatHistory(activeChat.user_id));
         await loadChats();
       } catch (error) {
@@ -497,32 +598,31 @@ export function renderMessagesScreen(outlet, params = {}) {
   }, listenerOptions);
 
   outlet.addEventListener('change', async event => {
-    if (event.target.matches('[data-message-image]')) {
-      const file = event.target.files?.[0];
-      if (!file || !activeChat || activeChat.kind === 'favorite') return;
-      if (file.size > 10 * 1024 * 1024) {
-        showStatus(outlet.querySelector('[data-message-list]'), 'Фотография должна быть не больше 10 МБ');
-        event.target.value = '';
-        return;
+    if (event.target.matches('[data-message-image], [data-message-camera]')) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length || !activeChat || activeChat.kind === 'favorite') return;
+      const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+      for (const file of files) {
+        if (!allowed.includes(file.type)) {
+          showStatus(outlet.querySelector('[data-message-list]'), 'Поддерживаются JPG, PNG и WebP');
+          event.target.value = '';
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          showStatus(outlet.querySelector('[data-message-list]'), 'Каждая фотография должна быть не больше 10 МБ');
+          event.target.value = '';
+          return;
+        }
       }
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        showStatus(outlet.querySelector('[data-message-list]'), 'Поддерживаются JPG, PNG и WebP');
-        event.target.value = '';
-        return;
+      const remaining = Math.max(0, 10 - pendingMessageImages.length);
+      files.slice(0, remaining).forEach(file => {
+        pendingMessageImages.push({ file, url: URL.createObjectURL(file) });
+      });
+      if (files.length > remaining) {
+        showStatus(outlet.querySelector('[data-message-list]'), 'За раз можно подготовить не больше 10 фотографий');
       }
-      const form = outlet.querySelector('[data-send-form]');
-      const buttons = form?.querySelectorAll('button');
-      buttons?.forEach(button => button.disabled = true);
-      try {
-        await uploadMessageImage(activeChat.user_id, file);
-        renderMessages(await getChatHistory(activeChat.user_id));
-        await loadChats();
-      } catch (error) {
-        showStatus(outlet.querySelector('[data-message-list]'), error.message);
-      } finally {
-        buttons?.forEach(button => button.disabled = false);
-        event.target.value = '';
-      }
+      renderPendingMediaTray();
+      event.target.value = '';
       return;
     }
     if (!event.target.matches('[data-favorite-image]')) return;
