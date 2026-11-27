@@ -115,3 +115,98 @@
   .store-preview-panel { gap:6px; }
   .store-preview-art { min-height:126px; padding:9px; }
 }
+
+
+
+/* Store install button: visual progress only, adds a home-screen shortcut. */
+.store-detail-actions { display:grid; grid-template-columns:minmax(0,1fr); gap:9px; }
+.store-install-action {
+  display:flex; align-items:center; justify-content:center; gap:11px;
+  width:100%; min-height:50px; padding:0 18px;
+  border:1px solid #269d70; border-radius:14px;
+  color:#062016; background:linear-gradient(110deg,#83e7b9,#32c48a);
+  font:inherit; font-size:14px; font-weight:850; cursor:pointer;
+  transition:filter .18s,background .18s,border-color .18s;
+}
+.store-install-action:active:not(:disabled) { filter:brightness(.94); }
+.store-install-action:disabled { cursor:default; }
+.store-install-progress {
+  position:relative; display:grid; flex:0 0 25px; place-items:center;
+  width:25px; height:25px; border-radius:50%;
+  background:conic-gradient(#0b5137 0deg,#0b5137 360deg);
+}
+.store-install-progress::before {
+  position:absolute; inset:3px; border-radius:50%;
+  background:#71dbaa; content:"";
+}
+.store-install-progress > span {
+  position:relative; z-index:1; width:6px; height:6px;
+  border-radius:50%; background:#0b5137;
+}
+.store-install-action.is-installing {
+  border-color:#269d70; color:#d9ffec; background:#123d2e;
+}
+.store-install-action.is-installing .store-install-progress {
+  background:conic-gradient(#79e7b4 0deg,#79e7b4 0deg,rgba(121,231,180,.2) 0deg);
+  animation:store-install-spin 1.1s linear forwards;
+}
+.store-install-action.is-installing .store-install-progress::before { background:#123d2e; }
+.store-install-action.is-installing .store-install-progress > span {
+  width:7px; height:7px; background:#79e7b4;
+}
+.store-install-action.is-installed {
+  border-color:#245e48; color:#9ce7c4; background:#123d2e;
+}
+.store-install-action.is-installed .store-install-progress {
+  background:conic-gradient(#79e7b4 0deg 360deg);
+}
+.store-install-action.is-installed .store-install-progress::before { background:#123d2e; }
+.store-install-action.is-installed .store-install-progress > span {
+  width:10px; height:6px; border-radius:0;
+  background:transparent; border-left:2px solid #79e7b4;
+  border-bottom:2px solid #79e7b4; transform:rotate(-45deg) translate(1px,-1px);
+}
+@keyframes store-install-spin {
+  from { background:conic-gradient(#79e7b4 0deg,rgba(121,231,180,.2) 0deg); }
+  to { background:conic-gradient(#79e7b4 0deg 360deg,rgba(121,231,180,.2) 360deg); }
+}
+@media (min-width:700px) {
+  .store-detail-actions { grid-template-columns:minmax(220px,360px); }
+}
+
+
+/* Circular install indicator wraps the app artwork itself. */
+.store-detail-icon-wrap {
+  position:relative;display:grid;flex:0 0 auto;place-items:center;
+  width:90px;height:90px;
+}
+.store-detail-icon-wrap .store-detail-icon {
+  position:relative;z-index:1;width:82px;height:82px;
+}
+.store-detail-download-ring {
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(transparent 0deg,transparent 360deg);
+  opacity:0;pointer-events:none;
+}
+.store-detail-download-ring::before {
+  position:absolute;inset:0;border:3px solid transparent;border-radius:50%;
+  content:"";
+}
+.store-detail-icon-wrap.is-installing .store-detail-download-ring {
+  opacity:1;
+  background:conic-gradient(#79e7b4 0deg,rgba(121,231,180,.2) 0deg);
+  animation:store-detail-install-progress 1.1s linear forwards;
+}
+.store-detail-icon-wrap.is-installing .store-detail-download-ring::before {
+  border-color:transparent;
+}
+.store-detail-icon-wrap.is-installed .store-detail-download-ring {
+  opacity:1;background:conic-gradient(#79e7b4 0deg 360deg);
+}
+.store-detail-icon-wrap.is-installed .store-detail-download-ring::before {
+  inset:3px;border-color:#123d2e;
+}
+@keyframes store-detail-install-progress {
+  from { background:conic-gradient(#79e7b4 0deg,rgba(121,231,180,.2) 0deg); }
+  to { background:conic-gradient(#79e7b4 0deg 360deg,rgba(121,231,180,.2) 360deg); }
+}

@@ -41,7 +41,9 @@ jobs:
           # Fail the release if the canonical frontend does not contain the current store.
           grep -R -q 'ChatGPT' frontend/build/assets
           grep -R -q 'store-chatgpt-preview' frontend/build/assets
-          printf '{"version":"0.2.3","commit":"%s"}\n' "$GITHUB_SHA" > frontend/build/rebunar-build.json
+          BUILD_VERSION="0.2.4"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then BUILD_VERSION="0.2.4-test"; fi
+          printf '{"version":"%s","commit":"%s"}\n' "$BUILD_VERSION" "$GITHUB_SHA" > frontend/build/rebunar-build.json
           cd frontend/build
           zip -qr ../../rebunar-web-build.zip .
           cd ../..
@@ -58,14 +60,22 @@ jobs:
           cp android-source/rebunar_avatar.png ./rebunar_avatar.png
           python - <<'PY'
           from pathlib import Path
+          import os
           import re
+          is_preview = os.environ.get("GITHUB_EVENT_NAME") == "pull_request"
+          version_code = 11 if is_preview else 12
+          version_name = "0.2.4-test" if is_preview else "0.2.4"
           gradle_file = Path("android-rebunar/app/build.gradle.kts")
           text = gradle_file.read_text()
-          text, code_count = re.subn(r"versionCode = \d+", "versionCode = 10", text, count=1)
-          text, name_count = re.subn(r'versionName = "[^"]+"', 'versionName = "0.2.3"', text, count=1)
+          text, code_count = re.subn(r"versionCode = \d+", f"versionCode = {version_code}", text, count=1)
+          text, name_count = re.subn(r'versionName = "[^"]+"', f'versionName = "{version_name}"', text, count=1)
           if code_count != 1 or name_count != 1:
               raise SystemExit("Could not set the intended Android version.")
           gradle_file.write_text(text)
+          build_metadata = Path("frontend/build/rebunar-build.json")
+          build_metadata.write_text(
+              f'{{"version":"{version_name}","commit":"{os.environ["GITHUB_SHA"]}"}}\\n'
+          )
           PY
           mkdir -p android-rebunar/app/src/main/assets/build
           cp -R frontend/build/. android-rebunar/app/src/main/assets/build/
@@ -228,8 +238,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2.3
-          name: Rebunar Android 0.2.3
+          tag_name: v0.2.4
+          name: Rebunar Android 0.2.4
           target_commitish: main
           generate_release_notes: true
           make_latest: true

@@ -1,4 +1,5 @@
 import { navigate } from '../../app/router.js';
+import { subscribeToAuth } from '../auth/session.js';
 
 /**
  * REBUNAR — HOME WORKSPACE
@@ -124,6 +125,32 @@ async function loadAccountWallpaper(workspace) {
     if (localBlob) applyWallpaper(workspace, localBlob);
     showWallpaperMessage(workspace, error.message || 'Не удалось загрузить настройки аккаунта.', true);
   }
+}
+
+function openWallpaperSourcePicker(workspace, fileInput) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('section');
+    overlay.className = 'wallpaper-source-picker';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Выбор обоев');
+    overlay.innerHTML = '<header class="wallpaper-source-header"><button type="button" class="wallpaper-source-close" aria-label="Закрыть">×</button><strong>Обои</strong><span></span></header>' +
+      '<div class="wallpaper-source-preview"><div class="wallpaper-source-preview-image"></div><span>Предпросмотр обоев</span></div>' +
+      '<div class="wallpaper-source-bottom"><button type="button" data-source="screenshots"><span class="wallpaper-source-icon">▧</span><strong>Скриншоты</strong></button><button type="button" data-source="photos"><span class="wallpaper-source-icon">▣</span><strong>Фото</strong></button></div>';
+    workspace.appendChild(overlay);
+    const preview = overlay.querySelector('.wallpaper-source-preview-image');
+    if (wallpaperUrl) preview.style.backgroundImage = 'url("' + wallpaperUrl + '")';
+    const finish = value => { overlay.remove(); resolve(value); };
+    overlay.querySelector('.wallpaper-source-close').addEventListener('click', () => finish(null));
+    overlay.addEventListener('click', event => {
+      const sourceButton = event.target.closest('[data-source]');
+      if (!sourceButton) return;
+      // Android opens its native image picker; the user can choose the Screenshots
+      // or Photos album there. Keep this click directly tied to the user gesture.
+      finish(sourceButton.dataset.source);
+      fileInput.click();
+    });
+  });
 }
 
 function applyWallpaper(workspace, blob) {
@@ -268,38 +295,7 @@ function openWallpaperEditor(file, workspace) {
 }
 
 
-const HOME_APPS = [
-  {id:'games',name:'Игры',icon:'🎮',color:'#315b47',route:'store'},
-  {id:'video',name:'Видео',icon:'▶',color:'#74434c',route:'creators'},
-  {id:'music',name:'Музыка',icon:'♫',color:'#554b7a',route:null},
-  {id:'books',name:'Книги',icon:'📚',color:'#66533b',route:'reader'},
-  {id:'chats',name:'Чаты',icon:'✉',color:'#315b72',route:'messages'},
-  {id:'store',name:'Магазин',icon:'◈',color:'#6b4c37',route:'store'},
-  {id:'anime',name:'Аниме',icon:'✦',color:'#67466f',route:null},
-  {id:'communities',name:'Сообщества',icon:'♧',color:'#38634d',route:'communities'},
-  {id:'photos',name:'Фото',icon:'▧',color:'#5c5275',route:'favorites'},
-  {id:'files',name:'Файлы',icon:'▤',color:'#4a6170',route:null},
-  {id:'maps',name:'Карты',icon:'⌖',color:'#456b58',route:null},
-  {id:'browser',name:'Браузер',icon:'◎',color:'#3d6274',route:null},
-  {id:'news',name:'Новости',icon:'▥',color:'#66503d',route:'notifications'},
-  {id:'users',name:'Люди',icon:'♙',color:'#536b54',route:'users'},
-  {id:'profile',name:'Профиль',icon:'◉',color:'#624d70',route:'profile'},
-  {id:'mail',name:'Почта',icon:'✉',color:'#4c6377',route:'mail'},
-  {id:'search',name:'Поиск',icon:'⌕',color:'#426b5a',route:'search'},
-  {id:'alerts',name:'Уведомления',icon:'♢',color:'#765448',route:'notifications'},
-  {id:'stats',name:'Статистика',icon:'▥',color:'#405e78',route:'statistics'},
-  {id:'settings',name:'Настройки',icon:'⚙',color:'#52665a',route:'settings'},
-  {id:'creator',name:'Авторы',icon:'✎',color:'#76516b',route:'creators'},
-  {id:'reader',name:'Читалка',icon:'▣',color:'#5c6141',route:'reader'},
-  {id:'favorites',name:'Избранное',icon:'♡',color:'#744b55',route:'favorites'},
-  {id:'social',name:'Лента',icon:'⌁',color:'#3e6a63',route:'communities'},
-  {id:'cloud',name:'Облако',icon:'☁',color:'#526b7a',route:null},
-  {id:'calendar',name:'Календарь',icon:'▦',color:'#6a5842',route:null},
-  {id:'wallet',name:'Кошелёк',icon:'◇',color:'#536b49',route:null},
-  {id:'translate',name:'Переводчик',icon:'文',color:'#4d5d7b',route:null},
-  {id:'camera',name:'Камера',icon:'◉',color:'#68516a',route:null},
-  {id:'more',name:'Ещё',icon:'＋',color:'#426b52',route:'settings'}
-];
+const HOME_APPS = [];
 const HOME_DOCK_DEFAULT = ['dock-home','dock-messages','dock-search','dock-favorites','dock-profile'];
 const HOME_DOCK_APPS = [
   {id:'dock-home',name:'Главная',icon:'⌂',color:'#286b48',route:'home'},
@@ -336,10 +332,21 @@ function saveRemovedHomeApps(ids) {
 }
 
 function loadCustomHomeApps() {
+  const allowedApps = new Set(['pinterest', 'chatgpt']);
   try {
-    const apps = JSON.parse(localStorage.getItem(HOME_CUSTOM_APPS_KEY) || '[]');
-    return Array.isArray(apps) ? apps.filter(app => app && typeof app.id === 'string' && typeof app.url === 'string') : [];
-  } catch { return []; }
+    const stored = JSON.parse(localStorage.getItem(HOME_CUSTOM_APPS_KEY) || '[]');
+    const apps = Array.isArray(stored)
+      ? stored.filter(app => app && allowedApps.has(app.id) && typeof app.url === 'string')
+      : [];
+    // Remove legacy/demo shortcuts saved by older store versions.
+    if (!Array.isArray(stored) || apps.length !== stored.length) {
+      localStorage.setItem(HOME_CUSTOM_APPS_KEY, JSON.stringify(apps));
+    }
+    return apps;
+  } catch {
+    try { localStorage.setItem(HOME_CUSTOM_APPS_KEY, '[]'); } catch {}
+    return [];
+  }
 }
 const HOME_MAX_PAGES = 10;
 
@@ -775,8 +782,7 @@ export function renderHomeScreen(outlet) {
     event.preventDefault();
     event.stopPropagation();
     hidePicker();
-    // The gallery opens from this explicit tap, preserving Android's user gesture.
-    fileInput.click();
+    openWallpaperSourcePicker(workspace, fileInput);
   });
 
   workspace.addEventListener('contextmenu', event => event.preventDefault());
@@ -822,5 +828,17 @@ export function renderHomeScreen(outlet) {
     }
   });
 
+  let wallpaperSyncForUser = null;
+  const syncWallpaperForAccount = user => {
+    if (!user || !workspace.isConnected) return;
+    const userKey = String(user.id || user.username || 'account');
+    if (wallpaperSyncForUser === userKey) return;
+    wallpaperSyncForUser = userKey;
+    loadAccountWallpaper(workspace).catch(error => {
+      wallpaperSyncForUser = null;
+      console.warn('Rebunar: не удалось восстановить обои аккаунта.', error);
+    });
+  };
   loadAccountWallpaper(workspace);
+  subscribeToAuth(syncWallpaperForAccount);
 }
