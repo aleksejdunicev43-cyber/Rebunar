@@ -1237,6 +1237,76 @@ def send_message():
 
 
 
+@app.post("/api/messages/image")
+def send_message_image():
+    if "user_id" not in session:
+        return jsonify({"error": "Войди в аккаунт"}), 401
+
+    receiver_id = request.form.get("receiver_id")
+    try:
+        receiver_id = int(receiver_id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный получатель"}), 400
+
+    me = session["user_id"]
+    if receiver_id == me:
+        return jsonify({"error": "Нельзя отправить сообщение самому себе"}), 400
+
+    file = request.files.get("image")
+    if not file or not file.filename:
+        return jsonify({"error": "Выбери фотографию"}), 400
+
+    data = file.read(10 * 1024 * 1024 + 1)
+    if len(data) > 10 * 1024 * 1024:
+        return jsonify({"error": "Максимальный размер фотографии — 10 МБ"}), 413
+
+    if data.startswith(b"\\xff\\xd8\\xff"):
+        ext = "jpg"
+    elif data.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+        ext = "png"
+    elif data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+        ext = "webp"
+    else:
+        return jsonify({"error": "Разрешены JPG, PNG и WebP"}), 400
+
+    with connect() as con:
+        user = con.execute("SELECT id FROM users WHERE id = ?", (receiver_id,)).fetchone()
+        if not user:
+            return jsonify({"error": "Пользователь не найден"}), 404
+
+        folder = BASE / "uploads" / "messages"
+        folder.mkdir(parents=True, exist_ok=True)
+        filename = uuid.uuid4().hex + "." + ext
+        (folder / filename).write_bytes(data)
+        cur = con.execute("""
+            INSERT INTO messages (sender_id, receiver_id, text, image_path)
+            VALUES (?, ?, ?, ?)
+        """, (me, receiver_id, "[Фото]", filename))
+
+    return jsonify({"ok": True, "id": cur.lastrowid}), 201
+
+
+@app.get("/api/messages/image/<filename>")
+def get_message_image(filename):
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+    if Path(filename).name != filename:
+        return jsonify({"error": "Фотография не найдена"}), 404
+
+    me = session["user_id"]
+    with connect() as con:
+        row = con.execute("""
+            SELECT id FROM messages
+            WHERE image_path = ?
+              AND (sender_id = ? OR receiver_id = ?)
+        """, (filename, me, me)).fetchone()
+
+    if not row:
+        return jsonify({"error": "Фотография не найдена"}), 404
+
+    return send_from_directory(BASE / "uploads" / "messages", filename)
+
+
 @app.get("/api/messages/self")
 def self_messages():
     if "user_id" not in session:
@@ -1450,21 +1520,13 @@ def hide_message_chat(other_user_id):
         if not user:
             return jsonify({"error": "Пользователь не найден"}), 404
 
-        # Удаляем только личную переписку этой пары, а не сообщения других пользователей.
+        # Скрываем диалог только для текущего пользователя. История собеседника не удаляется.
         con.execute("""
-            DELETE FROM messages
-            WHERE (sender_id = ? AND receiver_id = ?)
-               OR (sender_id = ? AND receiver_id = ?)
-        """, (me, other_user_id, other_user_id, me))
+            INSERT OR IGNORE INTO hidden_chats (user_id, other_user_id)
+            VALUES (?, ?)
+        """, (me, other_user_id))
 
-        # Убираем старые скрытия в обе стороны, чтобы новый диалог мог появиться снова.
-        con.execute("""
-            DELETE FROM hidden_chats
-            WHERE (user_id = ? AND other_user_id = ?)
-               OR (user_id = ? AND other_user_id = ?)
-        """, (me, other_user_id, other_user_id, me))
-
-    return jsonify({"ok": True, "deleted_for_both": True}), 200
+    return jsonify({"ok": True, "hidden_for_me": True}), 200
 
 
 @app.get("/api/messages/history")
@@ -1494,7 +1556,8 @@ def message_history():
                 m.{time_column} AS created_at,
                 u.username,
                 u.display_name,
-                u.avatar
+                u.avatar,
+                m.image_path
             FROM messages m
             JOIN users u ON u.id = m.sender_id
             WHERE
