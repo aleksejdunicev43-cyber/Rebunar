@@ -9,7 +9,8 @@ import {
   getSelfNotes,
   createSelfNote,
   deleteSelfNote,
-  uploadSelfImage
+  uploadSelfImage,
+  uploadMessageImage
 } from './api.js';
 
 let outletRef = null;
@@ -113,7 +114,8 @@ function renderMessages(messages) {
         ${avatar}
         <div class="messages-bubble">
           <div class="message-author">${escapeHTML(name)}</div>
-          <div>${escapeHTML(message.text)}</div>
+          ${message.image_url ? `<a class="message-image-link" href="${escapeHTML(message.image_url)}" target="_blank" rel="noopener"><img class="message-image" src="${escapeHTML(message.image_url)}" alt="Фотография" loading="lazy"></a>` : ''}
+          ${message.text && message.text !== '[Фото]' ? `<div class="message-text">${escapeHTML(message.text)}</div>` : ''}
           <time>${escapeHTML(message.created_at || '')}</time>
         </div>
       </div>
@@ -172,8 +174,10 @@ async function openChat(user) {
     </header>
     <div class="messages-message-list" data-message-list></div>
     <form class="messages-compose" data-send-form>
-      <input name="text" maxlength="5000" placeholder="Сообщение..." autocomplete="off" required>
-      <button type="submit" aria-label="Отправить">➤</button>
+      <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image hidden>
+      <button type="button" class="messages-attach-button" data-attach-message-image aria-label="Прикрепить фотографию" title="Прикрепить фотографию">＋</button>
+      <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" aria-label="Текст сообщения"></textarea>
+      <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение">➤</button>
     </form>
   `;
 
@@ -349,7 +353,7 @@ export function renderMessagesScreen(outlet, params = {}) {
     const deleteChatButton = event.target.closest('[data-delete-chat]');
     if (deleteChatButton) {
       const userId = Number(deleteChatButton.dataset.deleteChat);
-      if (!userId || !window.confirm('Удалить переписку у обоих? Все сообщения в этом чате будут удалены без возможности восстановления.')) return;
+      if (!userId || !window.confirm('Убрать переписку только из твоего списка чатов? У собеседника сообщения сохранятся.')) return;
       deleteChatButton.disabled = true;
       try {
         await hideChat(userId);
@@ -416,6 +420,11 @@ export function renderMessagesScreen(outlet, params = {}) {
       return;
     }
 
+    if (event.target.closest('[data-attach-message-image]')) {
+      outlet.querySelector('[data-message-image]')?.click();
+      return;
+    }
+
     const deleteButton = event.target.closest('[data-delete-note]');
     if (deleteButton) {
       try {
@@ -434,12 +443,13 @@ export function renderMessagesScreen(outlet, params = {}) {
       event.preventDefault();
       const input = event.target.elements.text;
       const text = input.value.trim();
-      if (!text || !activeChat || activeChat.kind === 'favorite') return;
+      if (!activeChat || activeChat.kind === 'favorite') return;
+      if (!text) return;
 
       const button = event.target.querySelector('button[type="submit"]');
       button.disabled = true;
       try {
-        await sendMessage(activeChat.user_id, text);
+        if (text) await sendMessage(activeChat.user_id, text);
         input.value = '';
         renderMessages(await getChatHistory(activeChat.user_id));
         await loadChats();
@@ -473,6 +483,34 @@ export function renderMessagesScreen(outlet, params = {}) {
   }, listenerOptions);
 
   outlet.addEventListener('change', async event => {
+    if (event.target.matches('[data-message-image]')) {
+      const file = event.target.files?.[0];
+      if (!file || !activeChat || activeChat.kind === 'favorite') return;
+      if (file.size > 10 * 1024 * 1024) {
+        showStatus(outlet.querySelector('[data-message-list]'), 'Фотография должна быть не больше 10 МБ');
+        event.target.value = '';
+        return;
+      }
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        showStatus(outlet.querySelector('[data-message-list]'), 'Поддерживаются JPG, PNG и WebP');
+        event.target.value = '';
+        return;
+      }
+      const form = outlet.querySelector('[data-send-form]');
+      const buttons = form?.querySelectorAll('button');
+      buttons?.forEach(button => button.disabled = true);
+      try {
+        await uploadMessageImage(activeChat.user_id, file);
+        renderMessages(await getChatHistory(activeChat.user_id));
+        await loadChats();
+      } catch (error) {
+        showStatus(outlet.querySelector('[data-message-list]'), error.message);
+      } finally {
+        buttons?.forEach(button => button.disabled = false);
+        event.target.value = '';
+      }
+      return;
+    }
     if (!event.target.matches('[data-favorite-image]')) return;
     const file = event.target.files?.[0];
     if (!file) return;
