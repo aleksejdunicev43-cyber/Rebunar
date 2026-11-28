@@ -2010,3 +2010,118 @@
 @media (prefers-reduced-motion: reduce) {
   .messages-compose > [data-voice-input].is-listening { animation: none; }
 }
+
+
+/* Signal-inspired composer, live photo strip and five attachment shortcuts. */
+.messages-compose-signal {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 9px !important;
+  padding: 10px 12px max(10px, env(safe-area-inset-bottom)) !important;
+  background: #1b2632;
+}
+.messages-compose-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 28px;
+  background: #303943;
+}
+.messages-compose-field > textarea {
+  min-width: 0 !important;
+  min-height: 44px !important;
+  max-height: 112px !important;
+  flex: 1 1 0 !important;
+  padding: 11px 5px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  color: #eef3f6 !important;
+  resize: none !important;
+}
+.messages-compose-field > button {
+  display: grid;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  flex: 0 0 36px !important;
+  place-items: center;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: #d3dde5 !important;
+  font-size: 20px !important;
+}
+.messages-compose-field > .messages-mic-button,
+.messages-compose-field > button[type="submit"] {
+  background: #263541 !important;
+  color: #35c99a !important;
+}
+.messages-compose-field > button[type="submit"] {
+  background: #28bd91 !important;
+  color: #09251c !important;
+}
+.messages-compose-field > [hidden] { display: none !important; }
+.messages-gallery-strip {
+  display: flex;
+  min-height: 64px;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1px 2px 5px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.messages-gallery-prompt {
+  flex: 0 0 auto;
+  min-height: 58px !important;
+  padding: 0 16px !important;
+  border: 1px dashed rgba(160,180,200,.3) !important;
+  border-radius: 12px !important;
+  background: #25323e !important;
+  color: #b9c9d5 !important;
+  font-size: 12px !important;
+}
+.messages-gallery-thumb {
+  width: 68px;
+  height: 62px;
+  flex: 0 0 68px;
+  border-radius: 10px;
+  object-fit: cover;
+  scroll-snap-align: start;
+}
+.messages-attachment-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.messages-attachment-actions button {
+  display: flex;
+  min-width: 0;
+  min-height: 66px !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 2px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #303b4d !important;
+  color: #dce4ef !important;
+}
+.messages-attachment-actions button > span { font-size: 22px; line-height: 1; }
+.messages-attachment-actions button > small { font-size: 10px; font-weight: 500; }
+.messages-attachment-actions button:active { background: #3a485b !important; }
+@media (max-width: 420px) {
+  .messages-compose-signal { padding-left: 8px !important; padding-right: 8px !important; }
+  .messages-compose-field { gap: 4px; padding-inline: 5px; }
+  .messages-compose-field > button { width: 33px !important; min-width: 33px !important; flex-basis: 33px !important; }
+  .messages-attachment-actions { gap: 4px; }
+  .messages-attachment-actions button > small { font-size: 9px; }
+}
