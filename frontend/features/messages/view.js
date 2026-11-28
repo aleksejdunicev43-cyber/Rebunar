@@ -1,3 +1,33 @@
+
+window.RebunarNativeGallery = {
+  onPhotos(payload) {
+    const strip = document.querySelector('[data-compose-gallery]');
+    if (!strip) return;
+    let photos = [];
+    try { photos = JSON.parse(payload || '[]'); } catch {}
+    strip.replaceChildren();
+    if (!photos.length) {
+      const empty = document.createElement('span');
+      empty.className = 'messages-gallery-empty';
+      empty.textContent = 'Фотографии не найдены';
+      strip.append(empty);
+      return;
+    }
+    photos.forEach(photo => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'messages-gallery-photo';
+      button.dataset.nativePhoto = photo.uri;
+      button.setAttribute('aria-label', 'Отправить фотографию');
+      const image = document.createElement('img');
+      image.src = photo.src;
+      image.alt = 'Фотография из галереи';
+      image.loading = 'lazy';
+      button.append(image);
+      strip.append(button);
+    });
+  }
+};
 import { getUser } from '../auth/session.js';
 import { avatarMarkup } from '../../shared/avatar.js?v=avatar-system-20261104-1';
 import {
@@ -278,9 +308,7 @@ async function openChat(user) {
         <button type="button" class="messages-mic-button" data-voice-input aria-label="Записать голосовое сообщение" title="Записать голосовое сообщение">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
-      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
-        <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
-      </div>
+      <div class="messages-gallery-strip" data-compose-gallery aria-label="Последние фотографии"></div>
       <nav class="messages-attachment-actions" data-attachment-actions aria-label="Вложения">
         <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
         <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
@@ -594,6 +622,10 @@ export function renderMessagesScreen(outlet, params = {}) {
       }
       const opening = !form?.classList.contains('is-attachments-open');
       form?.classList.toggle('is-attachments-open', opening);
+      if (opening) {
+        if (window.AndroidMediaGallery?.loadRecentPhotos) window.AndroidMediaGallery.loadRecentPhotos();
+        else showStatus(outlet.querySelector('[data-message-list]'), 'Встроенная лента последних фотографий доступна в приложении Rebunar.');
+      }
       return;
     }
     if (event.target.closest('[data-open-camera]')) {
@@ -611,7 +643,29 @@ export function renderMessagesScreen(outlet, params = {}) {
     }
 
     if (event.target.closest('[data-attach-message-image]')) {
-      outlet.querySelector('[data-message-image]')?.click();
+      if (window.AndroidMediaGallery?.loadRecentPhotos) window.AndroidMediaGallery.loadRecentPhotos();
+      else showStatus(outlet.querySelector('[data-message-list]'), 'Встроенная лента последних фотографий доступна в приложении Rebunar.');
+      return;
+    }
+
+    const nativePhoto = event.target.closest('[data-native-photo]');
+    if (nativePhoto) {
+      if (!activeChat || activeChat.kind === 'favorite' || nativePhoto.dataset.busy === '1') return;
+      nativePhoto.dataset.busy = '1';
+      try {
+        const dataUrl = window.AndroidMediaGallery?.readPhoto(nativePhoto.dataset.nativePhoto);
+        if (!dataUrl) throw new Error('Не удалось прочитать фотографию.');
+        const blob = await (await fetch(dataUrl)).blob();
+        if (blob.size > 10 * 1024 * 1024) throw new Error('Фотография должна быть меньше 10 МБ.');
+        const file = new File([blob], 'rebunar-photo-' + Date.now() + '.jpg', { type: blob.type || 'image/jpeg' });
+        await uploadMessageImage(activeChat.user_id, file);
+        renderMessages(await getChatHistory(activeChat.user_id));
+        await loadChats();
+      } catch (error) {
+        showStatus(outlet.querySelector('[data-message-list]'), error.message);
+      } finally {
+        nativePhoto.dataset.busy = '0';
+      }
       return;
     }
 
