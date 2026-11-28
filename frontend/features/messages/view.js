@@ -475,16 +475,10 @@ export function renderMessagesScreen(outlet, params = {}) {
 
     const voiceButton = event.target.closest('[data-voice-input]');
     if (voiceButton) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        showStatus(outlet.querySelector('[data-message-list]'), 'Голосовой ввод не поддерживается этим браузером. Можно воспользоваться микрофоном клавиатуры.');
-        return;
-      }
-      if (voiceRecognition) { stopVoiceInput(); return; }
       const form = voiceButton.closest('[data-send-form]');
       const textarea = form?.querySelector('textarea[name="text"]');
+      const composeToggle = form?.querySelector('[data-compose-toggle]');
       if (!textarea) return;
-      const composeToggle = form.querySelector('[data-compose-toggle]');
       if (composeToggle) {
         composeToggle.textContent = '⌨';
         composeToggle.setAttribute('aria-label', 'Ввод текста');
@@ -496,33 +490,6 @@ export function renderMessagesScreen(outlet, params = {}) {
       if (actions) actions.hidden = true;
       form.classList.remove('is-attachments-open');
       textarea.focus();
-      const recognition = new SpeechRecognition();
-      voiceRecognition = recognition;
-      recognition.lang = 'ru-RU';
-      recognition.interimResults = true;
-      recognition.continuous = false;
-      const initialText = textarea.value.trim();
-      recognition.onstart = () => {
-        voiceButton.classList.add('is-listening');
-        voiceButton.setAttribute('aria-label', 'Остановить голосовой ввод');
-        voiceButton.title = 'Нажмите, чтобы остановить';
-      };
-      recognition.onresult = event => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
-        textarea.value = [initialText, transcript.trim()].filter(Boolean).join(' ');
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      };
-      recognition.onerror = () => showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось распознать речь. Проверьте разрешение на микрофон.');
-      recognition.onend = () => {
-        if (voiceRecognition === recognition) voiceRecognition = null;
-        voiceButton.classList.remove('is-listening');
-        voiceButton.setAttribute('aria-label', 'Голосовой ввод');
-        voiceButton.title = 'Голосовой ввод';
-        updateComposerAction(form);
-      };
-      try { recognition.start(); }
-      catch { voiceRecognition = null; showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось включить микрофон.'); }
       return;
     }
     const attachButton = event.target.closest('[data-attach-image]');
