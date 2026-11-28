@@ -53,3 +53,10 @@ export function uploadSelfImage(file) {
 export function hideChat(userId) {
   return api.delete(`/messages/chats/${Number(userId)}`);
 }
+
+export function uploadMessageAudio(receiverId, file) {
+  const form = new FormData();
+  form.append('receiver_id', String(Number(receiverId)));
+  form.append('audio', file);
+  return api.upload('/messages/audio', form);
+}

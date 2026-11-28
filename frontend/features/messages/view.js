@@ -11,7 +11,8 @@ import {
   createSelfNote,
   deleteSelfNote,
   uploadSelfImage,
-  uploadMessageImage
+  uploadMessageImage,
+  uploadMessageAudio
 } from './api.js';
 
 let outletRef = null;
@@ -23,6 +24,12 @@ let refreshTimer = null;
 let screenToken = 0;
 let screenController = null;
 let voiceRecognition = null;
+let mediaRecorder = null;
+let voiceChunks = [];
+let voiceStream = null;
+let pressToTalk = null;
+let recordingTimer = null;
+let recordingStartedAt = 0;
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -44,6 +51,50 @@ function stopVoiceInput() {
   const current = voiceRecognition;
   voiceRecognition = null;
   try { current.stop(); } catch {}
+}
+async function startVoiceRecording(form) {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    showStatus(outletRef?.querySelector('[data-message-list]'), 'Запись голоса не поддерживается браузером. Нужен HTTPS и разрешение на микрофон.'); return;
+  }
+  try {
+    voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const choices = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
+    const mime = choices.find(type => MediaRecorder.isTypeSupported?.(type));
+    mediaRecorder = new MediaRecorder(voiceStream, mime ? { mimeType: mime } : undefined);
+    voiceChunks = [];
+    mediaRecorder.ondataavailable = e => { if (e.data?.size) voiceChunks.push(e.data); };
+    mediaRecorder.start(); form.classList.add('is-recording');
+    const mic=form.querySelector('[data-voice-input]'); if(mic){mic.classList.add('is-listening');mic.setAttribute('aria-label','Запись голосового сообщения');}
+    const label=form.querySelector('[data-recording-label]'); if(label){label.hidden=false;label.textContent='00:00  ← Проведите для отмены';}
+    recordingStartedAt=Date.now();
+    clearInterval(recordingTimer);
+    recordingTimer=setInterval(()=>{if(!mediaRecorder||mediaRecorder.state!=='recording')return;const seconds=Math.floor((Date.now()-recordingStartedAt)/1000);const time=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');if(label)label.textContent=time+'  ← Проведите для отмены';},250);
+    const g=form.querySelector('[data-compose-gallery]'), a=form.querySelector('[data-attachment-actions]'); if(g)g.hidden=true;if(a)a.hidden=true;form.classList.remove('is-attachments-open');
+    return true;
+  } catch (error) { stopVoiceRecording(false); showStatus(outletRef?.querySelector('[data-message-list]'), error.name==='NotAllowedError'?'Разреши доступ к микрофону в браузере.':'Не удалось включить микрофон.'); return false; }
+}
+function stopVoiceRecording(discard = true) {
+  if(mediaRecorder?.state==='recording'){try{mediaRecorder.stop();}catch{}}
+  voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;voiceChunks=[];
+  clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
+  const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
+  const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');mic.setAttribute('aria-label','Записать голосовое сообщение');}
+  const label=form?.querySelector('[data-recording-label]');if(label)label.hidden=true;
+  const toggle=form?.querySelector('[data-compose-toggle]');if(toggle){toggle.textContent='＋';toggle.dataset.mode='attachments';toggle.setAttribute('aria-label','Вложения');}
+}
+async function finishVoiceRecording(send) {
+  const recorder=mediaRecorder;if(!recorder)return;const mime=recorder.mimeType||'audio/webm',receiverId=activeChat?.user_id;
+  const blobReady=new Promise(resolve=>recorder.addEventListener('stop',()=>resolve(new Blob(voiceChunks,{type:mime})),{once:true}));
+  try{recorder.stop();}catch{}voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;
+  clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
+  const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
+  const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');}
+  const label=form?.querySelector('[data-recording-label]');if(label)label.hidden=true;
+  const toggle=form?.querySelector('[data-compose-toggle]');if(toggle){toggle.textContent='＋';toggle.dataset.mode='attachments';toggle.setAttribute('aria-label','Вложения');}
+  const blob=await blobReady;voiceChunks=[];if(!send||!blob.size||!receiverId)return;
+  const ext=mime.includes('ogg')?'ogg':mime.includes('mp4')?'m4a':'webm';
+  try{await uploadMessageAudio(receiverId,new File([blob],'voice.'+ext,{type:mime}));renderMessages(await getChatHistory(receiverId));await loadChats();}
+  catch(error){showStatus(outletRef?.querySelector('[data-message-list]'),error.message);}
 }
 function showStatus(container, message) {
   if (container) {
@@ -133,6 +184,7 @@ function renderMessages(messages) {
         <div class="message-content">
           <div class="messages-bubble">
             ${message.image_url ? `<a class="message-image-link" href="${escapeHTML(message.image_url)}" target="_blank" rel="noopener"><img class="message-image" src="${escapeHTML(message.image_url)}" alt="Фотография" loading="lazy"></a>` : ''}
+            ${message.audio_url ? `<audio class="message-audio" controls preload="metadata" src="${escapeHTML(message.audio_url)}"></audio>` : ''}
             ${message.text && message.text !== '[Фото]' ? `<div class="message-text">${escapeHTML(message.text)}</div>` : ''}
           </div>
           <time class="message-time">${escapeHTML(message.created_at || '')}</time>
@@ -197,6 +249,7 @@ async function refreshChatPresence(userId) {
 
 async function openChat(user) {
   stopVoiceInput();
+  stopVoiceRecording(false);
   activeChat = user;
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -218,16 +271,17 @@ async function openChat(user) {
       <input type="file" accept="image/*" capture="environment" data-camera-image hidden>
       <input type="file" data-message-file hidden>
       <div class="messages-compose-field">
+        <span class="messages-recording-label" data-recording-label hidden>Идёт запись…</span>
         <button type="button" class="messages-compose-toggle" data-compose-toggle aria-label="Вложения" title="Вложения">＋</button>
         <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
         <button type="button" class="messages-camera-button" data-open-camera aria-label="Камера" title="Камера">▣</button>
-        <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
+        <button type="button" class="messages-mic-button" data-voice-input aria-label="Записать голосовое сообщение" title="Записать голосовое сообщение">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
-      <div class="messages-gallery-strip" data-compose-gallery hidden aria-label="Выбранные фотографии">
+      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
         <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
       </div>
-      <nav class="messages-attachment-actions" data-attachment-actions hidden aria-label="Вложения">
+      <nav class="messages-attachment-actions" data-attachment-actions aria-label="Вложения">
         <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
         <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
         <button type="button" data-attachment-coming="Опрос"><span>☷</span><small>Опрос</small></button>
@@ -408,6 +462,58 @@ export function renderMessagesScreen(outlet, params = {}) {
     swipeStart = null;
   }, { passive: true, signal: screenController.signal });
 
+  outlet.addEventListener('pointerdown', async event => {
+    const mic = event.target.closest('[data-voice-input]');
+    if (!mic || !activeChat || activeChat.kind === 'favorite' || !event.isPrimary || event.button !== 0 || pressToTalk) return;
+    event.preventDefault();
+    const form = mic.closest('[data-send-form]');
+    pressToTalk = { pointerId: event.pointerId, mic, form, startX: event.clientX, cancelled: false, released: false, started: false, finishing: false };
+    mic.classList.add('is-pressed');
+    try { mic.setPointerCapture(event.pointerId); } catch {}
+    const started = await startVoiceRecording(form);
+    const state = pressToTalk;
+    if (!state || state.mic !== mic) { if (started) stopVoiceRecording(false); return; }
+    state.started = started;
+    if (!started) { mic.classList.remove('is-pressed'); pressToTalk = null; return; }
+    if (state.released && !state.finishing) {
+      state.finishing = true;
+      await finishVoiceRecording(!state.cancelled);
+    }
+  }, listenerOptions);
+
+  outlet.addEventListener('pointermove', event => {
+    const state = pressToTalk;
+    if (!state || state.pointerId !== event.pointerId) return;
+    const dx = event.clientX - state.startX;
+    if (dx < -90) {
+      state.cancelled = true;
+      state.form?.classList.add('is-recording-cancel');
+      const label = state.form?.querySelector('[data-recording-label]');
+      if (label) label.textContent = 'Отпустите, чтобы отменить';
+    } else {
+      state.cancelled = false;
+      state.form?.classList.remove('is-recording-cancel');
+      const seconds=Math.floor((Date.now()-recordingStartedAt)/1000);
+      const time=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+      const label=state.form?.querySelector('[data-recording-label]');
+      if(label)label.textContent=time+'  ← Проведите для отмены';
+    }
+  }, listenerOptions);
+
+  const releasePushToTalk = async (event, cancelledBySystem = false) => {
+    const state = pressToTalk;
+    if (!state || state.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    state.released = true;
+    if (cancelledBySystem) state.cancelled = true;
+    state.mic?.classList.remove('is-pressed');
+    if (!state.started || state.finishing) return;
+    state.finishing = true;
+    await finishVoiceRecording(!state.cancelled);
+  };
+  outlet.addEventListener('pointerup', event => releasePushToTalk(event), listenerOptions);
+  outlet.addEventListener('pointercancel', event => releasePushToTalk(event, true), listenerOptions);
+
   outlet.addEventListener('click', async event => {
     const deleteChatButton = event.target.closest('[data-delete-chat]');
     if (deleteChatButton) {
@@ -473,27 +579,7 @@ export function renderMessagesScreen(outlet, params = {}) {
       return;
     }
 
-    const voiceButton = event.target.closest('[data-voice-input]');
-    if (voiceButton) {
-      const form = voiceButton.closest('[data-send-form]');
-      const textarea = form?.querySelector('textarea[name="text"]');
-      const composeToggle = form?.querySelector('[data-compose-toggle]');
-      if (!textarea) return;
-      if (composeToggle) {
-        composeToggle.dataset.mode = 'text';
-        composeToggle.textContent = '⌨';
-        composeToggle.setAttribute('aria-label', 'Ввод текста');
-        composeToggle.title = 'Ввод текста';
-      }
-      const gallery = form.querySelector('[data-compose-gallery]');
-      const actions = form.querySelector('[data-attachment-actions]');
-      if (gallery) gallery.hidden = true;
-      if (actions) actions.hidden = true;
-      form.classList.remove('is-attachments-open');
-      textarea.focus();
-      return;
-    }
-    const attachButton = event.target.closest('[data-attach-image]');
+        const attachButton = event.target.closest('[data-attach-image]');
     if (attachButton) {
       outlet.querySelector('[data-favorite-image]')?.click();
       return;
@@ -501,15 +587,12 @@ export function renderMessagesScreen(outlet, params = {}) {
     const composeToggle = event.target.closest('[data-compose-toggle]');
     if (composeToggle) {
       const form = composeToggle.closest('[data-send-form]');
-      if (composeToggle.dataset.mode === 'text') {
+      if (mediaRecorder?.state === 'recording') {
+        stopVoiceRecording(false);
         form?.querySelector('textarea[name="text"]')?.focus();
         return;
       }
-      const gallery = form?.querySelector('[data-compose-gallery]');
-      const actions = form?.querySelector('[data-attachment-actions]');
-      const opening = gallery?.hidden !== false;
-      if (gallery) gallery.hidden = !opening;
-      if (actions) actions.hidden = !opening;
+      const opening = !form?.classList.contains('is-attachments-open');
       form?.classList.toggle('is-attachments-open', opening);
       return;
     }

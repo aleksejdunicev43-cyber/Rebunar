@@ -2157,3 +2157,85 @@
 .messages-compose-signal.is-attachments-open .messages-attachment-actions {
   display: grid !important;
 }
+
+
+/* Smooth, stable attachment drawer and voice-recording state. */
+.messages-compose-signal .messages-gallery-strip,.messages-compose-signal .messages-attachment-actions{max-height:0;min-height:0;opacity:0;overflow:hidden;padding-top:0;padding-bottom:0;visibility:hidden;transform:translateY(-5px);transition:max-height .24s ease,opacity .18s ease,transform .24s ease,padding .24s ease,visibility .24s;}
+.messages-compose-signal .messages-attachment-actions{display:grid;}
+.messages-compose-signal.is-attachments-open .messages-gallery-strip{max-height:100px;min-height:64px;opacity:1;padding-top:1px;padding-bottom:5px;visibility:visible;transform:none;}
+.messages-compose-signal.is-attachments-open .messages-attachment-actions{max-height:100px;opacity:1;padding-top:2px;padding-bottom:2px;visibility:visible;transform:none;}
+.messages-compose-signal.is-recording .messages-compose-field>textarea{display:none;}
+.messages-recording-label{flex:1;color:#ff9a9a;font-size:13px;padding-left:8px;}
+.messages-recording-label[hidden]{display:none!important;}
+.messages-compose-signal .messages-mic-button.is-listening{color:#fff!important;background:#b94152!important;animation:messages-mic-pulse 1.1s ease-in-out infinite;}
+.message-audio{display:block;width:min(260px,100%);max-width:100%;margin:4px 0;}
+@media(prefers-reduced-motion:reduce){.messages-compose-signal .messages-gallery-strip,.messages-compose-signal .messages-attachment-actions{transition:none;}}
+
+/* Keep drawer nodes in layout while collapsed so opening/closing can animate smoothly. */
+.messages-compose-signal:not(.is-attachments-open) .messages-gallery-strip{display:flex!important;}
+.messages-compose-signal:not(.is-attachments-open) .messages-attachment-actions{display:grid!important;}
+
+
+/* Push-to-talk interaction, matching the familiar hold / slide-to-cancel pattern. */
+.messages-compose-field [data-voice-input] {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.messages-compose-field [data-voice-input].is-pressed {
+  transform: scale(1.08);
+}
+.messages-compose-signal.is-recording .messages-compose-field {
+  gap: 8px;
+  min-height: 58px;
+  padding-left: 12px;
+  padding-right: 7px;
+  background: #303943;
+}
+.messages-compose-signal.is-recording .messages-compose-toggle,
+.messages-compose-signal.is-recording .messages-compose-field > textarea,
+.messages-compose-signal.is-recording .messages-camera-button,
+.messages-compose-signal.is-recording .messages-compose-field > button[type="submit"] {
+  display: none !important;
+}
+.messages-compose-signal.is-recording .messages-recording-label {
+  display: block !important;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #bfc6ce;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-left: 2px;
+}
+.messages-compose-signal.is-recording .messages-recording-label::first-letter {
+  color: #ef5964;
+}
+.messages-compose-signal.is-recording .messages-mic-button {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+  flex: 0 0 64px !important;
+  margin-top: -17px;
+  margin-bottom: -12px;
+  border-radius: 50% !important;
+  background: #f0443e !important;
+  color: #fff !important;
+  font-size: 31px !important;
+  box-shadow: 0 5px 16px rgba(240,68,62,.28);
+}
+.messages-compose-signal.is-recording .messages-mic-button.is-listening {
+  animation: messages-mic-pulse 1.15s ease-in-out infinite;
+}
+.messages-compose-signal.is-recording-cancel .messages-recording-label {
+  color: #ff6b73 !important;
+}
+.messages-compose-signal.is-recording-cancel .messages-mic-button {
+  background: #8d343b !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .messages-compose-signal.is-recording .messages-mic-button { animation: none; }
+}
