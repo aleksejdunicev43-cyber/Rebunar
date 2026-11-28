@@ -1,6 +1,7 @@
 /**
- * Keep the app shell stationary while the software keyboard is open.
- * Only the active message composer follows the visible viewport edge.
+ * Keep the app shell anchored to the currently available browser height.
+ * Android resizes the content viewport when the software keyboard opens;
+ * the chat composer then stays in normal flex layout at the bottom edge.
  */
 export function initKeyboardLayout(root) {
   const shell = root.querySelector('.app-shell');
@@ -8,57 +9,47 @@ export function initKeyboardLayout(root) {
 
   const viewport = window.visualViewport;
   const editableSelector = 'input:not([type="hidden"]):not([type="file"]), textarea, [contenteditable="true"]';
-  let shellHeight = window.innerHeight;
+  let baselineHeight = window.innerHeight;
   let editor = null;
   let composer = null;
-  let keyboardWasOpen = false;
 
   function setShellHeight() {
-    shellHeight = window.innerHeight;
-    shell.style.setProperty('--rb-shell-height', `${Math.round(shellHeight)}px`);
+    const currentHeight = window.innerHeight;
+    shell.style.setProperty('--rb-shell-height', `${Math.round(currentHeight)}px`);
+    // Keep the unoccluded height as the reference while an editor is focused.
+    if (!editor) baselineHeight = currentHeight;
   }
 
   function sync() {
     const visibleHeight = viewport?.height ?? window.innerHeight;
     const visibleTop = viewport?.offsetTop ?? 0;
     const keyboardOpen = Boolean(
-      editor && composer && shellHeight - (visibleHeight + visibleTop) > 90
+      editor && composer && (
+        baselineHeight - window.innerHeight > 90 ||
+        baselineHeight - (visibleTop + visibleHeight) > 90
+      )
     );
 
     shell.classList.toggle('keyboard-compose-open', keyboardOpen);
 
-    if (keyboardOpen) {
-      // Some mobile browsers report a visual viewport that ends above the
-      // actual IME edge. Use whichever viewport bottom is lower on screen,
-      // so the composer sits directly against the keyboard in both resize and
-      // overlay keyboard modes. Keep the app shell and document stationary.
-      // The shell keeps its original height while the keyboard changes the
-      // browser's current innerHeight. Measure the gap from the visual
-      // viewport bottom to the shell's fixed bottom instead of innerHeight.
-      const bounds = composer.getBoundingClientRect();
-      const keyboardInset = Math.max(0, shellHeight - (visibleTop + visibleHeight));
-      composer.classList.add('keyboard-floated');
-      composer.style.left = `${Math.round(bounds.left)}px`;
-      composer.style.width = `${Math.round(bounds.width)}px`;
-      composer.style.top = 'auto';
-      composer.style.bottom = `${Math.round(keyboardInset)}px`;
-    } else {
-      composer?.classList.remove('keyboard-floated');
-      if (composer) {
-        composer.style.removeProperty('left');
-        composer.style.removeProperty('width');
-        composer.style.removeProperty('top');
-        composer.style.removeProperty('bottom');
-      }
+    // Never position the composer with a second, manually calculated keyboard
+    // inset. With resizes-content the available viewport already ends above
+    // the keyboard, so normal flex layout places the composer at that edge.
+    if (composer) {
+      composer.classList.remove('keyboard-floated');
+      composer.style.removeProperty('position');
+      composer.style.removeProperty('left');
+      composer.style.removeProperty('width');
+      composer.style.removeProperty('top');
+      composer.style.removeProperty('bottom');
     }
-
-    keyboardWasOpen = keyboardOpen;
   }
 
   function onFocusIn(event) {
     const target = event.target;
     editor = target?.matches?.(editableSelector) ? target : null;
     composer = editor?.closest?.('.messages-compose, .messages-favorite-compose') || null;
+    setShellHeight();
     sync();
   }
 
@@ -67,18 +58,20 @@ export function initKeyboardLayout(root) {
       const target = document.activeElement;
       editor = target?.matches?.(editableSelector) ? target : null;
       composer = editor?.closest?.('.messages-compose, .messages-favorite-compose') || null;
+      setShellHeight();
       sync();
-    }, 80);
+    }, 100);
   }
 
   function onResize() {
-    if (!editor) setShellHeight();
+    setShellHeight();
     sync();
   }
 
   function onOrientationChange() {
     window.setTimeout(() => {
-      if (!editor) setShellHeight();
+      baselineHeight = window.innerHeight;
+      setShellHeight();
       sync();
     }, 250);
   }
