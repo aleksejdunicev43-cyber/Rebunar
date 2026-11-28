@@ -213,12 +213,27 @@ async function openChat(user) {
       </div>
     </header>
     <div class="messages-message-list" data-message-list></div>
-    <form class="messages-compose" data-send-form>
-      <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image hidden>
-      <button type="button" class="messages-attach-button" data-attach-message-image aria-label="Прикрепить фотографию" title="Прикрепить фотографию">＋</button>
-      <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
-      <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
-      <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
+    <form class="messages-compose messages-compose-signal" data-send-form>
+      <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image multiple hidden>
+      <input type="file" accept="image/*" capture="environment" data-camera-image hidden>
+      <input type="file" data-message-file hidden>
+      <div class="messages-compose-field">
+        <button type="button" class="messages-keyboard-button" data-focus-message aria-label="Ввод текста" title="Ввод текста">⌨</button>
+        <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
+        <button type="button" class="messages-camera-button" data-open-camera aria-label="Камера" title="Камера">▣</button>
+        <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
+        <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
+      </div>
+      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
+        <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
+      </div>
+      <nav class="messages-attachment-actions" aria-label="Вложения">
+        <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
+        <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
+        <button type="button" data-attachment-coming="Опрос"><span>☷</span><small>Опрос</small></button>
+        <button type="button" data-attachment-coming="Контакт"><span>♙</span><small>Контакт</small></button>
+        <button type="button" data-attachment-coming="Место"><span>⌖</span><small>Место</small></button>
+      </nav>
     </form>
   `;
 
@@ -503,6 +518,23 @@ export function renderMessagesScreen(outlet, params = {}) {
       outlet.querySelector('[data-favorite-image]')?.click();
       return;
     }
+    if (event.target.closest('[data-focus-message]')) {
+      outlet.querySelector('[data-send-form] textarea[name="text"]')?.focus();
+      return;
+    }
+    if (event.target.closest('[data-open-camera]')) {
+      outlet.querySelector('[data-camera-image]')?.click();
+      return;
+    }
+    if (event.target.closest('[data-open-file]')) {
+      outlet.querySelector('[data-message-file]')?.click();
+      return;
+    }
+    const coming = event.target.closest('[data-attachment-coming]');
+    if (coming) {
+      showStatus(outlet.querySelector('[data-message-list]'), coming.dataset.attachmentComing + ' — эта функция пока готовится.');
+      return;
+    }
 
     if (event.target.closest('[data-attach-message-image]')) {
       outlet.querySelector('[data-message-image]')?.click();
@@ -576,32 +608,40 @@ export function renderMessagesScreen(outlet, params = {}) {
   }, listenerOptions);
 
   outlet.addEventListener('change', async event => {
-    if (event.target.matches('[data-message-image]')) {
-      const file = event.target.files?.[0];
-      if (!file || !activeChat || activeChat.kind === 'favorite') return;
-      if (file.size > 10 * 1024 * 1024) {
-        showStatus(outlet.querySelector('[data-message-list]'), 'Фотография должна быть не больше 10 МБ');
-        event.target.value = '';
-        return;
+    if (event.target.matches('[data-message-image], [data-camera-image]')) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length || !activeChat || activeChat.kind === 'favorite') return;
+      const valid = files.filter(file => file.size <= 10 * 1024 * 1024 && ['image/jpeg', 'image/png', 'image/webp'].includes(file.type));
+      if (valid.length !== files.length) {
+        showStatus(outlet.querySelector('[data-message-list]'), 'Поддерживаются JPG, PNG и WebP размером до 10 МБ каждое.');
       }
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        showStatus(outlet.querySelector('[data-message-list]'), 'Поддерживаются JPG, PNG и WebP');
-        event.target.value = '';
-        return;
+      const strip = outlet.querySelector('[data-compose-gallery]');
+      if (strip && valid.length) {
+        strip.innerHTML = valid.slice(0, 12).map(file => {
+          const url = URL.createObjectURL(file);
+          return '<img src="' + url + '" alt="Выбранная фотография" class="messages-gallery-thumb">';
+        }).join('');
       }
       const form = outlet.querySelector('[data-send-form]');
       const buttons = form?.querySelectorAll('button');
       buttons?.forEach(button => button.disabled = true);
       try {
-        await uploadMessageImage(activeChat.user_id, file);
-        renderMessages(await getChatHistory(activeChat.user_id));
-        await loadChats();
+        for (const file of valid) await uploadMessageImage(activeChat.user_id, file);
+        if (valid.length) {
+          renderMessages(await getChatHistory(activeChat.user_id));
+          await loadChats();
+        }
       } catch (error) {
         showStatus(outlet.querySelector('[data-message-list]'), error.message);
       } finally {
         buttons?.forEach(button => button.disabled = false);
         event.target.value = '';
       }
+      return;
+    }
+    if (event.target.matches('[data-message-file]')) {
+      if (event.target.files?.length) showStatus(outlet.querySelector('[data-message-list]'), 'Отправка документов появится в одном из следующих обновлений.');
+      event.target.value = '';
       return;
     }
     if (!event.target.matches('[data-favorite-image]')) return;
