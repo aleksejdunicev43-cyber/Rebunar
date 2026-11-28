@@ -49,14 +49,3 @@ export function uploadSelfImage(file) {
 export function hideChat(userId) {
   return api.delete(`/messages/chats/${Number(userId)}`);
 }
-
-export function getChatStatus(userId) {
-  return api.get(`/messages/status/${Number(userId)}`);
-}
-
-export function setTypingStatus(receiverId, isTyping) {
-  return api.post('/messages/typing', {
-    receiver_id: Number(receiverId),
-    is_typing: Boolean(isTyping)
-  });
-}
