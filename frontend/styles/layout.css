@@ -167,3 +167,24 @@
   .app-header { min-height: 52px; }
   .app-wordmark { font-size: clamp(17px, 3.2vw, 23px); letter-spacing: .16em; }
 }
+
+
+/* Keep the mobile application screen stationary during keyboard display. */
+@media (max-width: 760px) {
+  .app-shell {
+    height: var(--rb-shell-height, 100dvh) !important;
+    min-height: 0 !important;
+  }
+
+  .messages-compose.keyboard-floated,
+  .messages-favorite-compose.keyboard-floated {
+    position: fixed !important;
+    z-index: 80 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  .app-shell.keyboard-compose-open .messages-message-list {
+    padding-bottom: 88px !important;
+  }
+}
