@@ -2125,3 +2125,35 @@
   .messages-attachment-actions { gap: 4px; }
   .messages-attachment-actions button > small { font-size: 9px; }
 }
+
+
+/* Chat attachment tray stays collapsed until the user taps the plus. */
+.messages-compose-signal [hidden] { display: none !important; }
+.messages-compose-signal .messages-gallery-strip[hidden],
+.messages-compose-signal .messages-attachment-actions[hidden] { display: none !important; }
+.messages-compose-signal .messages-compose-toggle {
+  display: grid;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  flex: 0 0 36px !important;
+  place-items: center;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: #35c99a !important;
+  font-size: 27px !important;
+}
+.messages-compose-signal:not(.is-attachments-open) .messages-gallery-strip,
+.messages-compose-signal:not(.is-attachments-open) .messages-attachment-actions {
+  display: none !important;
+}
+.messages-compose-signal.is-attachments-open .messages-gallery-strip,
+.messages-compose-signal.is-attachments-open .messages-attachment-actions {
+  display: flex !important;
+}
+.messages-compose-signal.is-attachments-open .messages-attachment-actions {
+  display: grid !important;
+}
