@@ -76,8 +76,8 @@ function stopVoiceRecording(discard = true) {
   const toggle=form?.querySelector('[data-compose-toggle]');if(toggle){toggle.textContent='＋';toggle.dataset.mode='attachments';toggle.setAttribute('aria-label','Вложения');}
 }
 async function finishVoiceRecording(send) {
-  const recorder=mediaRecorder;if(!recorder)return;const chunks=voiceChunks.slice(),mime=recorder.mimeType||'audio/webm',receiverId=activeChat?.user_id;
-  const blobReady=new Promise(resolve=>recorder.addEventListener('stop',()=>resolve(new Blob(chunks,{type:mime})),{once:true}));
+  const recorder=mediaRecorder;if(!recorder)return;const mime=recorder.mimeType||'audio/webm',receiverId=activeChat?.user_id;
+  const blobReady=new Promise(resolve=>recorder.addEventListener('stop',()=>resolve(new Blob(voiceChunks,{type:mime})),{once:true}));
   try{recorder.stop();}catch{}voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;voiceChunks=[];
   const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
   const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');}
@@ -270,10 +270,10 @@ async function openChat(user) {
         <button type="button" class="messages-mic-button" data-voice-input aria-label="Записать голосовое сообщение" title="Записать голосовое сообщение">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
-      <div class="messages-gallery-strip" data-compose-gallery hidden aria-label="Выбранные фотографии">
+      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
         <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
       </div>
-      <nav class="messages-attachment-actions" data-attachment-actions hidden aria-label="Вложения">
+      <nav class="messages-attachment-actions" data-attachment-actions aria-label="Вложения">
         <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
         <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
         <button type="button" data-attachment-coming="Опрос"><span>☷</span><small>Опрос</small></button>
@@ -542,10 +542,6 @@ export function renderMessagesScreen(outlet, params = {}) {
       }
       const opening = !form?.classList.contains('is-attachments-open');
       form?.classList.toggle('is-attachments-open', opening);
-      const gallery = form?.querySelector('[data-compose-gallery]');
-      const actions = form?.querySelector('[data-attachment-actions]');
-      if (gallery) gallery.hidden = !opening;
-      if (actions) actions.hidden = !opening;
       return;
     }
     if (event.target.closest('[data-open-camera]')) {
