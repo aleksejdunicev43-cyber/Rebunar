@@ -218,16 +218,16 @@ async function openChat(user) {
       <input type="file" accept="image/*" capture="environment" data-camera-image hidden>
       <input type="file" data-message-file hidden>
       <div class="messages-compose-field">
-        <button type="button" class="messages-keyboard-button" data-focus-message aria-label="Ввод текста" title="Ввод текста">⌨</button>
+        <button type="button" class="messages-compose-toggle" data-compose-toggle aria-label="Вложения" title="Вложения">＋</button>
         <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
         <button type="button" class="messages-camera-button" data-open-camera aria-label="Камера" title="Камера">▣</button>
         <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
-      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
+      <div class="messages-gallery-strip" data-compose-gallery hidden aria-label="Выбранные фотографии">
         <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
       </div>
-      <nav class="messages-attachment-actions" aria-label="Вложения">
+      <nav class="messages-attachment-actions" data-attachment-actions hidden aria-label="Вложения">
         <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
         <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
         <button type="button" data-attachment-coming="Опрос"><span>☷</span><small>Опрос</small></button>
@@ -475,42 +475,22 @@ export function renderMessagesScreen(outlet, params = {}) {
 
     const voiceButton = event.target.closest('[data-voice-input]');
     if (voiceButton) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        showStatus(outlet.querySelector('[data-message-list]'), 'Голосовой ввод не поддерживается этим браузером. Можно воспользоваться микрофоном клавиатуры.');
-        return;
-      }
-      if (voiceRecognition) { stopVoiceInput(); return; }
       const form = voiceButton.closest('[data-send-form]');
       const textarea = form?.querySelector('textarea[name="text"]');
+      const composeToggle = form?.querySelector('[data-compose-toggle]');
       if (!textarea) return;
-      const recognition = new SpeechRecognition();
-      voiceRecognition = recognition;
-      recognition.lang = 'ru-RU';
-      recognition.interimResults = true;
-      recognition.continuous = false;
-      const initialText = textarea.value.trim();
-      recognition.onstart = () => {
-        voiceButton.classList.add('is-listening');
-        voiceButton.setAttribute('aria-label', 'Остановить голосовой ввод');
-        voiceButton.title = 'Нажмите, чтобы остановить';
-      };
-      recognition.onresult = event => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
-        textarea.value = [initialText, transcript.trim()].filter(Boolean).join(' ');
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      };
-      recognition.onerror = () => showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось распознать речь. Проверьте разрешение на микрофон.');
-      recognition.onend = () => {
-        if (voiceRecognition === recognition) voiceRecognition = null;
-        voiceButton.classList.remove('is-listening');
-        voiceButton.setAttribute('aria-label', 'Голосовой ввод');
-        voiceButton.title = 'Голосовой ввод';
-        updateComposerAction(form);
-      };
-      try { recognition.start(); }
-      catch { voiceRecognition = null; showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось включить микрофон.'); }
+      if (composeToggle) {
+        composeToggle.dataset.mode = 'text';
+        composeToggle.textContent = '⌨';
+        composeToggle.setAttribute('aria-label', 'Ввод текста');
+        composeToggle.title = 'Ввод текста';
+      }
+      const gallery = form.querySelector('[data-compose-gallery]');
+      const actions = form.querySelector('[data-attachment-actions]');
+      if (gallery) gallery.hidden = true;
+      if (actions) actions.hidden = true;
+      form.classList.remove('is-attachments-open');
+      textarea.focus();
       return;
     }
     const attachButton = event.target.closest('[data-attach-image]');
@@ -518,8 +498,19 @@ export function renderMessagesScreen(outlet, params = {}) {
       outlet.querySelector('[data-favorite-image]')?.click();
       return;
     }
-    if (event.target.closest('[data-focus-message]')) {
-      outlet.querySelector('[data-send-form] textarea[name="text"]')?.focus();
+    const composeToggle = event.target.closest('[data-compose-toggle]');
+    if (composeToggle) {
+      const form = composeToggle.closest('[data-send-form]');
+      if (composeToggle.dataset.mode === 'text') {
+        form?.querySelector('textarea[name="text"]')?.focus();
+        return;
+      }
+      const gallery = form?.querySelector('[data-compose-gallery]');
+      const actions = form?.querySelector('[data-attachment-actions]');
+      const opening = gallery?.hidden !== false;
+      if (gallery) gallery.hidden = !opening;
+      if (actions) actions.hidden = !opening;
+      form?.classList.toggle('is-attachments-open', opening);
       return;
     }
     if (event.target.closest('[data-open-camera]')) {
