@@ -1228,9 +1228,15 @@ def send_message():
         if not user:
             return jsonify({"error": "Пользователь не найден"}), 404
 
+        con.execute("""
+            DELETE FROM hidden_chats
+            WHERE (user_id = ? AND other_user_id = ?)
+               OR (user_id = ? AND other_user_id = ?)
+        """, (session["user_id"], receiver_id, receiver_id, session["user_id"]))
+
         cur = con.execute(
             "INSERT INTO messages (sender_id, receiver_id, text) VALUES (?, ?, ?)",
-            (session["user_id"], receiver_id, text)
+            (session["user_id"], receiver_id, text[:5000])
         )
 
     return jsonify({"id": cur.lastrowid, "ok": True}), 201
