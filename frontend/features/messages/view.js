@@ -197,7 +197,7 @@ async function openChat(user) {
     <form class="messages-compose" data-send-form>
       <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image hidden>
       <button type="button" class="messages-attach-button" data-attach-message-image aria-label="Прикрепить фотографию" title="Прикрепить фотографию">＋</button>
-      <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" aria-label="Текст сообщения"></textarea>
+      <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
       <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение">➤</button>
     </form>
   `;
@@ -234,7 +234,7 @@ async function openFavorite() {
     <form class="messages-compose messages-favorite-compose" data-note-form>
       <input type="file" accept="image/jpeg,image/png,image/webp" data-favorite-image hidden>
       <button type="button" data-attach-image aria-label="Добавить фото" title="Добавить фото">＋</button>
-      <textarea name="text" maxlength="5000" rows="1" placeholder="Записать заметку..." autocomplete="off"></textarea>
+      <textarea name="text" maxlength="5000" rows="1" placeholder="Записать заметку..." autocomplete="off" enterkeyhint="enter"></textarea>
       <button type="submit" aria-label="Сохранить заметку" title="Сохранить заметку">➤</button>
     </form>
   `;
@@ -461,18 +461,11 @@ export function renderMessagesScreen(outlet, params = {}) {
   }, listenerOptions);
 
   outlet.addEventListener('input', event => {
-    if (!event.target.matches('[data-send-form] textarea[name="text"]')) return;
+    if (!event.target.matches('[data-send-form] textarea[name="text"], [data-note-form] textarea[name="text"]')) return;
     event.target.style.height = 'auto';
     event.target.style.height = Math.min(event.target.scrollHeight, 120) + 'px';
   }, listenerOptions);
 
-  outlet.addEventListener('keydown', event => {
-    if (!event.target.matches('[data-send-form] textarea[name="text"]')) return;
-    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
-      event.preventDefault();
-      event.target.form?.requestSubmit();
-    }
-  }, listenerOptions);
 
   outlet.addEventListener('submit', async event => {
     if (event.target.matches('[data-send-form]')) {
