@@ -28,13 +28,16 @@ export function initKeyboardLayout(root) {
     shell.classList.toggle('keyboard-compose-open', keyboardOpen);
 
     if (keyboardOpen) {
-      // Fixed coordinates are relative to the visible viewport. Do not resize
-      // the app shell or scroll the document: only the composer is repositioned.
+      // Some mobile browsers report a visual viewport that ends above the
+      // actual IME edge. Use whichever viewport bottom is lower on screen,
+      // so the composer sits directly against the keyboard in both resize and
+      // overlay keyboard modes. Keep the app shell and document stationary.
       const bounds = composer.getBoundingClientRect();
+      const viewportBottom = Math.max(visibleTop + visibleHeight, window.innerHeight);
       composer.classList.add('keyboard-floated');
       composer.style.left = `${Math.round(bounds.left)}px`;
       composer.style.width = `${Math.round(bounds.width)}px`;
-      composer.style.top = `${Math.round(visibleTop + visibleHeight - bounds.height)}px`;
+      composer.style.top = `${Math.round(viewportBottom - bounds.height)}px`;
     } else {
       composer?.classList.remove('keyboard-floated');
       if (composer) {
