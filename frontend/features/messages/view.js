@@ -218,16 +218,16 @@ async function openChat(user) {
       <input type="file" accept="image/*" capture="environment" data-camera-image hidden>
       <input type="file" data-message-file hidden>
       <div class="messages-compose-field">
-        <button type="button" class="messages-keyboard-button" data-focus-message aria-label="Ввод текста" title="Ввод текста">⌨</button>
+        <button type="button" class="messages-compose-toggle" data-compose-toggle aria-label="Вложения" title="Вложения">＋</button>
         <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
         <button type="button" class="messages-camera-button" data-open-camera aria-label="Камера" title="Камера">▣</button>
         <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
-      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
+      <div class="messages-gallery-strip" data-compose-gallery hidden aria-label="Выбранные фотографии">
         <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
       </div>
-      <nav class="messages-attachment-actions" aria-label="Вложения">
+      <nav class="messages-attachment-actions" data-attachment-actions hidden aria-label="Вложения">
         <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
         <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
         <button type="button" data-attachment-coming="Опрос"><span>☷</span><small>Опрос</small></button>
@@ -484,6 +484,18 @@ export function renderMessagesScreen(outlet, params = {}) {
       const form = voiceButton.closest('[data-send-form]');
       const textarea = form?.querySelector('textarea[name="text"]');
       if (!textarea) return;
+      const composeToggle = form.querySelector('[data-compose-toggle]');
+      if (composeToggle) {
+        composeToggle.textContent = '⌨';
+        composeToggle.setAttribute('aria-label', 'Ввод текста');
+        composeToggle.title = 'Ввод текста';
+      }
+      const gallery = form.querySelector('[data-compose-gallery]');
+      const actions = form.querySelector('[data-attachment-actions]');
+      if (gallery) gallery.hidden = true;
+      if (actions) actions.hidden = true;
+      form.classList.remove('is-attachments-open');
+      textarea.focus();
       const recognition = new SpeechRecognition();
       voiceRecognition = recognition;
       recognition.lang = 'ru-RU';
@@ -518,8 +530,18 @@ export function renderMessagesScreen(outlet, params = {}) {
       outlet.querySelector('[data-favorite-image]')?.click();
       return;
     }
-    if (event.target.closest('[data-focus-message]')) {
-      outlet.querySelector('[data-send-form] textarea[name="text"]')?.focus();
+    const composeToggle = event.target.closest('[data-compose-toggle]');
+    if (composeToggle) {
+      const form = composeToggle.closest('[data-send-form]');
+      const gallery = form?.querySelector('[data-compose-gallery]');
+      const actions = form?.querySelector('[data-attachment-actions]');
+      const opening = gallery?.hidden !== false;
+      if (gallery) gallery.hidden = !opening;
+      if (actions) actions.hidden = !opening;
+      composeToggle.textContent = opening ? '⌨' : '＋';
+      composeToggle.setAttribute('aria-label', opening ? 'Перейти к вводу текста' : 'Вложения');
+      composeToggle.title = opening ? 'Ввод текста' : 'Вложения';
+      form?.classList.toggle('is-attachments-open', opening);
       return;
     }
     if (event.target.closest('[data-open-camera]')) {
