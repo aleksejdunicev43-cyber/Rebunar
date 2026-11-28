@@ -44,6 +44,7 @@ export function initKeyboardLayout(root) {
         composer.style.removeProperty('left');
         composer.style.removeProperty('width');
         composer.style.removeProperty('top');
+        composer.style.removeProperty('bottom');
       }
     }
 
