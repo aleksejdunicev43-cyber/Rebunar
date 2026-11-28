@@ -1912,3 +1912,17 @@
   margin: 0;
   line-height: 1.35;
 }
+
+
+/* Tight vertical fit: remove excess top/bottom space around message text. */
+.message-row .messages-bubble {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  min-height: 0 !important;
+}
+
+.message-row .messages-bubble .message-text {
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+  line-height: 1.2 !important;
+}
