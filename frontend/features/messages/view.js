@@ -218,10 +218,10 @@ async function openChat(user) {
       <input type="file" accept="image/*" capture="environment" data-camera-image hidden>
       <input type="file" data-message-file hidden>
       <div class="messages-compose-field">
-        <button type="button" class="messages-compose-toggle" data-compose-toggle aria-label="Вложения" title="Вложения">＋</button>
+        <button type="button" class="messages-compose-toggle" data-compose-toggle data-mode="attachments" aria-label="Вложения" title="Вложения">＋</button>
         <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
         <button type="button" class="messages-camera-button" data-open-camera aria-label="Камера" title="Камера">▣</button>
-        <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
+        <button type="button" class="messages-mic-button" data-voice-input aria-label="Перейти к вводу текста" title="Перейти к вводу текста">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
       <div class="messages-gallery-strip" data-compose-gallery hidden aria-label="Выбранные фотографии">
@@ -482,8 +482,8 @@ export function renderMessagesScreen(outlet, params = {}) {
       if (composeToggle) {
         composeToggle.dataset.mode = 'text';
         composeToggle.textContent = '⌨';
-        composeToggle.setAttribute('aria-label', 'Ввод текста');
-        composeToggle.title = 'Ввод текста';
+        composeToggle.setAttribute('aria-label', 'Вернуться к вложениям');
+        composeToggle.title = 'Вернуться к вложениям';
       }
       const gallery = form.querySelector('[data-compose-gallery]');
       const actions = form.querySelector('[data-attachment-actions]');
@@ -502,7 +502,17 @@ export function renderMessagesScreen(outlet, params = {}) {
     if (composeToggle) {
       const form = composeToggle.closest('[data-send-form]');
       if (composeToggle.dataset.mode === 'text') {
-        form?.querySelector('textarea[name="text"]')?.focus();
+        const textarea = form?.querySelector('textarea[name="text"]');
+        textarea?.blur();
+        composeToggle.dataset.mode = 'attachments';
+        composeToggle.textContent = '＋';
+        composeToggle.setAttribute('aria-label', 'Вложения');
+        composeToggle.title = 'Вложения';
+        const gallery = form?.querySelector('[data-compose-gallery]');
+        const actions = form?.querySelector('[data-attachment-actions]');
+        if (gallery) gallery.hidden = false;
+        if (actions) actions.hidden = false;
+        form?.classList.add('is-attachments-open');
         return;
       }
       const gallery = form?.querySelector('[data-compose-gallery]');
