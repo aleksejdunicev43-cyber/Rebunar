@@ -2174,3 +2174,68 @@
 /* Keep drawer nodes in layout while collapsed so opening/closing can animate smoothly. */
 .messages-compose-signal:not(.is-attachments-open) .messages-gallery-strip{display:flex!important;}
 .messages-compose-signal:not(.is-attachments-open) .messages-attachment-actions{display:grid!important;}
+
+
+/* Push-to-talk interaction, matching the familiar hold / slide-to-cancel pattern. */
+.messages-compose-field [data-voice-input] {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.messages-compose-field [data-voice-input].is-pressed {
+  transform: scale(1.08);
+}
+.messages-compose-signal.is-recording .messages-compose-field {
+  gap: 8px;
+  min-height: 58px;
+  padding-left: 12px;
+  padding-right: 7px;
+  background: #303943;
+}
+.messages-compose-signal.is-recording .messages-compose-toggle,
+.messages-compose-signal.is-recording .messages-compose-field > textarea,
+.messages-compose-signal.is-recording .messages-camera-button,
+.messages-compose-signal.is-recording .messages-compose-field > button[type="submit"] {
+  display: none !important;
+}
+.messages-compose-signal.is-recording .messages-recording-label {
+  display: block !important;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #bfc6ce;
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-left: 2px;
+}
+.messages-compose-signal.is-recording .messages-recording-label::first-letter {
+  color: #ef5964;
+}
+.messages-compose-signal.is-recording .messages-mic-button {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+  flex: 0 0 64px !important;
+  margin-top: -17px;
+  margin-bottom: -12px;
+  border-radius: 50% !important;
+  background: #f0443e !important;
+  color: #fff !important;
+  font-size: 31px !important;
+  box-shadow: 0 5px 16px rgba(240,68,62,.28);
+}
+.messages-compose-signal.is-recording .messages-mic-button.is-listening {
+  animation: messages-mic-pulse 1.15s ease-in-out infinite;
+}
+.messages-compose-signal.is-recording-cancel .messages-recording-label {
+  color: #ff6b73 !important;
+}
+.messages-compose-signal.is-recording-cancel .messages-mic-button {
+  background: #8d343b !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .messages-compose-signal.is-recording .messages-mic-button { animation: none; }
+}
