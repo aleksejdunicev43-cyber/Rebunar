@@ -1,7 +1,6 @@
 /**
- * Keep the mobile app shell aligned with the visible viewport when the
- * Android/iOS software keyboard opens. The bottom navigation is hidden while
- * an editor is active so the message composer can sit directly above keyboard.
+ * Keep the app shell stationary while the software keyboard is open.
+ * Only the active message composer follows the visible viewport edge.
  */
 export function initKeyboardLayout(root) {
   const shell = root.querySelector('.app-shell');
@@ -9,59 +8,77 @@ export function initKeyboardLayout(root) {
 
   const viewport = window.visualViewport;
   const editableSelector = 'input:not([type="hidden"]):not([type="file"]), textarea, [contenteditable="true"]';
-  const getHeight = () => Math.min(
-    window.innerHeight || Number.POSITIVE_INFINITY,
-    viewport?.height || Number.POSITIVE_INFINITY
-  );
-
-  let maximumHeight = getHeight();
-  let editorFocused = false;
+  let shellHeight = window.innerHeight;
+  let editor = null;
+  let composer = null;
   let keyboardWasOpen = false;
 
-  function sync() {
-    const height = getHeight();
-    if (!editorFocused) maximumHeight = Math.max(maximumHeight, height);
+  function setShellHeight() {
+    shellHeight = window.innerHeight;
+    shell.style.setProperty('--rb-shell-height', `${Math.round(shellHeight)}px`);
+  }
 
-    const keyboardOpen = editorFocused && maximumHeight - height > 90;
-    shell.classList.toggle('keyboard-open', keyboardOpen);
-    shell.classList.toggle('keyboard-open-messages', keyboardOpen && Boolean(shell.querySelector('.messages-screen')));
+  function sync() {
+    const visibleHeight = viewport?.height ?? window.innerHeight;
+    const visibleTop = viewport?.offsetTop ?? 0;
+    const keyboardOpen = Boolean(
+      editor && composer && shellHeight - (visibleHeight + visibleTop) > 90
+    );
+
+    shell.classList.toggle('keyboard-compose-open', keyboardOpen);
 
     if (keyboardOpen) {
-      shell.style.setProperty('--rb-viewport-height', `${Math.round(height)}px`);
+      // Fixed coordinates are relative to the visible viewport. Do not resize
+      // the app shell or scroll the document: only the composer is repositioned.
+      const bounds = composer.getBoundingClientRect();
+      composer.classList.add('keyboard-floated');
+      composer.style.left = `${Math.round(bounds.left)}px`;
+      composer.style.width = `${Math.round(bounds.width)}px`;
+      composer.style.top = `${Math.round(visibleTop + visibleHeight - bounds.height)}px`;
     } else {
-      shell.style.removeProperty('--rb-viewport-height');
+      composer?.classList.remove('keyboard-floated');
+      if (composer) {
+        composer.style.removeProperty('left');
+        composer.style.removeProperty('width');
+        composer.style.removeProperty('top');
+      }
     }
 
-    if (keyboardOpen && !keyboardWasOpen) {
-      document.activeElement?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-    }
     keyboardWasOpen = keyboardOpen;
   }
 
   function onFocusIn(event) {
-    editorFocused = Boolean(event.target?.matches?.(editableSelector));
+    const target = event.target;
+    editor = target?.matches?.(editableSelector) ? target : null;
+    composer = editor?.closest?.('.messages-compose, .messages-favorite-compose') || null;
     sync();
   }
 
   function onFocusOut() {
     window.setTimeout(() => {
-      editorFocused = Boolean(document.activeElement?.matches?.(editableSelector));
+      const target = document.activeElement;
+      editor = target?.matches?.(editableSelector) ? target : null;
+      composer = editor?.closest?.('.messages-compose, .messages-favorite-compose') || null;
       sync();
     }, 80);
   }
 
-  function onOrientationChange() {
-    if (!editorFocused) {
-      window.setTimeout(() => {
-        maximumHeight = getHeight();
-        sync();
-      }, 250);
-    }
+  function onResize() {
+    if (!editor) setShellHeight();
+    sync();
   }
 
+  function onOrientationChange() {
+    window.setTimeout(() => {
+      if (!editor) setShellHeight();
+      sync();
+    }, 250);
+  }
+
+  setShellHeight();
   root.addEventListener('focusin', onFocusIn);
   root.addEventListener('focusout', onFocusOut);
-  window.addEventListener('resize', sync);
+  window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', onOrientationChange);
   viewport?.addEventListener('resize', sync);
   viewport?.addEventListener('scroll', sync);
@@ -69,11 +86,12 @@ export function initKeyboardLayout(root) {
   return () => {
     root.removeEventListener('focusin', onFocusIn);
     root.removeEventListener('focusout', onFocusOut);
-    window.removeEventListener('resize', sync);
+    window.removeEventListener('resize', onResize);
     window.removeEventListener('orientationchange', onOrientationChange);
     viewport?.removeEventListener('resize', sync);
     viewport?.removeEventListener('scroll', sync);
-    shell.classList.remove('keyboard-open', 'keyboard-open-messages');
-    shell.style.removeProperty('--rb-viewport-height');
+    composer?.classList.remove('keyboard-floated');
+    shell.classList.remove('keyboard-compose-open');
+    shell.style.removeProperty('--rb-shell-height');
   };
 }
