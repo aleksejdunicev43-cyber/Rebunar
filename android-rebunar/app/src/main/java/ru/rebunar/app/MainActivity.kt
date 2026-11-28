@@ -414,7 +414,10 @@ class MainActivity : Activity() {
                 input.readBytes()
             } ?: return ""
             if (bytes.size > 10 * 1024 * 1024) return ""
-            "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
+            val mimeType = contentResolver.getType(uri)
+                ?.takeIf { it == "image/jpeg" || it == "image/png" || it == "image/webp" }
+                ?: "image/jpeg"
+            "data:$mimeType;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
         } catch (error: Exception) {
             Log.e("RebunarGallery", "Unable to read selected photo", error)
             ""
