@@ -107,17 +107,17 @@ function renderMessages(messages) {
     // может содержать старый снимок профиля, если аватар/рамка менялись позже.
     const currentUser = isOwn ? getUser() : null;
     const profile = currentUser || message;
-    const name = profile.display_name || profile.username || message.display_name || message.username || 'Пользователь';
     const avatar = avatarMarkup(profile, { size: 'message' });
 
     return `
       <div class="message-row ${isOwn ? 'is-own' : 'is-incoming'}">
         ${avatar}
-        <div class="messages-bubble">
-          <div class="message-author">${escapeHTML(name)}</div>
-          ${message.image_url ? `<a class="message-image-link" href="${escapeHTML(message.image_url)}" target="_blank" rel="noopener"><img class="message-image" src="${escapeHTML(message.image_url)}" alt="Фотография" loading="lazy"></a>` : ''}
-          ${message.text && message.text !== '[Фото]' ? `<div class="message-text">${escapeHTML(message.text)}</div>` : ''}
-          <time>${escapeHTML(message.created_at || '')}</time>
+        <div class="message-content">
+          <div class="messages-bubble">
+            ${message.image_url ? `<a class="message-image-link" href="${escapeHTML(message.image_url)}" target="_blank" rel="noopener"><img class="message-image" src="${escapeHTML(message.image_url)}" alt="Фотография" loading="lazy"></a>` : ''}
+            ${message.text && message.text !== '[Фото]' ? `<div class="message-text">${escapeHTML(message.text)}</div>` : ''}
+          </div>
+          <time class="message-time">${escapeHTML(message.created_at || '')}</time>
         </div>
       </div>
     `;
