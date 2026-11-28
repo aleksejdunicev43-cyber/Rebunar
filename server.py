@@ -1260,9 +1260,9 @@ def upload_message_image():
     if len(data) > 5 * 1024 * 1024:
         return jsonify({"error": "Размер фотографии не должен превышать 5 МБ"}), 413
 
-    if data.startswith(b"\${token}\\xd8\${token}"):
+    if data.startswith(b"\xff\xd8\xff"):
         ext = "jpg"
-    elif data.startswith(b"\${token}\r\n\${token}\${token}"):
+    elif data.startswith(b"\x89PNG\r\n\x1a\n"):
         ext = "png"
     elif data.startswith(b"RIFF") and data[8:12] == b"WEBP":
         ext = "webp"
