@@ -196,6 +196,7 @@ async function refreshChatPresence(userId) {
 }
 
 async function openChat(user) {
+  stopVoiceInput();
   activeChat = user;
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -232,6 +233,7 @@ async function openChat(user) {
 }
 
 async function openFavorite() {
+  stopVoiceInput();
   activeChat = { kind: 'favorite' };
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -312,6 +314,7 @@ function renderShell() {
 }
 
 export function renderMessagesScreen(outlet, params = {}) {
+  stopVoiceInput();
   outletRef = outlet;
   activeChat = null;
   chats = [];
