@@ -22,11 +22,29 @@ let searchTimer = null;
 let refreshTimer = null;
 let screenToken = 0;
 let screenController = null;
+let voiceRecognition = null;
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
 })[char]);
 
+function updateComposerAction(form) {
+  if (!form) return;
+  const input = form.querySelector('textarea[name="text"]');
+  const mic = form.querySelector('[data-voice-input]');
+  const send = form.querySelector('button[type="submit"]');
+  if (!input || !mic || !send) return;
+  const hasText = Boolean(input.value.trim());
+  mic.hidden = hasText;
+  send.hidden = !hasText;
+}
+
+function stopVoiceInput() {
+  if (!voiceRecognition) return;
+  const current = voiceRecognition;
+  voiceRecognition = null;
+  try { current.stop(); } catch {}
+}
 function showStatus(container, message) {
   if (container) {
     container.innerHTML = `<div class="messages-status">${escapeHTML(message)}</div>`;
@@ -178,6 +196,7 @@ async function refreshChatPresence(userId) {
 }
 
 async function openChat(user) {
+  stopVoiceInput();
   activeChat = user;
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -198,7 +217,8 @@ async function openChat(user) {
       <input type="file" accept="image/jpeg,image/png,image/webp" data-message-image hidden>
       <button type="button" class="messages-attach-button" data-attach-message-image aria-label="Прикрепить фотографию" title="Прикрепить фотографию">＋</button>
       <textarea name="text" maxlength="5000" rows="1" placeholder="Сообщение..." autocomplete="off" enterkeyhint="enter" aria-label="Текст сообщения"></textarea>
-      <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение">➤</button>
+      <button type="button" class="messages-mic-button" data-voice-input aria-label="Голосовой ввод" title="Голосовой ввод">🎙</button>
+      <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
     </form>
   `;
 
@@ -213,6 +233,7 @@ async function openChat(user) {
 }
 
 async function openFavorite() {
+  stopVoiceInput();
   activeChat = { kind: 'favorite' };
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -293,6 +314,7 @@ function renderShell() {
 }
 
 export function renderMessagesScreen(outlet, params = {}) {
+  stopVoiceInput();
   outletRef = outlet;
   activeChat = null;
   chats = [];
@@ -436,6 +458,46 @@ export function renderMessagesScreen(outlet, params = {}) {
       return;
     }
 
+    const voiceButton = event.target.closest('[data-voice-input]');
+    if (voiceButton) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        showStatus(outlet.querySelector('[data-message-list]'), 'Голосовой ввод не поддерживается этим браузером. Можно воспользоваться микрофоном клавиатуры.');
+        return;
+      }
+      if (voiceRecognition) { stopVoiceInput(); return; }
+      const form = voiceButton.closest('[data-send-form]');
+      const textarea = form?.querySelector('textarea[name="text"]');
+      if (!textarea) return;
+      const recognition = new SpeechRecognition();
+      voiceRecognition = recognition;
+      recognition.lang = 'ru-RU';
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      const initialText = textarea.value.trim();
+      recognition.onstart = () => {
+        voiceButton.classList.add('is-listening');
+        voiceButton.setAttribute('aria-label', 'Остановить голосовой ввод');
+        voiceButton.title = 'Нажмите, чтобы остановить';
+      };
+      recognition.onresult = event => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
+        textarea.value = [initialText, transcript.trim()].filter(Boolean).join(' ');
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+      recognition.onerror = () => showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось распознать речь. Проверьте разрешение на микрофон.');
+      recognition.onend = () => {
+        if (voiceRecognition === recognition) voiceRecognition = null;
+        voiceButton.classList.remove('is-listening');
+        voiceButton.setAttribute('aria-label', 'Голосовой ввод');
+        voiceButton.title = 'Голосовой ввод';
+        updateComposerAction(form);
+      };
+      try { recognition.start(); }
+      catch { voiceRecognition = null; showStatus(outlet.querySelector('[data-message-list]'), 'Не удалось включить микрофон.'); }
+      return;
+    }
     const attachButton = event.target.closest('[data-attach-image]');
     if (attachButton) {
       outlet.querySelector('[data-favorite-image]')?.click();
@@ -464,6 +526,7 @@ export function renderMessagesScreen(outlet, params = {}) {
     if (!event.target.matches('[data-send-form] textarea[name="text"], [data-note-form] textarea[name="text"]')) return;
     event.target.style.height = 'auto';
     event.target.style.height = Math.min(event.target.scrollHeight, 120) + 'px';
+    if (event.target.closest('[data-send-form]')) updateComposerAction(event.target.closest('[data-send-form]'));
   }, listenerOptions);
 
 
@@ -480,6 +543,7 @@ export function renderMessagesScreen(outlet, params = {}) {
       try {
         if (text) await sendMessage(activeChat.user_id, text);
         input.value = '';
+        updateComposerAction(event.target);
         renderMessages(await getChatHistory(activeChat.user_id));
         await loadChats();
       } catch (error) {
