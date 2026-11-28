@@ -24,6 +24,7 @@ export function initKeyboardLayout(root) {
 
     const keyboardOpen = editorFocused && maximumHeight - height > 90;
     shell.classList.toggle('keyboard-open', keyboardOpen);
+    shell.classList.toggle('keyboard-open-messages', keyboardOpen && Boolean(shell.querySelector('.messages-screen')));
 
     if (keyboardOpen) {
       shell.style.setProperty('--rb-viewport-height', `${Math.round(height)}px`);
@@ -72,7 +73,7 @@ export function initKeyboardLayout(root) {
     window.removeEventListener('orientationchange', onOrientationChange);
     viewport?.removeEventListener('resize', sync);
     viewport?.removeEventListener('scroll', sync);
-    shell.classList.remove('keyboard-open');
+    shell.classList.remove('keyboard-open', 'keyboard-open-messages');
     shell.style.removeProperty('--rb-viewport-height');
   };
 }
