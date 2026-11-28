@@ -1968,3 +1968,45 @@
     padding: 9px 12px max(9px, env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* Chat microphone: voice dictation when empty, send action appears after typing. */
+.messages-compose > [data-voice-input],
+.messages-compose > button[type="submit"] {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  line-height: 1;
+  font-size: 20px;
+}
+.messages-compose > [data-voice-input] {
+  color: #35c99a;
+  background: #263541;
+  border: 1px solid rgba(53, 201, 154, .28);
+  box-shadow: none;
+}
+.messages-compose > [data-voice-input].is-listening {
+  color: #fff;
+  background: #b94b5b;
+  border-color: #e16a79;
+  animation: messages-mic-pulse 1.15s ease-in-out infinite;
+}
+.messages-compose > button[type="submit"] {
+  color: #071d17;
+  background: linear-gradient(145deg, #32c49a, #159b78);
+  border: 0;
+  box-shadow: 0 3px 10px rgba(27, 180, 137, .16);
+}
+.messages-compose > [hidden] { display: none !important; }
+@keyframes messages-mic-pulse {
+  50% { box-shadow: 0 0 0 6px rgba(185, 75, 91, .16); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .messages-compose > [data-voice-input].is-listening { animation: none; }
+}
