@@ -27,6 +27,11 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.provider.MediaStore
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.util.Size
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -198,6 +203,24 @@ class MainActivity : Activity() {
             }
         }, "AndroidBrowser")
 
+        webView.addJavascriptInterface(object {
+            @JavascriptInterface
+            fun loadRecentPhotos() {
+                runOnUiThread {
+                    if (!hasGalleryPermission()) {
+                        requestGalleryPermission()
+                    } else {
+                        Thread { publishRecentPhotos() }.start()
+                    }
+                }
+            }
+
+            @JavascriptInterface
+            fun readPhoto(uri: String): String {
+                return readPhotoAsDataUrl(uri)
+            }
+        }, "AndroidMediaGallery")
+
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
                 view: WebView?,
@@ -306,6 +329,113 @@ class MainActivity : Activity() {
                     filePathCallback?.onReceiveValue(null)
                     filePathCallback = null
                     false
+                }
+            }
+        }
+    }
+
+    private fun hasGalleryPermission(): Boolean {
+        val permission = if (Build.VERSION.SDK_INT >= 33) {
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        return checkSelfPermission(permission) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+            (Build.VERSION.SDK_INT >= 34 &&
+                checkSelfPermission(android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun requestGalleryPermission() {
+        val permissions = when {
+            Build.VERSION.SDK_INT >= 34 -> arrayOf(
+                android.Manifest.permission.READ_MEDIA_IMAGES,
+                android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+            )
+            Build.VERSION.SDK_INT >= 33 -> arrayOf(android.Manifest.permission.READ_MEDIA_IMAGES)
+            else -> arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        requestPermissions(permissions, 4103)
+    }
+
+    private fun publishRecentPhotos() {
+        val items = org.json.JSONArray()
+        val projection = arrayOf(
+            MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DATE_ADDED,
+            MediaStore.Images.Media.MIME_TYPE
+        )
+        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        try {
+            contentResolver.query(
+                collection,
+                projection,
+                null,
+                null,
+                "${MediaStore.Images.Media.DATE_ADDED} DESC LIMIT 30"
+            )?.use { cursor ->
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+                while (cursor.moveToNext() && items.length() < 30) {
+                    val id = cursor.getLong(idColumn)
+                    val uri = android.content.ContentUris.withAppendedId(collection, id)
+                    val thumbnail = try {
+                        if (Build.VERSION.SDK_INT >= 29) {
+                            contentResolver.loadThumbnail(uri, Size(180, 180), null)
+                        } else {
+                            contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
+                        }
+                    } catch (_: Exception) { null } ?: continue
+                    val bytes = java.io.ByteArrayOutputStream().use { output ->
+                        thumbnail.compress(Bitmap.CompressFormat.JPEG, 68, output)
+                        output.toByteArray()
+                    }
+                    items.put(org.json.JSONObject()
+                        .put("uri", uri.toString())
+                        .put("src", "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)))
+                    thumbnail.recycle()
+                }
+            }
+        } catch (error: Exception) {
+            Log.e("RebunarGallery", "Unable to query recent photos", error)
+        }
+        runOnUiThread {
+            val payload = org.json.JSONObject.quote(items.toString())
+            webView.evaluateJavascript(
+                "window.RebunarNativeGallery && window.RebunarNativeGallery.onPhotos($payload)",
+                null
+            )
+        }
+    }
+
+    private fun readPhotoAsDataUrl(rawUri: String): String {
+        return try {
+            val uri = Uri.parse(rawUri)
+            if (uri.scheme != "content") return ""
+            val bytes = contentResolver.openInputStream(uri)?.use { input ->
+                input.readBytes()
+            } ?: return ""
+            if (bytes.size > 10 * 1024 * 1024) return ""
+            "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
+        } catch (error: Exception) {
+            Log.e("RebunarGallery", "Unable to read selected photo", error)
+            ""
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 4103) {
+            if (hasGalleryPermission()) {
+                Thread { publishRecentPhotos() }.start()
+            } else {
+                runOnUiThread {
+                    webView.evaluateJavascript(
+                        "window.RebunarNativeGallery && window.RebunarNativeGallery.onPhotos('[]')",
+                        null
+                    )
                 }
             }
         }
