@@ -4,6 +4,7 @@
 
 import { registerRoute, navigate, initRouter, subscribeToRoute } from './router.js';
 import { createShell } from '../layout/shell.js?v=wordmark-header-20261116-1';
+import { initKeyboardLayout } from '../layout/keyboard.js';
 import { initNavigation } from '../layout/navigation.js?v=responsive-navigation-20261116-1';
 import { initializeAuth, getUser, clearUser } from '../features/auth/session.js';
 import { renderAuthScreen } from '../features/auth/view.js';
@@ -132,6 +133,7 @@ for (const [path, title] of Object.entries(screens)) {
 
 let appStarted = false;
 let navigationInitialized = false;
+let keyboardLayoutInitialized = false;
 let routerInitialized = false;
 
 async function handleLogout(event) {
@@ -154,6 +156,7 @@ function mountApp() {
   if (appStarted) return;
   appStarted = true; initializeTheme(getUser()); startPresence(); createShell(root);
   if (!navigationInitialized) { initNavigation(root, navigate, subscribeToRoute); navigationInitialized = true; }
+  if (!keyboardLayoutInitialized) { initKeyboardLayout(root); keyboardLayoutInitialized = true; }
   if (!routerInitialized) { initRouter('home'); routerInitialized = true; } else navigate('home');
 }
 
