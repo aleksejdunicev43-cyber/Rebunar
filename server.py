@@ -210,6 +210,19 @@ def init_db():
         """)
 
         con.execute("""
+            CREATE TABLE IF NOT EXISTS user_typing (
+                user_id INTEGER NOT NULL,
+                receiver_id INTEGER NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, receiver_id)
+            )
+        """)
+        con.execute("""
+            CREATE INDEX IF NOT EXISTS idx_user_typing_updated
+            ON user_typing(updated_at)
+        """)
+
+        con.execute("""
             INSERT INTO registration_events (user_id, registered_at)
             SELECT u.id, COALESCE(u.created_at, CURRENT_TIMESTAMP)
             FROM users AS u
@@ -1476,6 +1489,86 @@ def message_history():
         for row in rows
     ])
 
+
+
+@app.post("/api/presence/heartbeat")
+def presence_heartbeat():
+    if "user_id" not in session:
+        return jsonify({"error": "Войди в аккаунт"}), 401
+
+    user_id = int(session["user_id"])
+    presence_id = "user:" + str(user_id)
+    with connect() as con:
+        con.execute("""
+            INSERT INTO user_presence (presence_id, user_id, last_seen)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(presence_id) DO UPDATE SET
+                user_id = excluded.user_id,
+                last_seen = CURRENT_TIMESTAMP
+        """, (presence_id, user_id))
+
+    return jsonify({"ok": True}), 200
+
+
+@app.post("/api/messages/typing")
+def update_message_typing():
+    if "user_id" not in session:
+        return jsonify({"error": "Войди в аккаунт"}), 401
+
+    data = request.get_json(silent=True) or {}
+    try:
+        receiver_id = int(data.get("receiver_id"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный пользователь"}), 400
+
+    user_id = int(session["user_id"])
+    if receiver_id == user_id:
+        return jsonify({"error": "Некорректный пользователь"}), 400
+
+    is_typing = bool(data.get("is_typing"))
+    with connect() as con:
+        if is_typing:
+            con.execute("""
+                INSERT INTO user_typing (user_id, receiver_id, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(user_id, receiver_id) DO UPDATE SET
+                    updated_at = CURRENT_TIMESTAMP
+            """, (user_id, receiver_id))
+        else:
+            con.execute("""
+                DELETE FROM user_typing
+                WHERE user_id = ? AND receiver_id = ?
+            """, (user_id, receiver_id))
+
+    return jsonify({"ok": True}), 200
+
+
+@app.get("/api/messages/status/<int:other_user_id>")
+def get_message_user_status(other_user_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Войди в аккаунт"}), 401
+
+    me = int(session["user_id"])
+    if other_user_id == me:
+        return jsonify({"online": True, "typing": False}), 200
+
+    with connect() as con:
+        online = con.execute("""
+            SELECT 1 FROM user_presence
+            WHERE user_id = ?
+              AND last_seen >= datetime('now', '-5 minutes')
+            LIMIT 1
+        """, (other_user_id,)).fetchone() is not None
+
+        typing = con.execute("""
+            SELECT 1 FROM user_typing
+            WHERE user_id = ?
+              AND receiver_id = ?
+              AND updated_at >= datetime('now', '-8 seconds')
+            LIMIT 1
+        """, (other_user_id, me)).fetchone() is not None
+
+    return jsonify({"online": online, "typing": typing}), 200
 
 
 if __name__ == "__main__":

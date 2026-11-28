@@ -10,7 +10,9 @@ import {
   createSelfNote,
   deleteSelfNote,
   uploadSelfImage,
-  uploadMessageImage
+  uploadMessageImage,
+  getChatStatus,
+  setTypingStatus
 } from './api.js';
 
 let outletRef = null;
@@ -19,6 +21,9 @@ let chats = [];
 let notes = [];
 let searchTimer = null;
 let refreshTimer = null;
+let statusTimer = null;
+let typingTimer = null;
+let typingLastSentAt = 0;
 let screenToken = 0;
 let screenController = null;
 
@@ -34,6 +39,47 @@ function showStatus(container, message) {
 
 function getChatName(chat) {
   return chat.display_name || chat.username || 'Пользователь';
+}
+
+function stopTyping(userId = activeChat?.user_id) {
+  clearTimeout(typingTimer);
+  typingTimer = null;
+  typingLastSentAt = 0;
+  if (userId) setTypingStatus(userId, false).catch(() => {});
+}
+
+function noteTyping() {
+  const userId = Number(activeChat?.user_id);
+  if (!userId) return;
+
+  const now = Date.now();
+  if (now - typingLastSentAt >= 2500) {
+    typingLastSentAt = now;
+    setTypingStatus(userId, true).catch(() => {});
+  }
+
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => {
+    setTypingStatus(userId, false).catch(() => {});
+    typingLastSentAt = 0;
+  }, 1800);
+}
+
+async function refreshChatStatus() {
+  const userId = Number(activeChat?.user_id);
+  if (!userId) return;
+
+  try {
+    const status = await getChatStatus(userId);
+    if (Number(activeChat?.user_id) !== userId) return;
+    const label = outletRef?.querySelector('[data-chat-presence]');
+    if (!label) return;
+
+    const isTyping = Boolean(status.typing);
+    label.textContent = isTyping ? 'Печатает…' : status.online ? 'В сети' : 'Не в сети';
+    label.classList.toggle('is-online', Boolean(status.online) && !isTyping);
+    label.classList.toggle('is-typing', isTyping);
+  } catch {}
 }
 
 function renderChatList(filter = '') {
@@ -157,6 +203,8 @@ async function loadChats() {
 }
 
 async function openChat(user) {
+  if (activeChat?.user_id) stopTyping(activeChat.user_id);
+  clearInterval(statusTimer);
   activeChat = user;
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -169,7 +217,7 @@ async function openChat(user) {
       ${avatarMarkup(user, { size: 'chat', className: 'messages-header-avatar' })}
       <div class="messages-chat-identity">
         <strong>${escapeHTML(getChatName(user))}</strong>
-        <span>@${escapeHTML(user.username || 'пользователь')}</span>
+        <span class="messages-chat-presence" data-chat-presence>Проверяем статус…</span>
       </div>
     </header>
     <div class="messages-message-list" data-message-list></div>
@@ -185,12 +233,16 @@ async function openChat(user) {
 
   try {
     renderMessages(await getChatHistory(user.user_id));
+    await refreshChatStatus();
+    statusTimer = setInterval(refreshChatStatus, 2000);
   } catch (error) {
     showStatus(conversation.querySelector('[data-message-list]'), error.message);
   }
 }
 
 async function openFavorite() {
+  if (activeChat?.user_id) stopTyping(activeChat.user_id);
+  clearInterval(statusTimer);
   activeChat = { kind: 'favorite' };
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -272,12 +324,20 @@ function renderShell() {
 
 export function renderMessagesScreen(outlet, params = {}) {
   outletRef = outlet;
+  if (activeChat?.user_id) stopTyping(activeChat.user_id);
   activeChat = null;
+  clearInterval(statusTimer);
+  clearTimeout(typingTimer);
+  statusTimer = null;
+  typingTimer = null;
+  typingLastSentAt = 0;
   chats = [];
   notes = [];
   const token = ++screenToken;
 
   clearInterval(refreshTimer);
+  clearInterval(statusTimer);
+  clearTimeout(typingTimer);
   clearTimeout(searchTimer);
   screenController?.abort();
   screenController = new AbortController();
@@ -408,6 +468,8 @@ export function renderMessagesScreen(outlet, params = {}) {
     }
 
     if (event.target.closest('[data-back]')) {
+      if (activeChat?.user_id) stopTyping(activeChat.user_id);
+      clearInterval(statusTimer);
       activeChat = null;
       outlet.querySelector('.messages-layout')?.classList.remove('is-chat-open');
       renderChatList(search.value);
@@ -440,6 +502,7 @@ export function renderMessagesScreen(outlet, params = {}) {
 
   outlet.addEventListener('input', event => {
     if (!event.target.matches('[data-send-form] textarea[name="text"]')) return;
+    noteTyping();
     event.target.style.height = 'auto';
     event.target.style.height = Math.min(event.target.scrollHeight, 120) + 'px';
   }, listenerOptions);
@@ -462,6 +525,7 @@ export function renderMessagesScreen(outlet, params = {}) {
 
       const button = event.target.querySelector('button[type="submit"]');
       button.disabled = true;
+      stopTyping(activeChat.user_id);
       try {
         if (text) await sendMessage(activeChat.user_id, text);
         input.value = '';
