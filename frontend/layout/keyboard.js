@@ -32,18 +32,23 @@ export function initKeyboardLayout(root) {
       // actual IME edge. Use whichever viewport bottom is lower on screen,
       // so the composer sits directly against the keyboard in both resize and
       // overlay keyboard modes. Keep the app shell and document stationary.
+      // Convert the visual viewport bottom into an inset from the layout
+      // viewport. This is the important distinction on Android: the IME may
+      // resize the visual viewport while fixed elements remain tied to layout.
       const bounds = composer.getBoundingClientRect();
-      const viewportBottom = Math.max(visibleTop + visibleHeight, window.innerHeight);
+      const keyboardInset = Math.max(0, window.innerHeight - (visibleTop + visibleHeight));
       composer.classList.add('keyboard-floated');
       composer.style.left = `${Math.round(bounds.left)}px`;
       composer.style.width = `${Math.round(bounds.width)}px`;
-      composer.style.top = `${Math.round(viewportBottom - bounds.height)}px`;
+      composer.style.top = 'auto';
+      composer.style.bottom = `${Math.round(keyboardInset)}px`;
     } else {
       composer?.classList.remove('keyboard-floated');
       if (composer) {
         composer.style.removeProperty('left');
         composer.style.removeProperty('width');
         composer.style.removeProperty('top');
+        composer.style.removeProperty('bottom');
       }
     }
 
