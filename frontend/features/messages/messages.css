@@ -2239,3 +2239,96 @@
 @media (prefers-reduced-motion: reduce) {
   .messages-compose-signal.is-recording .messages-mic-button { animation: none; }
 }
+
+
+/* Compact Signal-like attachment tray: horizontal photo strip + small action rail. */
+.messages-compose-signal.is-attachments-open .messages-gallery-strip {
+  display:flex !important;
+  align-items:center;
+  gap:7px;
+  min-height:82px;
+  max-height:96px;
+  padding:7px 3px 8px;
+  margin:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+}
+.messages-compose-signal .messages-gallery-strip:empty::before {
+  content:"Выберите фотографии из галереи";
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:58px;
+  border:1px dashed rgba(174,190,207,.18);
+  border-radius:12px;
+  color:#8795a5;
+  font-size:12px;
+  letter-spacing:.1px;
+}
+.messages-compose-signal .messages-gallery-thumb {
+  display:block;
+  width:72px;
+  height:72px;
+  flex:0 0 72px;
+  border-radius:11px;
+  object-fit:cover;
+  background:#26313d;
+  scroll-snap-align:start;
+}
+.messages-compose-signal.is-attachments-open .messages-attachment-actions {
+  display:flex !important;
+  flex-flow:row nowrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+  min-height:48px;
+  max-height:58px;
+  padding:2px 0 4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+}
+.messages-compose-signal .messages-attachment-actions::-webkit-scrollbar { display:none; }
+.messages-compose-signal .messages-attachment-actions button {
+  display:flex;
+  flex:1 1 0;
+  min-width:0;
+  width:auto !important;
+  min-height:44px !important;
+  height:46px;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:5px 6px !important;
+  border:1px solid rgba(173,190,210,.08) !important;
+  border-radius:12px !important;
+  background:#2b3542 !important;
+  color:#d5deea !important;
+  white-space:nowrap;
+}
+.messages-compose-signal .messages-attachment-actions button > span {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  line-height:1;
+}
+.messages-compose-signal .messages-attachment-actions button > small {
+  font-size:10px;
+  line-height:1;
+  font-weight:550;
+}
+@media(max-width:390px) {
+  .messages-compose-signal .messages-attachment-actions { gap:4px; }
+  .messages-compose-signal .messages-attachment-actions button {
+    gap:3px;
+    padding:4px 3px !important;
+    border-radius:10px !important;
+  }
+  .messages-compose-signal .messages-attachment-actions button > span { font-size:15px; }
+  .messages-compose-signal .messages-attachment-actions button > small { font-size:9px; }
+}

@@ -278,9 +278,7 @@ async function openChat(user) {
         <button type="button" class="messages-mic-button" data-voice-input aria-label="Записать голосовое сообщение" title="Записать голосовое сообщение">🎙</button>
         <button type="submit" aria-label="Отправить сообщение" title="Отправить сообщение" hidden>➤</button>
       </div>
-      <div class="messages-gallery-strip" data-compose-gallery aria-label="Выбранные фотографии">
-        <button type="button" class="messages-gallery-prompt" data-attach-message-image>＋ Выбрать фотографии</button>
-      </div>
+      <div class="messages-gallery-strip" data-compose-gallery aria-label="Последние выбранные фотографии"></div>
       <nav class="messages-attachment-actions" data-attachment-actions aria-label="Вложения">
         <button type="button" data-attach-message-image><span>▧</span><small>Галерея</small></button>
         <button type="button" data-open-file><span>▤</span><small>Файл</small></button>
@@ -594,6 +592,10 @@ export function renderMessagesScreen(outlet, params = {}) {
       }
       const opening = !form?.classList.contains('is-attachments-open');
       form?.classList.toggle('is-attachments-open', opening);
+      if (opening) {
+        const imageInput = form?.querySelector('[data-message-image]');
+        if (imageInput) imageInput.click();
+      }
       return;
     }
     if (event.target.closest('[data-open-camera]')) {
