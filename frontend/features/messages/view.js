@@ -480,6 +480,7 @@ export function renderMessagesScreen(outlet, params = {}) {
       const composeToggle = form?.querySelector('[data-compose-toggle]');
       if (!textarea) return;
       if (composeToggle) {
+        composeToggle.dataset.mode = 'text';
         composeToggle.textContent = '⌨';
         composeToggle.setAttribute('aria-label', 'Ввод текста');
         composeToggle.title = 'Ввод текста';
@@ -500,14 +501,15 @@ export function renderMessagesScreen(outlet, params = {}) {
     const composeToggle = event.target.closest('[data-compose-toggle]');
     if (composeToggle) {
       const form = composeToggle.closest('[data-send-form]');
+      if (composeToggle.dataset.mode === 'text') {
+        form?.querySelector('textarea[name="text"]')?.focus();
+        return;
+      }
       const gallery = form?.querySelector('[data-compose-gallery]');
       const actions = form?.querySelector('[data-attachment-actions]');
       const opening = gallery?.hidden !== false;
       if (gallery) gallery.hidden = !opening;
       if (actions) actions.hidden = !opening;
-      composeToggle.textContent = opening ? '⌨' : '＋';
-      composeToggle.setAttribute('aria-label', opening ? 'Перейти к вводу текста' : 'Вложения');
-      composeToggle.title = opening ? 'Ввод текста' : 'Вложения';
       form?.classList.toggle('is-attachments-open', opening);
       return;
     }
