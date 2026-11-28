@@ -241,6 +241,8 @@ async function openChat(user) {
 }
 
 async function openFavorite() {
+  if (activeChat?.user_id) stopTyping(activeChat.user_id);
+  clearInterval(statusTimer);
   activeChat = { kind: 'favorite' };
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 
@@ -322,6 +324,7 @@ function renderShell() {
 
 export function renderMessagesScreen(outlet, params = {}) {
   outletRef = outlet;
+  if (activeChat?.user_id) stopTyping(activeChat.user_id);
   activeChat = null;
   clearInterval(statusTimer);
   clearTimeout(typingTimer);
