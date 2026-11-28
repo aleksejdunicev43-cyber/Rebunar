@@ -1926,3 +1926,45 @@
   padding-block: 0 !important;
   line-height: 1.2 !important;
 }
+
+/* Compact circular chat actions — keep the message field visually primary. */
+.messages-compose > .messages-attach-button,
+.messages-compose > button[type="submit"] {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  min-height: 46px !important;
+  flex: 0 0 46px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.messages-compose > .messages-attach-button {
+  background: #263541 !important;
+  border: 1px solid rgba(53, 201, 154, .28) !important;
+  color: #35c99a !important;
+  font-size: 23px !important;
+  box-shadow: none !important;
+}
+
+.messages-compose > button[type="submit"] {
+  background: linear-gradient(145deg, #32c49a, #159b78) !important;
+  border: 0 !important;
+  color: #071d17 !important;
+  font-size: 20px !important;
+  box-shadow: 0 3px 10px rgba(27, 180, 137, .16) !important;
+}
+
+.messages-compose > textarea {
+  min-height: 52px !important;
+  border-radius: 26px !important;
+  padding: 13px 17px !important;
+}
+
+@media (max-width: 760px) {
+  .messages-compose {
+    gap: 8px !important;
+    padding: 9px 12px max(9px, env(safe-area-inset-bottom)) !important;
+  }
+}
