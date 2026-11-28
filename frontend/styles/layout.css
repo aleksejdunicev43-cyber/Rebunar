@@ -169,77 +169,22 @@
 }
 
 
-/* Mobile software keyboard: give the composer the space previously used by
-   the bottom navigation and size the shell to the actually visible viewport. */
+/* Keep the mobile application screen stationary during keyboard display. */
 @media (max-width: 760px) {
-  .app-shell.keyboard-open {
-    height: var(--rb-viewport-height) !important;
+  .app-shell {
+    height: var(--rb-shell-height, 100dvh) !important;
     min-height: 0 !important;
-    max-height: var(--rb-viewport-height);
   }
 
-  .app-shell.keyboard-open > .mobile-navigation {
-    display: none !important;
+  .messages-compose.keyboard-floated,
+  .messages-favorite-compose.keyboard-floated {
+    position: fixed !important;
+    z-index: 80 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
   }
 
-  .app-shell.keyboard-open > .app-layout {
-    flex: 1 1 0;
-    min-height: 0;
-    padding-bottom: 0;
-    overflow: hidden;
-  }
-
-  .app-shell.keyboard-open .main-content {
-    min-height: 0;
-    padding-bottom: 6px;
-    overflow: hidden;
-  }
-
-  .app-shell.keyboard-open-messages #screen-outlet {
-    display: flex;
-    flex: 1 1 0;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .app-shell.keyboard-open .messages-screen {
-    display: flex;
-    flex: 1 1 0;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .app-shell.keyboard-open .messages-layout {
-    display: flex;
-    flex: 1 1 0;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .app-shell.keyboard-open .messages-layout.is-chat-open .messages-conversation,
-  .app-shell.keyboard-open .messages-layout.is-chat-open .messages-chat {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .app-shell.keyboard-open .messages-message-list {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: none;
-    overflow-y: auto;
-  }
-
-  .app-shell.keyboard-open .messages-compose {
-    flex: 0 0 auto;
-    margin-bottom: 0;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  .app-shell.keyboard-compose-open .messages-message-list {
+    padding-bottom: 88px !important;
   }
 }
