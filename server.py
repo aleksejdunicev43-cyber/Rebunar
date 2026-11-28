@@ -223,6 +223,8 @@ def init_db():
         message_columns = [row[1] for row in con.execute("PRAGMA table_info(messages)")]
         if "image_path" not in message_columns:
             con.execute("ALTER TABLE messages ADD COLUMN image_path TEXT")
+        if "audio_path" not in message_columns:
+            con.execute("ALTER TABLE messages ADD COLUMN audio_path TEXT")
 
         post_columns = [row[1] for row in con.execute("PRAGMA table_info(posts)")]
         if "community_id" not in post_columns:
@@ -1299,6 +1301,41 @@ def upload_message_image():
     return jsonify({"ok": True, "id": cur.lastrowid}), 201
 
 
+@app.post("/api/messages/audio")
+def upload_message_audio():
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+    try: receiver_id = int(request.form.get("receiver_id", ""))
+    except (TypeError, ValueError): return jsonify({"error": "Некорректный получатель"}), 400
+    me = session["user_id"]
+    if receiver_id == me: return jsonify({"error": "Нельзя отправить сообщение самому себе"}), 400
+    file = request.files.get("audio")
+    if not file or not file.filename: return jsonify({"error": "Голосовая запись не найдена"}), 400
+    mime = (file.mimetype or "").lower().split(";")[0]
+    formats = {"audio/webm":"webm","audio/ogg":"ogg","audio/mp4":"m4a","audio/mpeg":"mp3","audio/aac":"aac","audio/wav":"wav","audio/x-wav":"wav"}
+    ext = formats.get(mime)
+    if not ext: return jsonify({"error": "Формат голосовой записи не поддерживается"}), 400
+    data = file.read(15 * 1024 * 1024 + 1)
+    if not data or len(data) > 15 * 1024 * 1024: return jsonify({"error": "Голосовое сообщение должно быть не больше 15 МБ"}), 413
+    with connect() as con:
+        user = con.execute("SELECT id FROM users WHERE id = ?", (receiver_id,)).fetchone()
+        if not user: return jsonify({"error": "Пользователь не найден"}), 404
+        folder = BASE / "uploads" / "messages"; folder.mkdir(parents=True, exist_ok=True)
+        filename = uuid.uuid4().hex + "." + ext; (folder / filename).write_bytes(data)
+        con.execute("""DELETE FROM hidden_chats WHERE (user_id = ? AND other_user_id = ?) OR (user_id = ? AND other_user_id = ?)""", (me, receiver_id, receiver_id, me))
+        cur = con.execute("INSERT INTO messages (sender_id, receiver_id, text, audio_path) VALUES (?, ?, ?, ?)", (me, receiver_id, "[Голосовое сообщение]", filename))
+    return jsonify({"ok": True, "id": cur.lastrowid}), 201
+
+@app.get("/api/messages/audio/<filename>")
+def get_message_audio(filename):
+    if "user_id" not in session: return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+    if Path(filename).name != filename: return jsonify({"error": "Запись не найдена"}), 404
+    me = session["user_id"]
+    with connect() as con:
+        row = con.execute("SELECT id FROM messages WHERE audio_path = ? AND (sender_id = ? OR receiver_id = ?)", (filename, me, me)).fetchone()
+    if not row: return jsonify({"error": "Запись не найдена"}), 404
+    return send_from_directory(BASE / "uploads" / "messages", filename, conditional=True)
+
 @app.get("/api/messages/image/<filename>")
 def get_message_image(filename):
     if "user_id" not in session:
@@ -1570,7 +1607,8 @@ def message_history():
                 u.username,
                 u.display_name,
                 u.avatar,
-                m.image_path
+                m.image_path,
+                m.audio_path
             FROM messages m
             JOIN users u ON u.id = m.sender_id
             WHERE
@@ -1594,6 +1632,7 @@ def message_history():
             "display_name": row[6] or row[5],
             "avatar": row[7] or "",
             "image_url": "/api/messages/image/" + row[8] if row[8] else None,
+            "audio_url": "/api/messages/audio/" + row[9] if row[9] else None,
         }
         for row in rows
     ])
