@@ -77,7 +77,6 @@ function stopVoiceRecording(discard = true) {
   if(mediaRecorder?.state==='recording'){try{mediaRecorder.stop();}catch{}}
   voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;voiceChunks=[];
   clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
-  clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
   const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
   const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');mic.setAttribute('aria-label','Записать голосовое сообщение');}
   const label=form?.querySelector('[data-recording-label]');if(label)label.hidden=true;
@@ -87,6 +86,7 @@ async function finishVoiceRecording(send) {
   const recorder=mediaRecorder;if(!recorder)return;const mime=recorder.mimeType||'audio/webm',receiverId=activeChat?.user_id;
   const blobReady=new Promise(resolve=>recorder.addEventListener('stop',()=>resolve(new Blob(voiceChunks,{type:mime})),{once:true}));
   try{recorder.stop();}catch{}voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;
+  clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
   const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
   const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');}
   const label=form?.querySelector('[data-recording-label]');if(label)label.hidden=true;
@@ -472,7 +472,7 @@ export function renderMessagesScreen(outlet, params = {}) {
     try { mic.setPointerCapture(event.pointerId); } catch {}
     const started = await startVoiceRecording(form);
     const state = pressToTalk;
-    if (!state || state.mic !== mic) return;
+    if (!state || state.mic !== mic) { if (started) stopVoiceRecording(false); return; }
     state.started = started;
     if (!started) { mic.classList.remove('is-pressed'); pressToTalk = null; return; }
     if (state.released && !state.finishing) {
@@ -493,6 +493,10 @@ export function renderMessagesScreen(outlet, params = {}) {
     } else {
       state.cancelled = false;
       state.form?.classList.remove('is-recording-cancel');
+      const seconds=Math.floor((Date.now()-recordingStartedAt)/1000);
+      const time=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+      const label=state.form?.querySelector('[data-recording-label]');
+      if(label)label.textContent=time+'  ← Проведите для отмены';
     }
   }, listenerOptions);
 
