@@ -169,23 +169,15 @@
 }
 
 
-/* Keep the mobile application screen stationary during keyboard display. */
+/* Keep the mobile app shell sized to the browser's usable viewport. */
 @media (max-width: 760px) {
   .app-shell {
     height: var(--rb-shell-height, 100dvh) !important;
     min-height: 0 !important;
   }
 
-  .messages-compose.keyboard-floated,
-  .messages-favorite-compose.keyboard-floated {
-    position: fixed !important;
-    z-index: 80 !important;
-    box-sizing: border-box !important;
-    margin: 0 !important;
-  }
-
-  /* The keyboard occupies the lower screen area: do not leave a second
-     navigation bar or artificial spacer above it. */
+  /* The keyboard already reduces the content viewport; hide only the app
+     navigation so the conversation and composer use the newly freed space. */
   .app-shell.keyboard-compose-open .mobile-navigation {
     display: none !important;
   }
