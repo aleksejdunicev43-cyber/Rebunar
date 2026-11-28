@@ -78,12 +78,12 @@ function stopVoiceRecording(discard = true) {
 async function finishVoiceRecording(send) {
   const recorder=mediaRecorder;if(!recorder)return;const mime=recorder.mimeType||'audio/webm',receiverId=activeChat?.user_id;
   const blobReady=new Promise(resolve=>recorder.addEventListener('stop',()=>resolve(new Blob(voiceChunks,{type:mime})),{once:true}));
-  try{recorder.stop();}catch{}voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;voiceChunks=[];
+  try{recorder.stop();}catch{}voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;
   const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
   const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');}
   const label=form?.querySelector('[data-recording-label]');if(label)label.hidden=true;
   const toggle=form?.querySelector('[data-compose-toggle]');if(toggle){toggle.textContent='＋';toggle.dataset.mode='attachments';toggle.setAttribute('aria-label','Вложения');}
-  const blob=await blobReady;if(!send||!blob.size||!receiverId)return;
+  const blob=await blobReady;voiceChunks=[];if(!send||!blob.size||!receiverId)return;
   const ext=mime.includes('ogg')?'ogg':mime.includes('mp4')?'m4a':'webm';
   try{await uploadMessageAudio(receiverId,new File([blob],'voice.'+ext,{type:mime}));renderMessages(await getChatHistory(receiverId));await loadChats();}
   catch(error){showStatus(outletRef?.querySelector('[data-message-list]'),error.message);}
