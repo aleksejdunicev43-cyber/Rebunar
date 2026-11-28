@@ -51,7 +51,7 @@ jobs:
       - name: Checkout Android application source
         uses: actions/checkout@v4
         with:
-          ref: 2282873e5b8b6558ad5cf62816df916123e574c2
+          ref: feature/android-bundled-frontend
           path: android-source
 
       - name: Prepare Android project and bundle frontend
