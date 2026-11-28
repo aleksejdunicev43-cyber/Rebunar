@@ -1153,6 +1153,19 @@
   font-size: 12px;
 }
 
+.messages-chat-presence {
+  color: #8f9baa;
+  font-size: 12px;
+}
+
+.messages-chat-presence.is-online {
+  color: #69c99a;
+}
+
+.messages-chat-presence.is-offline {
+  color: #8f9baa;
+}
+
 .messages-back {
   width: 38px;
   height: 38px;
