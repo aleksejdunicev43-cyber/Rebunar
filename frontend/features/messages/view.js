@@ -27,6 +27,9 @@ let voiceRecognition = null;
 let mediaRecorder = null;
 let voiceChunks = [];
 let voiceStream = null;
+let pressToTalk = null;
+let recordingTimer = null;
+let recordingStartedAt = 0;
 
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -61,15 +64,20 @@ async function startVoiceRecording(form) {
     voiceChunks = [];
     mediaRecorder.ondataavailable = e => { if (e.data?.size) voiceChunks.push(e.data); };
     mediaRecorder.start(); form.classList.add('is-recording');
-    const toggle = form.querySelector('[data-compose-toggle]'); if (toggle) { toggle.textContent='⌨'; toggle.dataset.mode='text'; toggle.setAttribute('aria-label','Вернуться к тексту'); }
-    const mic=form.querySelector('[data-voice-input]'); if(mic){mic.textContent='■';mic.classList.add('is-listening');mic.setAttribute('aria-label','Остановить и отправить запись');}
-    const label=form.querySelector('[data-recording-label]'); if(label) label.hidden=false;
+    const mic=form.querySelector('[data-voice-input]'); if(mic){mic.classList.add('is-listening');mic.setAttribute('aria-label','Запись голосового сообщения');}
+    const label=form.querySelector('[data-recording-label]'); if(label){label.hidden=false;label.textContent='00:00  ← Проведите для отмены';}
+    recordingStartedAt=Date.now();
+    clearInterval(recordingTimer);
+    recordingTimer=setInterval(()=>{if(!mediaRecorder||mediaRecorder.state!=='recording')return;const seconds=Math.floor((Date.now()-recordingStartedAt)/1000);const time=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');if(label)label.textContent=time+'  ← Проведите для отмены';},250);
     const g=form.querySelector('[data-compose-gallery]'), a=form.querySelector('[data-attachment-actions]'); if(g)g.hidden=true;if(a)a.hidden=true;form.classList.remove('is-attachments-open');
-  } catch (error) { stopVoiceRecording(false); showStatus(outletRef?.querySelector('[data-message-list]'), error.name==='NotAllowedError'?'Разреши доступ к микрофону в браузере.':'Не удалось включить микрофон.'); }
+    return true;
+  } catch (error) { stopVoiceRecording(false); showStatus(outletRef?.querySelector('[data-message-list]'), error.name==='NotAllowedError'?'Разреши доступ к микрофону в браузере.':'Не удалось включить микрофон.'); return false; }
 }
 function stopVoiceRecording(discard = true) {
   if(mediaRecorder?.state==='recording'){try{mediaRecorder.stop();}catch{}}
   voiceStream?.getTracks().forEach(track=>track.stop());voiceStream=null;mediaRecorder=null;voiceChunks=[];
+  clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
+  clearInterval(recordingTimer);recordingTimer=null;recordingStartedAt=0;pressToTalk=null;
   const form=outletRef?.querySelector('[data-send-form]');form?.classList.remove('is-recording');
   const mic=form?.querySelector('[data-voice-input]');if(mic){mic.textContent='🎙';mic.classList.remove('is-listening');mic.setAttribute('aria-label','Записать голосовое сообщение');}
   const label=form?.querySelector('[data-recording-label]');if(label)label.hidden=true;
@@ -454,6 +462,54 @@ export function renderMessagesScreen(outlet, params = {}) {
     swipeStart = null;
   }, { passive: true, signal: screenController.signal });
 
+  outlet.addEventListener('pointerdown', async event => {
+    const mic = event.target.closest('[data-voice-input]');
+    if (!mic || !activeChat || activeChat.kind === 'favorite' || !event.isPrimary || event.button !== 0 || pressToTalk) return;
+    event.preventDefault();
+    const form = mic.closest('[data-send-form]');
+    pressToTalk = { pointerId: event.pointerId, mic, form, startX: event.clientX, cancelled: false, released: false, started: false, finishing: false };
+    mic.classList.add('is-pressed');
+    try { mic.setPointerCapture(event.pointerId); } catch {}
+    const started = await startVoiceRecording(form);
+    const state = pressToTalk;
+    if (!state || state.mic !== mic) return;
+    state.started = started;
+    if (!started) { mic.classList.remove('is-pressed'); pressToTalk = null; return; }
+    if (state.released && !state.finishing) {
+      state.finishing = true;
+      await finishVoiceRecording(!state.cancelled);
+    }
+  }, listenerOptions);
+
+  outlet.addEventListener('pointermove', event => {
+    const state = pressToTalk;
+    if (!state || state.pointerId !== event.pointerId) return;
+    const dx = event.clientX - state.startX;
+    if (dx < -90) {
+      state.cancelled = true;
+      state.form?.classList.add('is-recording-cancel');
+      const label = state.form?.querySelector('[data-recording-label]');
+      if (label) label.textContent = 'Отпустите, чтобы отменить';
+    } else {
+      state.cancelled = false;
+      state.form?.classList.remove('is-recording-cancel');
+    }
+  }, listenerOptions);
+
+  const releasePushToTalk = async (event, cancelledBySystem = false) => {
+    const state = pressToTalk;
+    if (!state || state.pointerId !== event.pointerId) return;
+    event.preventDefault();
+    state.released = true;
+    if (cancelledBySystem) state.cancelled = true;
+    state.mic?.classList.remove('is-pressed');
+    if (!state.started || state.finishing) return;
+    state.finishing = true;
+    await finishVoiceRecording(!state.cancelled);
+  };
+  outlet.addEventListener('pointerup', event => releasePushToTalk(event), listenerOptions);
+  outlet.addEventListener('pointercancel', event => releasePushToTalk(event, true), listenerOptions);
+
   outlet.addEventListener('click', async event => {
     const deleteChatButton = event.target.closest('[data-delete-chat]');
     if (deleteChatButton) {
@@ -519,15 +575,7 @@ export function renderMessagesScreen(outlet, params = {}) {
       return;
     }
 
-    const voiceButton = event.target.closest('[data-voice-input]');
-    if (voiceButton) {
-      const form = voiceButton.closest('[data-send-form]');
-      if (!form || !activeChat || activeChat.kind === 'favorite') return;
-      if (mediaRecorder?.state === 'recording') await finishVoiceRecording(true);
-      else await startVoiceRecording(form);
-      return;
-    }
-    const attachButton = event.target.closest('[data-attach-image]');
+        const attachButton = event.target.closest('[data-attach-image]');
     if (attachButton) {
       outlet.querySelector('[data-favorite-image]')?.click();
       return;
