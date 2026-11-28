@@ -167,3 +167,79 @@
   .app-header { min-height: 52px; }
   .app-wordmark { font-size: clamp(17px, 3.2vw, 23px); letter-spacing: .16em; }
 }
+
+
+/* Mobile software keyboard: give the composer the space previously used by
+   the bottom navigation and size the shell to the actually visible viewport. */
+@media (max-width: 760px) {
+  .app-shell.keyboard-open {
+    height: var(--rb-viewport-height) !important;
+    min-height: 0 !important;
+    max-height: var(--rb-viewport-height);
+  }
+
+  .app-shell.keyboard-open > .mobile-navigation {
+    display: none !important;
+  }
+
+  .app-shell.keyboard-open > .app-layout {
+    flex: 1 1 0;
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  .app-shell.keyboard-open .main-content {
+    min-height: 0;
+    padding-bottom: 6px;
+    overflow: hidden;
+  }
+
+  .app-shell.keyboard-open #screen-outlet {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app-shell.keyboard-open .messages-screen {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell.keyboard-open .messages-layout {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell.keyboard-open .messages-layout.is-chat-open .messages-conversation,
+  .app-shell.keyboard-open .messages-layout.is-chat-open .messages-chat {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell.keyboard-open .messages-message-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  .app-shell.keyboard-open .messages-compose {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
