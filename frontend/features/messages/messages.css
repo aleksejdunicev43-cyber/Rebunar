@@ -2328,3 +2328,11 @@
   }
   .messages-compose-signal .messages-attachment-actions button > small { font-size:9px; }
 }
+
+/* The tray must remain genuinely collapsed until the plus button is opened. */
+.messages-compose-signal:not(.is-attachments-open) .messages-gallery-strip,
+.messages-compose-signal:not(.is-attachments-open) .messages-attachment-actions {
+  display:none !important;
+}
+.messages-compose-signal.is-attachments-open .messages-gallery-strip { display:flex !important; }
+.messages-compose-signal.is-attachments-open .messages-attachment-actions { display:flex !important; }
