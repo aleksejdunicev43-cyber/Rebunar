@@ -1144,9 +1144,131 @@ def upload_profile_cover():
     if len(data) > 5 * 1024 * 1024:
         return jsonify({"error": "Размер обложки не должен превышать 5 МБ"}), 413
 
-    if data.hex().startswith("ffd8ff"):
+    if data.startswith(b"\xff\xd8\xff"):
+        extension = ".jpg"
+    elif data.startswith(b"\x89PNG\r\n\x1a\n"):
+        extension = ".png"
+    elif len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        extension = ".webp"
+    else:
+        return jsonify({"error": "Ожидается изображение JPEG, PNG или WebP"}), 400
+
+    folder = BASE / "uploads" / "profile_covers"
+    folder.mkdir(parents=True, exist_ok=True)
+    filename = uuid.uuid4().hex + extension
+    (folder / filename).write_bytes(data)
+    cover_url = "/uploads/profile-covers/" + filename
+
+    with connect() as con:
+        con.execute(
+            "UPDATE users SET profile_cover = ? WHERE id = ?",
+            (cover_url, session["user_id"])
+        )
+
+    return jsonify({"ok": True, "profile_cover": cover_url}), 200
+
+
+@app.get("/uploads/profile-covers/<filename>")
+def get_profile_cover(filename):
+    if Path(filename).name != filename:
+        return jsonify({"error": "Обложка не найдена"}), 404
+
+    return send_from_directory(BASE / "uploads" / "profile_covers", filename)
+
+
+@app.post("/api/logout")
+def logout():
+    presence_id = session.get("presence_id")
+
+    if presence_id:
+        with connect() as con:
+            con.execute(
+                "DELETE FROM user_presence WHERE presence_id = ?",
+                (presence_id,)
+            )
+
+    session.clear()
+    response = jsonify({"logged_in": False})
+    response.delete_cookie(
+        app.config.get("SESSION_COOKIE_NAME", "session"),
+        path=app.config.get("SESSION_COOKIE_PATH") or "/",
+        domain=app.config.get("SESSION_COOKIE_DOMAIN"),
+        secure=app.config.get("SESSION_COOKIE_SECURE", False),
+        httponly=app.config.get("SESSION_COOKIE_HTTPONLY", True),
+        samesite=app.config.get("SESSION_COOKIE_SAMESITE"),
+    )
+    return response, 200
+
+
+@app.post("/api/messages/send")
+def send_message():
+    if "user_id" not in session:
+        return jsonify({"error": "Войди в аккаунт"}), 401
+
+    data = request.get_json(silent=True) or {}
+    receiver_id = data.get("receiver_id")
+    text = str(data.get("text", "")).strip()
+
+    if not receiver_id or not text:
+        return jsonify({"error": "Нужны получатель и текст"}), 400
+
+    try:
+        receiver_id = int(receiver_id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный получатель"}), 400
+
+    if receiver_id == session["user_id"]:
+        return jsonify({"error": "Нельзя отправить сообщение самому себе"}), 400
+
+    with connect() as con:
+        user = con.execute(
+            "SELECT id FROM users WHERE id = ?", (receiver_id,)
+        ).fetchone()
+
+        if not user:
+            return jsonify({"error": "Пользователь не найден"}), 404
+
+        con.execute("""
+            DELETE FROM hidden_chats
+            WHERE (user_id = ? AND other_user_id = ?)
+               OR (user_id = ? AND other_user_id = ?)
+        """, (session["user_id"], receiver_id, receiver_id, session["user_id"]))
+
+        cur = con.execute(
+            "INSERT INTO messages (sender_id, receiver_id, text) VALUES (?, ?, ?)",
+            (session["user_id"], receiver_id, text[:5000])
+        )
+
+    return jsonify({"id": cur.lastrowid, "ok": True}), 201
+
+
+
+@app.post("/api/messages/image")
+def upload_message_image():
+    if "user_id" not in session:
+        return jsonify({"error": "Необходимо войти в аккаунт"}), 401
+
+    receiver_id = request.form.get("receiver_id")
+    try:
+        receiver_id = int(receiver_id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Некорректный получатель"}), 400
+
+    me = session["user_id"]
+    if receiver_id == me:
+        return jsonify({"error": "Нельзя отправить сообщение самому себе"}), 400
+
+    file = request.files.get("image")
+    if not file or not file.filename:
+        return jsonify({"error": "Фотография не выбрана"}), 400
+
+    data = file.read(5 * 1024 * 1024 + 1)
+    if len(data) > 5 * 1024 * 1024:
+        return jsonify({"error": "Размер фотографии не должен превышать 5 МБ"}), 413
+
+    if data.startswith(b"\xff\xd8\xff"):
         ext = "jpg"
-    elif data.hex().startswith("89504e470d0a1a0a"):
+    elif data.startswith(b"\x89PNG\r\n\x1a\n"):
         ext = "png"
     elif data.startswith(b"RIFF") and data[8:12] == b"WEBP":
         ext = "webp"
@@ -1162,7 +1284,7 @@ def upload_profile_cover():
         folder.mkdir(parents=True, exist_ok=True)
         filename = uuid.uuid4().hex + "." + ext
         (folder / filename).write_bytes(data)
-        # Новое вложение возвращает скрытый ранее диалог в список обеих сторон.
+
         con.execute("""
             DELETE FROM hidden_chats
             WHERE (user_id = ? AND other_user_id = ?)
