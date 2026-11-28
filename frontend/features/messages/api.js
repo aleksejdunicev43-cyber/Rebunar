@@ -12,6 +12,10 @@ export function getChatHistory(userId) {
   return api.get(`/messages/history?chat_with_id=${encodeURIComponent(userId)}`);
 }
 
+export function getChatPresence(userId) {
+  return api.get(`/users/${encodeURIComponent(userId)}/profile`);
+}
+
 export function sendMessage(receiverId, message) {
   return api.post('/messages/send', {
     receiver_id: Number(receiverId),

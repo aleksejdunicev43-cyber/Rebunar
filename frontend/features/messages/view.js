@@ -5,6 +5,7 @@ import {
   hideChat,
   searchUsers,
   getChatHistory,
+  getChatPresence,
   sendMessage,
   getSelfNotes,
   createSelfNote,
@@ -156,6 +157,26 @@ async function loadChats() {
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
 }
 
+async function refreshChatPresence(userId) {
+  const status = outletRef?.querySelector('[data-chat-presence]');
+  if (!status || !userId) return;
+
+  try {
+    const profile = await getChatPresence(userId);
+    if (Number(activeChat?.user_id) !== Number(userId)) return;
+
+    const currentStatus = outletRef?.querySelector('[data-chat-presence]');
+    if (!currentStatus) return;
+
+    const online = Boolean(profile.online);
+    currentStatus.textContent = online ? 'В сети' : 'Не в сети';
+    currentStatus.classList.toggle('is-online', online);
+    currentStatus.classList.toggle('is-offline', !online);
+  } catch {
+    // Не подменяем неизвестный статус на «Не в сети» при временной ошибке сети.
+  }
+}
+
 async function openChat(user) {
   activeChat = user;
   renderChatList(outletRef?.querySelector('[data-chat-search]')?.value || '');
@@ -169,7 +190,7 @@ async function openChat(user) {
       ${avatarMarkup(user, { size: 'chat', className: 'messages-header-avatar' })}
       <div class="messages-chat-identity">
         <strong>${escapeHTML(getChatName(user))}</strong>
-        <span>@${escapeHTML(user.username || 'пользователь')}</span>
+        <span class="messages-chat-presence" data-chat-presence>Проверяем статус…</span>
       </div>
     </header>
     <div class="messages-message-list" data-message-list></div>
@@ -182,6 +203,7 @@ async function openChat(user) {
   `;
 
   outletRef.querySelector('.messages-layout')?.classList.add('is-chat-open');
+  refreshChatPresence(user.user_id);
 
   try {
     renderMessages(await getChatHistory(user.user_id));
@@ -566,6 +588,7 @@ export function renderMessagesScreen(outlet, params = {}) {
         notes = await getSelfNotes();
         renderFavoriteNotes({ preserveScroll: true });
       } else if (activeChat?.user_id) {
+        refreshChatPresence(activeChat.user_id);
         renderMessages(await getChatHistory(activeChat.user_id));
       }
     } catch {}
