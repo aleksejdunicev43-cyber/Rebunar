@@ -184,7 +184,13 @@
     margin: 0 !important;
   }
 
+  /* The keyboard occupies the lower screen area: do not leave a second
+     navigation bar or artificial spacer above it. */
+  .app-shell.keyboard-compose-open .mobile-navigation {
+    display: none !important;
+  }
+
   .app-shell.keyboard-compose-open .messages-message-list {
-    padding-bottom: 88px !important;
+    padding-bottom: 12px !important;
   }
 }
