@@ -195,7 +195,7 @@
     overflow: hidden;
   }
 
-  .app-shell.keyboard-open #screen-outlet {
+  .app-shell.keyboard-open-messages #screen-outlet {
     display: flex;
     flex: 1 1 0;
     flex-direction: column;
