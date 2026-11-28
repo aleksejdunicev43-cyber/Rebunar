@@ -1894,3 +1894,35 @@
   align-self: flex-end;
   text-align: right;
 }
+
+
+/* Compact message bubbles: fit the text and reduce excess vertical space. */
+.message-content {
+  width: fit-content;
+  max-width: min(75%, 520px);
+}
+
+.message-row .messages-bubble {
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 12px;
+}
+
+.messages-bubble .message-text {
+  margin: 0;
+  line-height: 1.35;
+}
+
+
+/* Tight vertical fit: remove excess top/bottom space around message text. */
+.message-row .messages-bubble {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  min-height: 0 !important;
+}
+
+.message-row .messages-bubble .message-text {
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+  line-height: 1.2 !important;
+}
